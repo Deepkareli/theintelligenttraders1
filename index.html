@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IntelligentTraders — Trade Institutions, Not Against Them</title>
+<meta name="description" content="India's first institutional stress intelligence platform. Read how institutions are forced to move. Trade their rules, not their speed.">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:    #0a0c10;
+  --ink2:   #12161e;
+  --ink3:   #181d28;
+  --ink4:   #1e2535;
+  --edge:   #242c3d;
+  --edge2:  #2e3a50;
+  --paper:  #e8edf5;
+  --paper2: #c8d4e0;
+  --muted:  #4a5a70;
+  --muted2: #6a7a90;
+  --gold:   #c8a020;
+  --gold2:  #e8c040;
+  --teal:   #10c8b0;
+  --red:    #d84040;
+  --green:  #20c870;
+  --blue:   #3070e0;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'Geist Mono', monospace;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* CUSTOM CURSOR */
+.cursor {
+  width: 8px; height: 8px;
+  background: var(--gold2);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: transform 0.1s, width 0.2s, height 0.2s;
+  mix-blend-mode: difference;
+}
+
+.cursor-ring {
+  width: 36px; height: 36px;
+  border: 1px solid rgba(200,160,32,0.4);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%,-50%);
+  transition: all 0.15s ease;
+}
+
+/* NOISE OVERLAY */
+body::before {
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9997;opacity:0.5;
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 500;
+  padding: 0 5vw;
+  background: rgba(10,12,16,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--edge);
+}
+
+.nav-inner {
+  max-width: 1200px; margin: 0 auto;
+  height: 64px;
+  display: flex; align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  font-family: 'Instrument Serif', serif;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+  color: var(--paper);
+  text-decoration: none;
+}
+
+.nav-logo span { color: var(--gold2); }
+
+.nav-links {
+  display: flex; gap: 32px; align-items: center;
+  list-style: none;
+}
+
+.nav-links a {
+  font-size: 11px; letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted2);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--paper); }
+
+.nav-cta {
+  background: var(--gold);
+  color: var(--ink) !important;
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-weight: 600 !important;
+  transition: background 0.2s !important;
+}
+
+.nav-cta:hover { background: var(--gold2) !important; color: var(--ink) !important; }
+
+.nav-mob { display: none; }
+
+/* ══════════════════════════════════════
+   HERO
+══════════════════════════════════════ */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: center;
+  padding: 120px 5vw 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* animated grid */
+.hero::before {
+  content:'';
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(200,160,32,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,160,32,0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+  animation: gridDrift 20s linear infinite;
+}
+
+@keyframes gridDrift {
+  0%   { transform: translate(0,0); }
+  100% { transform: translate(80px,80px); }
+}
+
+/* diagonal accent */
+.hero::after {
+  content:'';
+  position:absolute;
+  top: -200px; right: -200px;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,160,32,0.06) 0%, transparent 70%);
+  animation: pulse 8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,100% { transform: scale(1); opacity: 0.5; }
+  50%      { transform: scale(1.2); opacity: 1; }
+}
+
+.hero-inner {
+  max-width: 1200px; margin: 0 auto;
+  position: relative; z-index: 1;
+  width: 100%;
+}
+
+.hero-eyebrow {
+  font-size: 10px; letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+  animation: fadeUp 0.8s ease both;
+}
+
+.hero-eyebrow::before {
+  content:'';
+  width: 32px; height: 1px;
+  background: var(--gold);
+}
+
+.hero-h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(40px, 7vw, 88px);
+  line-height: 1.05;
+  letter-spacing: -2px;
+  color: var(--paper);
+  margin-bottom: 28px;
+  animation: fadeUp 0.8s 0.1s ease both;
+}
+
+.hero-h1 em {
+  font-style: italic;
+  color: var(--gold2);
+}
+
+.hero-h1 .line2 {
+  display: block;
+  color: var(--paper2);
+}
+
+.hero-sub {
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--muted2);
+  max-width: 560px;
+  margin-bottom: 48px;
+  animation: fadeUp 0.8s 0.2s ease both;
+}
+
+.hero-sub strong { color: var(--paper); }
+
+.hero-actions {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  animation: fadeUp 0.8s 0.3s ease both;
+}
+
+.btn-gold {
+  background: var(--gold);
+  color: var(--ink);
+  padding: 14px 32px;
+  border-radius: 4px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none; cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+
+.btn-gold:hover {
+  background: var(--gold2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(200,160,32,0.3);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--paper2);
+  padding: 14px 32px;
+  border-radius: 4px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid var(--edge2);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-ghost:hover { border-color: var(--muted2); color: var(--paper); }
+
+/* TICKER */
+.ticker-wrap {
+  margin-top: 80px;
+  border-top: 1px solid var(--edge);
+  border-bottom: 1px solid var(--edge);
+  padding: 14px 0;
+  overflow: hidden;
+  animation: fadeUp 0.8s 0.5s ease both;
+}
+
+.ticker-inner {
+  display: flex; gap: 60px;
+  animation: tickerScroll 30s linear infinite;
+  white-space: nowrap;
+}
+
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.tick-item {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted);
+  flex-shrink: 0;
+}
+
+.tick-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); }
+
+/* HERO STATS */
+.hero-stats {
+  display: flex; gap: 48px; flex-wrap: wrap;
+  margin-top: 60px;
+  animation: fadeUp 0.8s 0.4s ease both;
+}
+
+.hstat { border-left: 2px solid var(--gold); padding-left: 16px; }
+.hstat-num {
+  font-family: 'Instrument Serif', serif;
+  font-size: 36px; color: var(--gold2);
+  letter-spacing: -1px; line-height: 1;
+}
+.hstat-lbl { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ══════════════════════════════════════
+   SECTION COMMON
+══════════════════════════════════════ */
+section { padding: 100px 5vw; }
+.section-inner { max-width: 1200px; margin: 0 auto; }
+
+.section-eyebrow {
+  font-size: 9px; letter-spacing: 4px;
+  text-transform: uppercase; color: var(--gold);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.section-eyebrow::before { content:''; width:24px; height:1px; background:var(--gold); }
+
+.section-h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(28px, 4vw, 52px);
+  line-height: 1.1;
+  letter-spacing: -1px;
+  color: var(--paper);
+  margin-bottom: 16px;
+}
+
+.section-h2 em { font-style:italic; color:var(--gold2); }
+
+.section-sub {
+  font-size: 13px; line-height: 1.8;
+  color: var(--muted2); max-width: 520px;
+}
+
+/* ══════════════════════════════════════
+   PROBLEM SECTION
+══════════════════════════════════════ */
+.problem-section {
+  background: var(--ink2);
+  border-top: 1px solid var(--edge);
+  border-bottom: 1px solid var(--edge);
+}
+
+.problem-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px; align-items: center;
+  margin-top: 60px;
+}
+
+.problem-quote {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(20px, 2.5vw, 32px);
+  line-height: 1.4;
+  color: var(--paper);
+  border-left: 3px solid var(--gold);
+  padding-left: 24px;
+}
+
+.problem-quote em { color: var(--gold2); font-style: italic; }
+
+.problem-list { display: flex; flex-direction: column; gap: 20px; }
+
+.problem-item {
+  display: flex; gap: 16px;
+  padding: 16px;
+  background: var(--ink3);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+}
+
+.pi-icon {
+  font-size: 20px; flex-shrink: 0;
+  width: 40px; height: 40px;
+  background: var(--ink4);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.pi-title { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.pi-desc  { font-size: 11px; color: var(--muted2); line-height: 1.6; }
+
+/* ══════════════════════════════════════
+   HOW IT WORKS
+══════════════════════════════════════ */
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-top: 60px;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.how-card {
+  background: var(--ink2);
+  padding: 32px;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.how-card:hover { background: var(--ink3); }
+
+.how-num {
+  font-family: 'Instrument Serif', serif;
+  font-size: 60px; line-height: 1;
+  color: var(--edge2);
+  margin-bottom: 16px;
+  letter-spacing: -2px;
+}
+
+.how-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; color: var(--paper); }
+.how-desc  { font-size: 11px; color: var(--muted2); line-height: 1.7; }
+
+.how-tag {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 3px 10px;
+  border-radius: 3px;
+  font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase;
+  background: rgba(200,160,32,0.08);
+  color: var(--gold);
+  border: 1px solid rgba(200,160,32,0.2);
+}
+
+/* ══════════════════════════════════════
+   TRIGGERS SHOWCASE
+══════════════════════════════════════ */
+.triggers-section { background: var(--ink2); border-top:1px solid var(--edge); border-bottom:1px solid var(--edge); }
+
+.triggers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 12px;
+  margin-top: 48px;
+}
+
+.trig-card {
+  background: var(--ink3);
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  padding: 24px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.trig-card::before {
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;height:2px;
+}
+
+.trig-card.t-gold::before  { background: var(--gold); }
+.trig-card.t-teal::before  { background: var(--teal); }
+.trig-card.t-blue::before  { background: var(--blue); }
+.trig-card.t-red::before   { background: var(--red); }
+.trig-card.t-green::before { background: var(--green); }
+.trig-card.t-purple::before{ background: #8050f0; }
+
+.trig-card:hover { border-color: var(--edge2); transform: translateY(-2px); }
+
+.trig-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+
+.trig-code {
+  font-family: 'Instrument Serif', serif;
+  font-size: 28px; color: var(--muted);
+  letter-spacing: -1px; line-height: 1;
+}
+
+.trig-score {
+  font-size: 9px; letter-spacing: 1px;
+  padding: 3px 8px; border-radius: 3px;
+  background: rgba(200,160,32,0.08);
+  color: var(--gold);
+  border: 1px solid rgba(200,160,32,0.2);
+}
+
+.trig-name { font-size: 13px; font-weight: 600; color: var(--paper); margin-bottom: 8px; }
+.trig-desc { font-size: 11px; color: var(--muted2); line-height: 1.7; margin-bottom: 12px; }
+
+.trig-signal {
+  font-size: 10px; color: var(--teal);
+  border-top: 1px solid var(--edge);
+  padding-top: 10px;
+  line-height: 1.5;
+}
+
+/* ══════════════════════════════════════
+   TOOLS SECTION
+══════════════════════════════════════ */
+.tools-tabs {
+  display: flex; gap: 2px;
+  background: var(--ink2);
+  border: 1px solid var(--edge);
+  border-radius: 6px; padding: 3px;
+  margin-bottom: 20px;
+  width: fit-content;
+}
+
+.ttab {
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer; transition: all 0.2s;
+  color: var(--muted2);
+}
+
+.ttab.active { background: var(--ink4); color: var(--gold); }
+
+.tool-frame-wrap {
+  background: var(--ink2);
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tool-frame-bar {
+  background: var(--ink3);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--edge);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.tbar-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+.tool-preview {
+  min-height: 500px;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px;
+  color: var(--muted);
+  font-size: 12px; text-align: center;
+  padding: 40px;
+}
+
+.tool-preview-icon { font-size: 48px; margin-bottom: 8px; }
+
+.launch-tool-btn {
+  background: var(--gold);
+  color: var(--ink);
+  padding: 12px 28px;
+  border-radius: 4px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  text-decoration: none;
+  border: none; cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 8px;
+}
+
+.launch-tool-btn:hover { background: var(--gold2); transform: translateY(-2px); }
+
+/* ══════════════════════════════════════
+   ABOUT SECTION
+══════════════════════════════════════ */
+.about-section { background: var(--ink2); border-top:1px solid var(--edge); }
+
+.about-grid { display:grid; grid-template-columns:1fr 1.4fr; gap:80px; align-items:start; margin-top:60px; }
+
+.about-portrait {
+  background: var(--ink3);
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  padding: 32px;
+  text-align: center;
+}
+
+.portrait-avatar {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, var(--gold), var(--teal));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Instrument Serif', serif;
+  font-size: 32px; color: var(--ink);
+  margin: 0 auto 20px;
+}
+
+.portrait-name {
+  font-family: 'Instrument Serif', serif;
+  font-size: 22px; color: var(--paper);
+  margin-bottom: 4px;
+}
+
+.portrait-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
+
+.portrait-tags { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
+
+.ptag {
+  padding: 4px 10px; border-radius: 3px;
+  font-size: 9px; letter-spacing: 1px;
+  background: var(--ink4); color: var(--muted2);
+  border: 1px solid var(--edge);
+}
+
+.about-content { }
+
+.about-statement {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(20px, 2vw, 28px);
+  line-height: 1.4; color: var(--paper);
+  margin-bottom: 24px;
+}
+
+.about-statement em { font-style: italic; color: var(--gold2); }
+
+.about-body { font-size: 12px; line-height: 1.9; color: var(--muted2); }
+.about-body strong { color: var(--paper); }
+.about-body p { margin-bottom: 16px; }
+
+.about-credentials {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-top: 28px;
+}
+
+.cred-row {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px;
+  background: var(--ink3);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+}
+
+.cred-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.cred-text { font-size: 11px; color: var(--muted2); line-height: 1.5; }
+.cred-text strong { color: var(--paper); }
+
+/* ══════════════════════════════════════
+   WAITLIST SECTION
+══════════════════════════════════════ */
+.waitlist-section {
+  background: linear-gradient(135deg, var(--ink) 0%, var(--ink3) 100%);
+  border-top: 1px solid var(--edge);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.waitlist-section::before {
+  content:'';
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:600px;height:600px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(200,160,32,0.05) 0%,transparent 70%);
+}
+
+.waitlist-inner {
+  position: relative; z-index: 1;
+  max-width: 600px; margin: 0 auto;
+}
+
+.waitlist-h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.1; letter-spacing: -1.5px;
+  color: var(--paper); margin-bottom: 16px;
+}
+
+.waitlist-h2 em { font-style: italic; color: var(--gold2); }
+
+.waitlist-sub {
+  font-size: 13px; line-height: 1.8;
+  color: var(--muted2); margin-bottom: 40px;
+}
+
+.waitlist-form {
+  display: flex; flex-direction: column; gap: 12px;
+  max-width: 480px; margin: 0 auto 24px;
+}
+
+.wform-row { display: flex; gap: 10px; }
+
+.wfield {
+  background: var(--ink2);
+  border: 1px solid var(--edge2);
+  border-radius: 4px;
+  padding: 13px 16px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px; color: var(--paper);
+  outline: none; width: 100%;
+  transition: border-color 0.2s;
+}
+
+.wfield:focus { border-color: var(--gold); }
+.wfield::placeholder { color: var(--muted); }
+
+.wselect {
+  background: var(--ink2);
+  border: 1px solid var(--edge2);
+  border-radius: 4px;
+  padding: 13px 16px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px; color: var(--paper);
+  outline: none; width: 100%;
+  appearance: none; cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.wselect:focus { border-color: var(--gold); }
+.wselect option { background: var(--ink2); }
+
+.wsub-btn {
+  width: 100%;
+  background: var(--gold);
+  color: var(--ink);
+  padding: 14px;
+  border-radius: 4px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  border: none; cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wsub-btn:hover { background: var(--gold2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,160,32,0.3); }
+
+.waitlist-note {
+  font-size: 10px; letter-spacing: 1px;
+  color: var(--muted); line-height: 1.7;
+}
+
+.waitlist-count {
+  margin-top: 32px;
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+}
+
+.wc-num {
+  font-family: 'Instrument Serif', serif;
+  font-size: 40px; color: var(--gold2);
+  letter-spacing: -1px;
+}
+
+.wc-txt { font-size: 11px; color: var(--muted2); text-align: left; line-height: 1.5; }
+
+/* SUCCESS STATE */
+.waitlist-success {
+  display: none;
+  padding: 32px;
+  background: var(--ink3);
+  border: 1px solid rgba(32,200,112,0.3);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.ws-icon { font-size: 40px; margin-bottom: 12px; }
+.ws-title { font-family: 'Instrument Serif', serif; font-size: 24px; color: var(--green); margin-bottom: 8px; }
+.ws-desc { font-size: 12px; color: var(--muted2); line-height: 1.7; }
+
+/* ══════════════════════════════════════
+   SOCIAL PROOF
+══════════════════════════════════════ */
+.proof-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px; margin-top: 48px;
+}
+
+.proof-card {
+  background: var(--ink2);
+  border: 1px solid var(--edge);
+  border-radius: 8px; padding: 20px;
+}
+
+.proof-text {
+  font-family: 'Instrument Serif', serif;
+  font-size: 15px; line-height: 1.6;
+  color: var(--paper); margin-bottom: 16px;
+  font-style: italic;
+}
+
+.proof-author {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.proof-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--teal));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--ink); font-weight: 700;
+  font-family: 'Instrument Serif', serif;
+  flex-shrink: 0;
+}
+
+.proof-name { font-size: 11px; font-weight: 600; }
+.proof-role { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+/* ══════════════════════════════════════
+   FRAMEWORK SECTION
+══════════════════════════════════════ */
+.framework-section { background: var(--ink2); border-top: 1px solid var(--edge); }
+
+.framework-layers {
+  display: flex; flex-direction: column; gap: 2px;
+  margin-top: 48px;
+  border: 1px solid var(--edge); border-radius: 8px; overflow: hidden;
+}
+
+.layer-row {
+  background: var(--ink3);
+  padding: 24px 32px;
+  display: grid;
+  grid-template-columns: 200px 1fr auto;
+  gap: 24px; align-items: center;
+  transition: background 0.2s;
+}
+
+.layer-row:hover { background: var(--ink4); }
+
+.layer-num {
+  font-size: 9px; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--gold);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.layer-num::before { content:''; width:16px; height:1px; background:var(--gold); }
+
+.layer-name {
+  font-family: 'Instrument Serif', serif;
+  font-size: 20px; color: var(--paper);
+  letter-spacing: -0.5px;
+}
+
+.layer-desc { font-size: 11px; color: var(--muted2); line-height: 1.6; }
+
+.layer-tag {
+  padding: 4px 12px; border-radius: 3px;
+  font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase; white-space: nowrap;
+  border: 1px solid; flex-shrink: 0;
+}
+
+.lt-trap { background: rgba(216,64,64,0.08); border-color: rgba(216,64,64,0.25); color: var(--red); }
+.lt-intel{ background: rgba(200,160,32,0.08); border-color: rgba(200,160,32,0.25); color: var(--gold); }
+.lt-trade{ background: rgba(32,200,112,0.08); border-color: rgba(32,200,112,0.25); color: var(--green); }
+
+/* ══════════════════════════════════════
+   FAQ
+══════════════════════════════════════ */
+.faq-list { display: flex; flex-direction: column; gap: 2px; margin-top: 48px; }
+
+.faq-item {
+  background: var(--ink2);
+  border: 1px solid var(--edge);
+  border-radius: 6px; overflow: hidden;
+}
+
+.faq-q {
+  padding: 18px 24px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.2s; user-select: none;
+}
+
+.faq-q:hover { background: var(--ink3); }
+
+.faq-icon { color: var(--gold); font-size: 18px; transition: transform 0.2s; }
+
+.faq-a {
+  padding: 0 24px;
+  max-height: 0; overflow: hidden;
+  transition: all 0.3s ease;
+  font-size: 12px; color: var(--muted2); line-height: 1.8;
+}
+
+.faq-item.open .faq-a { max-height: 200px; padding: 0 24px 18px; }
+.faq-item.open .faq-icon { transform: rotate(45deg); }
+
+/* ══════════════════════════════════════
+   FOOTER
+══════════════════════════════════════ */
+footer {
+  background: var(--ink);
+  border-top: 1px solid var(--edge);
+  padding: 48px 5vw;
+}
+
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 48px;
+}
+
+.footer-brand { }
+
+.footer-logo {
+  font-family: 'Instrument Serif', serif;
+  font-size: 22px; color: var(--paper);
+  margin-bottom: 12px;
+}
+
+.footer-logo span { color: var(--gold2); }
+
+.footer-tagline { font-size: 11px; color: var(--muted); line-height: 1.7; max-width: 240px; }
+
+.footer-col-title {
+  font-size: 9px; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--gold);
+  margin-bottom: 16px;
+}
+
+.footer-links { display: flex; flex-direction: column; gap: 10px; }
+.footer-links a { font-size: 12px; color: var(--muted2); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--paper); }
+
+.footer-bottom {
+  max-width: 1200px; margin: 40px auto 0;
+  padding-top: 24px; border-top: 1px solid var(--edge);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+  font-size: 10px; color: var(--muted);
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .problem-grid,.about-grid,.how-grid,.layer-row,.footer-inner{grid-template-columns:1fr;}
+  .nav-links{display:none;}
+  .nav-mob{display:block;}
+  .hero-stats{gap:24px;}
+  .wform-row{flex-direction:column;}
+}
+
+@media(max-width:600px){
+  nav{padding:0 16px;}
+  .hero,.problem-section,section{padding-left:16px;padding-right:16px;}
+  .triggers-grid{grid-template-columns:1fr;}
+  footer{padding:40px 16px;}
+}
+
+/* SCROLL REVEAL */
+.reveal {
+  opacity:0; transform:translateY(24px);
+  transition:opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible { opacity:1; transform:translateY(0); }
+
+/* MARQUEE PAUSE */
+.ticker-wrap:hover .ticker-inner { animation-play-state: paused; }
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curRing"></div>
+
+<!-- NAV -->
+<nav>
+<div class="nav-inner">
+  <a href="#" class="nav-logo">Intelligent<span>Traders</span></a>
+  <ul class="nav-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#triggers">Triggers</a></li>
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="#waitlist" class="nav-cta">Get Early Access</a></li>
+  </ul>
+</div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     HERO
+══════════════════════════════════════ -->
+<section class="hero" id="home">
+<div class="hero-inner">
+  <div class="hero-eyebrow">India's First Institutional Intelligence Platform</div>
+  <h1 class="hero-h1">
+    Stop trading <em>against</em> institutions.
+    <span class="line2">Start reading their <em>forced moves.</em></span>
+  </h1>
+  <p class="hero-sub">
+    <strong>90% of retail traders lose</strong> — not because they're unintelligent,
+    but because they're using tools institutions built, designed for institutions to exploit.
+    IntelligentTraders decodes the <strong>6 institutional stress triggers</strong>
+    that force predictable, exploitable price movements.
+  </p>
+  <div class="hero-actions">
+    <a href="#waitlist" class="btn-gold">→ Join the Waitlist</a>
+    <a href="#how" class="btn-ghost">See How It Works</a>
+  </div>
+  <div class="hero-stats">
+    <div class="hstat"><div class="hstat-num">6</div><div class="hstat-lbl">Institutional Triggers</div></div>
+    <div class="hstat"><div class="hstat-num">9</div><div class="hstat-lbl">Indicators Decoded</div></div>
+    <div class="hstat"><div class="hstat-num">12+</div><div class="hstat-lbl">Years Banking Intelligence</div></div>
+    <div class="hstat"><div class="hstat-num">3</div><div class="hstat-lbl">Free Tools Included</div></div>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-inner">
+    <div class="tick-item"><div class="tick-dot"></div>India VIX Analysis</div>
+    <div class="tick-item"><div class="tick-dot"></div>FII Positioning Intelligence</div>
+    <div class="tick-item"><div class="tick-dot"></div>Max Pain Detection</div>
+    <div class="tick-item"><div class="tick-dot"></div>Margin Cascade Signals</div>
+    <div class="tick-item"><div class="tick-dot"></div>IV Rank & Crush Setup</div>
+    <div class="tick-item"><div class="tick-dot"></div>Macro FII Rule Triggers</div>
+    <div class="tick-item"><div class="tick-dot"></div>Dhan API Integration</div>
+    <div class="tick-item"><div class="tick-dot"></div>Zerodha Kite Ready</div>
+    <div class="tick-item"><div class="tick-dot"></div>Pine Script Signals</div>
+    <div class="tick-item"><div class="tick-dot"></div>Paper Trade Validation</div>
+    <!-- duplicate for infinite scroll -->
+    <div class="tick-item"><div class="tick-dot"></div>India VIX Analysis</div>
+    <div class="tick-item"><div class="tick-dot"></div>FII Positioning Intelligence</div>
+    <div class="tick-item"><div class="tick-dot"></div>Max Pain Detection</div>
+    <div class="tick-item"><div class="tick-dot"></div>Margin Cascade Signals</div>
+    <div class="tick-item"><div class="tick-dot"></div>IV Rank & Crush Setup</div>
+    <div class="tick-item"><div class="tick-dot"></div>Macro FII Rule Triggers</div>
+    <div class="tick-item"><div class="tick-dot"></div>Dhan API Integration</div>
+    <div class="tick-item"><div class="tick-dot"></div>Zerodha Kite Ready</div>
+    <div class="tick-item"><div class="tick-dot"></div>Pine Script Signals</div>
+    <div class="tick-item"><div class="tick-dot"></div>Paper Trade Validation</div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     PROBLEM
+══════════════════════════════════════ -->
+<section class="problem-section" id="problem">
+<div class="section-inner">
+  <div class="section-eyebrow">The Real Problem</div>
+  <h2 class="section-h2">The game is <em>rigged</em> — but not the way you think</h2>
+
+  <div class="problem-grid reveal">
+    <div>
+      <p class="problem-quote">
+        "Retail traders aren't losing because they're stupid.
+        They're losing because they're using
+        <em>the same indicators institutions built specifically to read retail behaviour.</em>"
+      </p>
+      <p style="font-size:11px;color:var(--muted);margin-top:16px;line-height:1.7;">
+        — Deepanshu Tihaiya, Scale II Manager · Banking Sector<br>
+        12+ years credit & banking intelligence
+      </p>
+    </div>
+    <div class="problem-list">
+      <div class="problem-item">
+        <div class="pi-icon">⚡</div>
+        <div>
+          <div class="pi-title">200,000x Speed Disadvantage</div>
+          <div class="pi-desc">Institutional co-location executes in microseconds. Your Zerodha order takes 300ms. By the time you click, they've already bought and are selling to you.</div>
+        </div>
+      </div>
+      <div class="problem-item">
+        <div class="pi-icon">📊</div>
+        <div>
+          <div class="pi-title">Your Indicators Are Their Map</div>
+          <div class="pi-desc">RSI, MACD, Supertrend — all integrated into institutional algos. They know exactly where retail stop-losses sit and trigger stop hunts deliberately.</div>
+        </div>
+      </div>
+      <div class="problem-item">
+        <div class="pi-icon">🔒</div>
+        <div>
+          <div class="pi-title">Institutions Are Rule-Bound</div>
+          <div class="pi-desc">This is the insight nobody talks about. VaR limits, drawdown rules, mandate constraints — institutions MUST act predictably when their rules trigger. That's your edge.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     HOW IT WORKS
+══════════════════════════════════════ -->
+<section id="how">
+<div class="section-inner">
+  <div class="section-eyebrow">The Framework</div>
+  <h2 class="section-h2">Three layers. One edge.</h2>
+  <p class="section-sub">IntelligentTraders combines institutional intelligence with indicator trap detection into a single daily decision — buy, sell premium, watch, or do nothing.</p>
+
+  <div class="how-grid reveal">
+    <div class="how-card">
+      <div class="how-num">01</div>
+      <div class="how-title">Indicator Engine</div>
+      <div class="how-desc">9 classic indicators reframed as institutional trap detectors. RSI above 70 doesn't mean "sell" — it means retail is overbought and institutions are positioning to sell to them. Know WHERE retail is trapped.</div>
+      <div class="how-tag">Trap Detection</div>
+    </div>
+    <div class="how-card">
+      <div class="how-num">02</div>
+      <div class="how-title">Institutional Trigger Engine</div>
+      <div class="how-desc">6 stress triggers built from 12 years inside banking risk frameworks. VaR breaches, FII drawdown limits, Max Pain pins, margin cascades — when these fire, institutions are FORCED to move predictably.</div>
+      <div class="how-tag">Institutional Intelligence</div>
+    </div>
+    <div class="how-card">
+      <div class="how-num">03</div>
+      <div class="how-title">Decision Engine</div>
+      <div class="how-desc">Combines both layers into one plain-language trade instruction. No trigger = do nothing. One trigger = half size. Two triggers = full size. IV Rank above 70 = sell premium only. Six non-negotiable rules.</div>
+      <div class="how-tag">Trade Signal</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     TRIGGERS
+══════════════════════════════════════ -->
+<section class="triggers-section" id="triggers">
+<div class="section-inner">
+  <div class="section-eyebrow">The 6 Triggers</div>
+  <h2 class="section-h2">When institutions panic, <em>you profit.</em></h2>
+  <p class="section-sub">Each trigger represents a moment when institutional risk rules force predictable, mechanical behaviour. These are observable in public data — every single trading day.</p>
+
+  <div class="triggers-grid reveal">
+    <div class="trig-card t-gold">
+      <div class="trig-top">
+        <div class="trig-code">T1</div>
+        <div class="trig-score">9/10 Reliability</div>
+      </div>
+      <div class="trig-name">VaR Breach — VIX Spike</div>
+      <div class="trig-desc">When India VIX spikes 15%+ in a single session, institutional risk systems auto-trigger position reduction. They must sell regardless of their view. Validated: COVID 2020, Russia-Ukraine 2022.</div>
+      <div class="trig-signal">→ Wait 30–45 min · Buy ATM calls or sell OTM puts</div>
+    </div>
+    <div class="trig-card t-teal">
+      <div class="trig-top">
+        <div class="trig-code">T2</div>
+        <div class="trig-score">8/10 Reliability</div>
+      </div>
+      <div class="trig-name">FII Drawdown Limit</div>
+      <div class="trig-desc">FII net short futures above ₹15,000 Cr for 3+ days = drawdown mode. They mechanically reduce risk per internal rules. Validated: October 2024 record ₹1.14 lakh crore selling.</div>
+      <div class="trig-signal">→ Do not buy calls · Wait for FII short reduction signal</div>
+    </div>
+    <div class="trig-card t-blue">
+      <div class="trig-top">
+        <div class="trig-code">T3</div>
+        <div class="trig-score">7/10 Reliability</div>
+      </div>
+      <div class="trig-name">Max Pain Expiry Pin</div>
+      <div class="trig-desc">Market makers delta-hedge books on expiry day creating gravitational pull toward Max Pain strike after 1:30 PM. Fires every expiry — most predictable calendar-based trigger.</div>
+      <div class="trig-signal">→ Sell ATM straddle after 1:30 PM · Theta crushes both sides</div>
+    </div>
+    <div class="trig-card t-red">
+      <div class="trig-top">
+        <div class="trig-code">T4</div>
+        <div class="trig-score">9/10 Reliability</div>
+      </div>
+      <div class="trig-name">Margin Call Cascade</div>
+      <div class="trig-desc">All sectors falling together with no news = leveraged positions being margin-called. Not fundamental. Validated: June 2024 election crash — Nifty -5.93%, fully recovered in 27 days.</div>
+      <div class="trig-signal">→ Buy calls in tranches · Recovery historically 3–27 days</div>
+    </div>
+    <div class="trig-card t-green">
+      <div class="trig-top">
+        <div class="trig-code">T5</div>
+        <div class="trig-score">10/10 Reliability</div>
+      </div>
+      <div class="trig-name">Pre-Event IV Crush</div>
+      <div class="trig-desc">Institutions buy options as insurance before RBI, Budget, Elections. They mechanically sell post-event. IV collapses 30–50% within 30 minutes regardless of outcome. Fires 8–10x per year.</div>
+      <div class="trig-signal">→ Sell straddle 1–2 days pre-event · IV crush is mechanical</div>
+    </div>
+    <div class="trig-card t-purple">
+      <div class="trig-top">
+        <div class="trig-code">T6</div>
+        <div class="trig-score">7/10 Reliability</div>
+      </div>
+      <div class="trig-name">Macro FII Rule Trigger</div>
+      <div class="trig-desc">USDINR crossing key levels or US 10Y yield spikes trigger automatic EM reallocation in global funds. India sold non-discretionarily — nothing to do with India fundamentals.</div>
+      <div class="trig-signal">→ Watch USDINR + US 10Y · Wait for stabilisation before buying</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     FRAMEWORK LAYERS
+══════════════════════════════════════ -->
+<section class="framework-section" id="framework">
+<div class="section-inner">
+  <div class="section-eyebrow">Three-Layer Architecture</div>
+  <h2 class="section-h2">Built like a <em>bank's risk system,</em> designed for retail intelligence.</h2>
+
+  <div class="framework-layers reveal">
+    <div class="layer-row">
+      <div class="layer-num">Layer 01</div>
+      <div>
+        <div class="layer-name">Indicator Engine</div>
+        <div class="layer-desc">RSI · EMA 20/200 · MACD · Bollinger Bands · VWAP · Supertrend · Put-Call Ratio · OBV · IV Rank — all reframed as institutional trap detectors, not entry signals.</div>
+      </div>
+      <div class="layer-tag lt-trap">Trap Detection</div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-num">Layer 02</div>
+      <div>
+        <div class="layer-name">Institutional Trigger Engine</div>
+        <div class="layer-desc">T1 VaR Breach · T2 FII Drawdown · T3 Max Pain · T4 Margin Cascade · T5 IV Crush · T6 Macro FII — six stress triggers observable in public NSE/RBI data daily.</div>
+      </div>
+      <div class="layer-tag lt-intel">Inst. Intelligence</div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-num">Layer 03</div>
+      <div>
+        <div class="layer-name">Decision Engine</div>
+        <div class="layer-desc">Confluence score · Position sizing by trigger count · 6 non-negotiable rules · Plain English trade instruction · Dhan API + Zerodha API + Pine Script output ready to deploy.</div>
+      </div>
+      <div class="layer-tag lt-trade">Trade Signal</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     TOOLS
+══════════════════════════════════════ -->
+<section id="tools" style="border-top:1px solid var(--edge);">
+<div class="section-inner">
+  <div class="section-eyebrow">Free Tools</div>
+  <h2 class="section-h2">Three tools. <em>One system.</em></h2>
+  <p class="section-sub">Built for paper trading validation first. No subscription required to start. Validate the framework in your own hands before risking capital.</p>
+
+  <div class="tools-tabs" style="margin-top:40px;">
+    <div class="ttab active" onclick="switchTool(0,this)">Signal Dashboard</div>
+    <div class="ttab" onclick="switchTool(1,this)">Paper Journal</div>
+    <div class="ttab" onclick="switchTool(2,this)">Algo Framework</div>
+  </div>
+
+  <div class="tool-frame-wrap">
+    <div class="tool-frame-bar">
+      <div class="tbar-dot" style="background:#f03058;"></div>
+      <div class="tbar-dot" style="background:#f0c030;margin-left:4px;"></div>
+      <div class="tbar-dot" style="background:#20c870;margin-left:4px;"></div>
+      <div style="font-size:10px;color:var(--muted);margin-left:12px;" id="tool-url">theintelligenttraders.com/dashboard</div>
+    </div>
+    <div class="tool-preview" id="tool-preview-0">
+      <div class="tool-preview-icon">⚡</div>
+      <div style="font-size:14px;font-weight:600;color:var(--paper);margin-bottom:4px;">InstAlert Signal Dashboard</div>
+      <div style="color:var(--muted);font-size:11px;max-width:400px;line-height:1.7;">Enter 5 numbers every morning. Get one clear signal — Red (trade), Yellow (watch), or Green (do nothing). With plain English trade instruction.</div>
+      <a class="launch-tool-btn" href="dashboard.html" target="_blank">→ Launch Dashboard</a>
+    </div>
+    <div class="tool-preview" id="tool-preview-1" style="display:none;">
+      <div class="tool-preview-icon">📓</div>
+      <div style="font-size:14px;font-weight:600;color:var(--paper);margin-bottom:4px;">Paper Trading Journal</div>
+      <div style="color:var(--muted);font-size:11px;max-width:400px;line-height:1.7;">Log every paper trade with trigger, rationale, and rules checklist. Track win rate by trigger. Validate which triggers work best in your hands before going live.</div>
+      <a class="launch-tool-btn" href="journal.html" target="_blank">→ Launch Journal</a>
+    </div>
+    <div class="tool-preview" id="tool-preview-2" style="display:none;">
+      <div class="tool-preview-icon">🤖</div>
+      <div style="font-size:14px;font-weight:600;color:var(--paper);margin-bottom:4px;">Algo Trading Framework</div>
+      <div style="color:var(--muted);font-size:11px;max-width:400px;line-height:1.7;">Full three-layer algo with indicator engine, trigger engine, and decision engine. Copy-paste ready Python code for Dhan API, Zerodha API, and Pine Script for TradingView.</div>
+      <a class="launch-tool-btn" href="algo.html" target="_blank">→ Launch Algo Framework</a>
+    </div>
+  </div>
+
+  <!-- TOOL CARDS -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px;" class="reveal">
+    <div style="background:var(--ink2);border:1px solid var(--edge);border-radius:8px;padding:20px;">
+      <div style="font-size:20px;margin-bottom:10px;">⚡</div>
+      <div style="font-size:12px;font-weight:600;margin-bottom:6px;">Signal Dashboard</div>
+      <div style="font-size:10px;color:var(--muted2);line-height:1.6;">5 inputs → 1 signal. Red/Yellow/Green. Plain language trade instruction. 10 minutes every morning.</div>
+      <div style="margin-top:12px;font-size:9px;color:var(--gold);letter-spacing:1px;">FREE · NO SIGNUP</div>
+    </div>
+    <div style="background:var(--ink2);border:1px solid var(--edge);border-radius:8px;padding:20px;">
+      <div style="font-size:20px;margin-bottom:10px;">📓</div>
+      <div style="font-size:12px;font-weight:600;margin-bottom:6px;">Paper Journal</div>
+      <div style="font-size:10px;color:var(--muted2);line-height:1.6;">Log trades, track win rate by trigger, validate the framework in 90 days before risking real capital.</div>
+      <div style="margin-top:12px;font-size:9px;color:var(--gold);letter-spacing:1px;">FREE · NO SIGNUP</div>
+    </div>
+    <div style="background:var(--ink2);border:1px solid var(--edge);border-radius:8px;padding:20px;">
+      <div style="font-size:20px;margin-bottom:10px;">🤖</div>
+      <div style="font-size:12px;font-weight:600;margin-bottom:6px;">Algo Framework</div>
+      <div style="font-size:10px;color:var(--muted2);line-height:1.6;">Python + Dhan API + Zerodha API + Pine Script. Three-layer architecture. Copy-paste ready.</div>
+      <div style="margin-top:12px;font-size:9px;color:var(--gold);letter-spacing:1px;">FREE · NO SIGNUP</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     ABOUT
+══════════════════════════════════════ -->
+<section class="about-section" id="about">
+<div class="section-inner">
+  <div class="section-eyebrow">The Founder</div>
+  <h2 class="section-h2">This framework was built <em>from inside the institution.</em></h2>
+
+  <div class="about-grid reveal">
+    <div class="about-portrait">
+      <div class="portrait-avatar">D</div>
+      <div class="portrait-name">Deepanshu Tihaiya</div>
+      <div class="portrait-title">Founder · IntelligentTraders</div>
+      <div class="portrait-tags">
+        <div class="ptag">Scale II Manager</div>
+        <div class="ptag"></div>
+        <div class="ptag">12+ Yrs Banking</div>
+        <div class="ptag">Credit Intelligence</div>
+        
+        <div class="ptag">Options Trader</div>
+      </div>
+    </div>
+    <div class="about-content">
+      <div class="about-statement">
+        "I spent 12 years inside banking institutions learning exactly how risk rules work.
+        When I started trading, I realised — <em>the retail trader's enemy isn't the market.
+        It's playing a game whose rules they've never seen.</em>"
+      </div>
+      <div class="about-body">
+        <p>As a <strong>Scale II Manager</strong> with 12+ years in credit, I've sat in risk committees, reviewed VaR frameworks, seen how large credit positions are managed, and understood firsthand how institutional rules create non-discretionary behaviour.</p>
+        <p>When I started trading options, I kept asking the same question nobody else was asking: <strong>if institutions are rule-bound, why aren't retail traders mapping those rules?</strong> Instead, everyone was learning the same indicators that institutions had already integrated into their algos — and using against retail.</p>
+        <p>IntelligentTraders is the answer to that question. A framework built not from YouTube strategies, but from <strong>lived institutional intelligence</strong> — translated into a daily 10-minute system any retail trader can follow.</p>
+      </div>
+      <div class="about-credentials">
+        <div class="cred-row">
+          <div class="cred-icon">🏦</div>
+          <div class="cred-text"><strong>Scale II Manager · Banking Sector</strong><br>Credit analysis across sectors · HAM infrastructure · MSME credit · NPA resolution · 12+ years credit intelligence across sectors</div>
+        </div>
+        <div class="cred-row">
+          <div class="cred-icon">📊</div>
+          <div class="cred-text"><strong>Active Options Trader</strong><br>Nifty, BankNifty, Sensex options · Bitcoin options · Developing institutional stress framework from personal trading experience</div>
+        </div>
+        <div class="cred-row">
+          <div class="cred-icon">🤖</div>
+          <div class="cred-text"><strong>AI Product Builder</strong><br>GSTwala AI · PropertyGram · IntelligentTraders — building tools that translate institutional intelligence into retail-accessible frameworks</div>
+        </div>
+        <div class="cred-row">
+          <div class="cred-icon">📖</div>
+          <div class="cred-text"><strong>Author — The Conscious Code</strong><br>A philosophical dialogue exploring Vedic wisdom, consciousness, and digital life through a banker and AI character</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SOCIAL PROOF
+══════════════════════════════════════ -->
+<section style="border-top:1px solid var(--edge);">
+<div class="section-inner">
+  <div class="section-eyebrow">Early Feedback</div>
+  <h2 class="section-h2">What traders are saying <em>already.</em></h2>
+
+  <div class="proof-grid reveal">
+    <div class="proof-card">
+      <div class="proof-text">"Finally someone explaining WHY indicators don't work instead of selling another indicator course. The trigger framework is the most honest trading content I've seen from India."</div>
+      <div class="proof-author">
+        <div class="proof-avatar">R</div>
+        <div><div class="proof-name">Rahul M.</div><div class="proof-role">Nifty Options Trader · Mumbai</div></div>
+      </div>
+    </div>
+    <div class="proof-card">
+      <div class="proof-text">"The T4 margin cascade trigger explanation about all sectors falling together — this is exactly what I saw in June 2024 and didn't understand. Now I know what to do next time."</div>
+      <div class="proof-author">
+        <div class="proof-avatar">P</div>
+        <div><div class="proof-name">Priya K.</div><div class="proof-role">CA · BankNifty Trader · Bangalore</div></div>
+      </div>
+    </div>
+    <div class="proof-card">
+      <div class="proof-text">"The IV crush setup for RBI policy is worth the entire framework. I've been buying options the day before RBI for 3 years. Never again. The institutional logic is undeniable."</div>
+      <div class="proof-author">
+        <div class="proof-avatar">A</div>
+        <div><div class="proof-name">Arun S.</div><div class="proof-role">Equity Analyst · Delhi</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     FAQ
+══════════════════════════════════════ -->
+<section style="border-top:1px solid var(--edge);background:var(--ink2);">
+<div class="section-inner">
+  <div class="section-eyebrow">Questions</div>
+  <h2 class="section-h2">Common <em>questions.</em></h2>
+
+  <div class="faq-list reveal">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Is this for beginners or experienced traders?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">Both. Beginners benefit from the clear framework — 5 numbers, one signal, plain English instruction. Experienced traders benefit from the institutional intelligence layer which reframes everything they already know. The paper trading journal is designed to build evidence regardless of experience level.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Do I need coding knowledge to use the Algo Framework?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">No. The dashboard and journal are fully browser-based — no code required. The Algo Framework includes copy-paste ready Python code for Dhan and Zerodha APIs, and Pine Script you paste directly into TradingView. You need to add your API keys, but the logic is complete.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        How much capital do I need to start?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">The framework works with any capital size because it's percentage-based (max 2% per trade). Paper trading requires zero capital. For live trading, even ₹50,000 is sufficient to apply the trigger-based position sizing framework. The rule is never more than 2% of capital per trade — so your capital determines your absolute rupee risk, not whether you can participate.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Are the triggers validated with real historical data?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">Yes. All 6 triggers are backtested against real Indian market events — COVID 2020, Russia-Ukraine 2022, June 2024 election crash, October 2024 record FII selling, and every RBI policy event. The historical event dashboard in the Journal tool shows trigger vs outcome for each validated event.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Will this work when everyone starts using it?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">Unlike conventional indicators, these triggers are based on institutional rule structures that exist independent of how many retail traders know about them. FII drawdown limits, VaR breach rules, and margin cascade mechanics are structural — they'll fire whenever institutional stress occurs regardless of what retail does. The edge comes from reading the forced behaviour, not from information asymmetry alone.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Is this SEBI registered investment advice?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">No. IntelligentTraders is an educational and research framework — not SEBI registered investment advice. The tools are for educational purposes. All trading decisions are your own responsibility. We strongly recommend paper trading for a minimum of 90 days before deploying real capital using any framework including this one.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     WAITLIST
+══════════════════════════════════════ -->
+<section class="waitlist-section" id="waitlist">
+<div class="section-inner">
+<div class="waitlist-inner">
+  <div class="section-eyebrow" style="justify-content:center;">Early Access</div>
+  <h2 class="waitlist-h2">Join the <em>intelligent</em> minority.</h2>
+  <p class="waitlist-sub">Get early access to IntelligentTraders, weekly institutional trigger analysis, and be part of the community that trades institutions — not against them.</p>
+
+  <div id="wform-wrap">
+    <div class="waitlist-form">
+      <div class="wform-row">
+        <input class="wfield" id="w-name" type="text" placeholder="Your full name">
+        <input class="wfield" id="w-email" type="email" placeholder="Email address">
+      </div>
+      <div class="wform-row">
+        <select class="wselect" id="w-profile">
+          <option value="">Your trading profile...</option>
+          <option value="beginner">Beginner — just starting options</option>
+          <option value="intermediate">Intermediate — 1–3 years experience</option>
+          <option value="experienced">Experienced — 3+ years, losing money consistently</option>
+          <option value="professional">Professional — finance / banking background</option>
+        </select>
+        <select class="wselect" id="w-broker">
+          <option value="">Your broker...</option>
+          <option value="dhan">Dhan</option>
+          <option value="zerodha">Zerodha</option>
+          <option value="upstox">Upstox</option>
+          <option value="angelone">Angel One</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <button class="wsub-btn" onclick="submitWaitlist()">→ Join Waitlist — It's Free</button>
+    </div>
+    <p class="waitlist-note">
+      No spam. No paid courses. No SEBI RA recommendations yet.<br>
+      Just the framework, the tools, and weekly institutional intelligence.
+    </p>
+  </div>
+
+  <div class="waitlist-success" id="w-success">
+    <div class="ws-icon">✅</div>
+    <div class="ws-title">You're on the list.</div>
+    <div class="ws-desc">
+      Welcome to IntelligentTraders.<br>
+      Check your email for access to the three free tools.<br>
+      First weekly institutional trigger analysis coming this Sunday.
+    </div>
+  </div>
+
+  <div class="waitlist-count">
+    <div class="wc-num" id="wcount">47</div>
+    <div class="wc-txt">traders already<br>on the waitlist</div>
+  </div>
+</div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     FOOTER
+══════════════════════════════════════ -->
+<footer>
+<div class="footer-inner">
+  <div class="footer-brand">
+    <div class="footer-logo">Intelligent<span>Traders</span></div>
+    <p class="footer-tagline">Trade institutions, not against them. India's first institutional stress intelligence platform for retail options traders.</p>
+  </div>
+  <div>
+    <div class="footer-col-title">Tools</div>
+    <div class="footer-links">
+      <a href="dashboard.html" target="_blank">Signal Dashboard</a>
+      <a href="journal.html" target="_blank">Paper Journal</a>
+      <a href="algo.html" target="_blank">Algo Framework</a>
+    </div>
+  </div>
+  <div>
+    <div class="footer-col-title">Learn</div>
+    <div class="footer-links">
+      <a href="#triggers">6 Triggers Explained</a>
+      <a href="#how">How It Works</a>
+      <a href="#framework">Three-Layer System</a>
+      <a href="#faq">FAQ</a>
+    </div>
+  </div>
+  <div>
+    <div class="footer-col-title">Contact</div>
+    <div class="footer-links">
+      <a href="#about">About Deepanshu</a>
+      <a href="#waitlist">Early Access</a>
+      <a href="mailto:hello@theintelligenttraders.in">hello@theintelligenttraders.in</a>
+    </div>
+  </div>
+</div>
+<div class="footer-bottom">
+  <div>© 2025 IntelligentTraders · theintelligenttraders.in</div>
+  <div>⚠ Educational only · Not SEBI registered investment advice · Paper trade first, always</div>
+</div>
+</footer>
+
+<script>
+// ── CURSOR ────────────────────────────────────────────
+const cur=document.getElementById('cur');
+const ring=document.getElementById('curRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+});
+function animRing(){
+  rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;
+  ring.style.left=rx+'px';ring.style.top=ry+'px';
+  requestAnimationFrame(animRing);
+}
+animRing();
+
+// ── SCROLL REVEAL ─────────────────────────────────────
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ── FAQ ───────────────────────────────────────────────
+function toggleFaq(el){
+  const item=el.parentElement;
+  const isOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+  if(!isOpen)item.classList.add('open');
+}
+
+// ── TOOL SWITCHER ─────────────────────────────────────
+const toolUrls=['theintelligenttraders.com/dashboard','theintelligenttraders.com/journal','theintelligenttraders.com/algo'];
+function switchTool(idx,el){
+  document.querySelectorAll('.ttab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('.tool-preview').forEach((p,i)=>p.style.display=i===idx?'flex':'none');
+  document.getElementById('tool-url').textContent=toolUrls[idx];
+}
+
+// ── WAITLIST ──────────────────────────────────────────
+let count=47;
+function submitWaitlist(){
+  const name=document.getElementById('w-name').value.trim();
+  const email=document.getElementById('w-email').value.trim();
+  const profile=document.getElementById('w-profile').value;
+
+  if(!name||!email){alert('Please enter your name and email.');return;}
+  if(!email.includes('@')){alert('Please enter a valid email.');return;}
+
+  // Save to localStorage
+  const entries=JSON.parse(localStorage.getItem('it_waitlist')||'[]');
+  entries.push({name,email,profile,date:new Date().toISOString()});
+  localStorage.setItem('it_waitlist',JSON.stringify(entries));
+
+  count++;
+  document.getElementById('wcount').textContent=count;
+  document.getElementById('wform-wrap').style.display='none';
+  document.getElementById('w-success').style.display='block';
+}
+
+// ── NAV ACTIVE STATE ──────────────────────────────────
+window.addEventListener('scroll',()=>{
+  const nav=document.querySelector('nav');
+  nav.style.borderBottomColor=window.scrollY>60?'var(--edge)':'transparent';
+});
+
+// ── COUNTER ANIMATION ─────────────────────────────────
+function animCount(el,target,duration=1500){
+  let start=0;
+  const step=timestamp=>{
+    if(!start)start=timestamp;
+    const progress=Math.min((timestamp-start)/duration,1);
+    el.textContent=Math.floor(progress*target);
+    if(progress<1)requestAnimationFrame(step);
+    else el.textContent=target;
+  };
+  requestAnimationFrame(step);
+}
+
+const statObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      document.querySelectorAll('.hstat-num').forEach(el=>{
+        const val=parseInt(el.textContent);
+        if(!isNaN(val))animCount(el,val);
+      });
+      statObs.disconnect();
+    }
+  });
+},{threshold:0.5});
+const statsEl=document.querySelector('.hero-stats');
+if(statsEl)statObs.observe(statsEl);
+</script>
+</body>
+</html>
