@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — IntelligentTraders</title>
+<meta name="description" content="Built from inside the institution. Designed for the retail trader. The story behind IntelligentTraders and the 6 institutional stress triggers.">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0c10;--ink2:#12161e;--ink3:#181d28;--ink4:#1e2535;
+  --edge:#242c3d;--edge2:#2e3a50;
+  --paper:#e8edf5;--paper2:#c8d4e0;
+  --muted:#4a5a70;--muted2:#6a7a90;
+  --gold:#c8a020;--gold2:#e8c040;
+  --teal:#10c8b0;--red:#d84040;--green:#20c870;--blue:#3070e0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--paper);font-family:'Geist Mono',monospace;overflow-x:hidden;cursor:none;}
+
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9997;opacity:0.5;}
+
+/* CURSOR */
+.cur{width:8px;height:8px;background:var(--gold2);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference;}
+.cur-ring{width:36px;height:36px;border:1px solid rgba(200,160,32,0.4);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all 0.15s ease;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:0 5vw;background:rgba(10,12,16,0.93);backdrop-filter:blur(20px);border-bottom:1px solid var(--edge);}
+.nav-i{max-width:1200px;margin:0 auto;height:64px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-family:'Instrument Serif',serif;font-size:20px;color:var(--paper);text-decoration:none;}
+.nav-logo span{color:var(--gold2);}
+.nav-links{display:flex;gap:28px;align-items:center;list-style:none;}
+.nav-links a{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);text-decoration:none;transition:color 0.2s;}
+.nav-links a:hover{color:var(--paper);}
+.nav-links a.active{color:var(--gold);}
+.nav-cta{background:var(--gold);color:var(--ink)!important;padding:8px 18px;border-radius:4px;font-weight:600!important;}
+.nav-cta:hover{background:var(--gold2)!important;color:var(--ink)!important;}
+
+/* WRAP */
+.w{max-width:1200px;margin:0 auto;padding:0 5vw;position:relative;z-index:1;}
+
+/* ── HERO ── */
+.about-hero{
+  padding:140px 5vw 80px;
+  position:relative;overflow:hidden;
+  border-bottom:1px solid var(--edge);
+}
+.about-hero::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(200,160,32,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(200,160,32,0.03) 1px,transparent 1px);
+  background-size:80px 80px;
+}
+.about-hero::after{
+  content:'';position:absolute;top:-100px;right:-100px;
+  width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(200,160,32,0.05) 0%,transparent 70%);
+}
+.hero-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1;}
+.hero-eyebrow{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';width:28px;height:1px;background:var(--gold);}
+.hero-h1{font-family:'Instrument Serif',serif;font-size:clamp(36px,6vw,80px);line-height:1.05;letter-spacing:-2px;color:var(--paper);margin-bottom:24px;animation:fadeUp 0.8s ease both;}
+.hero-h1 em{font-style:italic;color:var(--gold2);}
+.hero-sub{font-size:14px;line-height:1.9;color:var(--muted2);max-width:560px;animation:fadeUp 0.8s 0.15s ease both;}
+.hero-sub strong{color:var(--paper);}
+
+/* FOUNDER CARD */
+.founder-strip{
+  display:flex;align-items:center;gap:24px;
+  margin-top:48px;
+  padding:24px;
+  background:var(--ink2);
+  border:1px solid var(--edge);
+  border-radius:8px;
+  max-width:560px;
+  animation:fadeUp 0.8s 0.25s ease both;
+}
+.founder-avatar{
+  width:64px;height:64px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--gold),var(--teal));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Instrument Serif',serif;font-size:28px;color:var(--ink);
+}
+.founder-name{font-family:'Instrument Serif',serif;font-size:18px;color:var(--paper);margin-bottom:3px;}
+.founder-role{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);}
+.founder-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.ftag{padding:3px 8px;border-radius:3px;font-size:9px;letter-spacing:1px;background:var(--ink4);color:var(--muted2);border:1px solid var(--edge);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── SECTIONS COMMON ── */
+section{padding:90px 5vw;position:relative;}
+.si{max-width:1200px;margin:0 auto;}
+.eyebrow{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.eyebrow::before{content:'';width:20px;height:1px;background:var(--gold);}
+.sh2{font-family:'Instrument Serif',serif;font-size:clamp(26px,3.5vw,48px);line-height:1.1;letter-spacing:-1px;color:var(--paper);margin-bottom:14px;}
+.sh2 em{font-style:italic;color:var(--gold2);}
+.ssub{font-size:13px;line-height:1.8;color:var(--muted2);max-width:520px;}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+/* ── ORIGIN SECTION ── */
+.origin-section{background:var(--ink2);border-top:1px solid var(--edge);border-bottom:1px solid var(--edge);}
+.origin-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;margin-top:48px;}
+.origin-text{font-size:13px;line-height:2;color:var(--muted2);}
+.origin-text p{margin-bottom:20px;}
+.origin-text strong{color:var(--paper);}
+.origin-text em{color:var(--gold2);font-style:italic;}
+.origin-pull{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(18px,2vw,26px);
+  line-height:1.5;color:var(--paper);
+  border-left:3px solid var(--gold);
+  padding-left:24px;
+  margin-bottom:28px;
+}
+.origin-pull em{color:var(--gold2);font-style:italic;}
+.origin-facts{display:flex;flex-direction:column;gap:10px;}
+.fact-row{
+  display:flex;gap:14px;align-items:flex-start;
+  padding:14px;background:var(--ink3);
+  border:1px solid var(--edge);border-radius:6px;
+}
+.fact-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.fact-text{font-size:11px;color:var(--muted2);line-height:1.6;}
+.fact-text strong{color:var(--paper);}
+
+/* ── PHILOSOPHY ── */
+.phil-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;margin-top:48px;border:1px solid var(--edge);border-radius:8px;overflow:hidden;}
+.phil-card{background:var(--ink2);padding:32px;position:relative;overflow:hidden;transition:background 0.2s;}
+.phil-card:hover{background:var(--ink3);}
+.phil-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;}
+.phil-card.pc1::before{background:var(--gold);}
+.phil-card.pc2::before{background:var(--teal);}
+.phil-card.pc3::before{background:var(--blue);}
+.phil-card.pc4::before{background:var(--green);}
+.phil-num{font-family:'Instrument Serif',serif;font-size:48px;color:var(--edge2);line-height:1;margin-bottom:14px;letter-spacing:-2px;}
+.phil-title{font-size:14px;font-weight:600;color:var(--paper);margin-bottom:10px;}
+.phil-body{font-size:11px;color:var(--muted2);line-height:1.8;}
+
+/* ── TRIGGER ORIGINS ── */
+.trigger-origins-section{background:var(--ink2);border-top:1px solid var(--edge);border-bottom:1px solid var(--edge);}
+.trig-timeline{display:flex;flex-direction:column;gap:0;margin-top:48px;}
+.trig-origin-row{
+  display:grid;grid-template-columns:80px 40px 1fr;
+  gap:0;align-items:stretch;
+}
+.tor-code{
+  padding:28px 0;
+  display:flex;align-items:center;justify-content:flex-end;
+  padding-right:20px;
+}
+.tor-code-inner{
+  font-family:'Instrument Serif',serif;
+  font-size:22px;color:var(--muted);
+  letter-spacing:-1px;
+}
+.tor-line{
+  display:flex;flex-direction:column;align-items:center;
+}
+.tor-dot{
+  width:12px;height:12px;border-radius:50%;
+  border:2px solid;flex-shrink:0;margin-top:32px;
+}
+.tor-connector{flex:1;width:2px;background:var(--edge);}
+.trig-origin-row:last-child .tor-connector{display:none;}
+.tor-content{
+  padding:24px 0 24px 24px;
+  border-left:0;
+}
+.tor-name{font-size:13px;font-weight:600;color:var(--paper);margin-bottom:6px;}
+.tor-insight{
+  font-size:11px;color:var(--muted2);line-height:1.7;
+  max-width:600px;margin-bottom:10px;
+}
+.tor-source{
+  font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  padding:3px 10px;border-radius:3px;border:1px solid;display:inline-block;
+}
+/* trigger colors */
+.tc-gold .tor-dot{border-color:var(--gold);background:rgba(200,160,32,0.15);}
+.tc-gold .tor-code-inner{color:var(--gold);}
+.tc-gold .tor-source{background:rgba(200,160,32,0.08);border-color:rgba(200,160,32,0.25);color:var(--gold);}
+.tc-teal .tor-dot{border-color:var(--teal);background:rgba(16,200,176,0.12);}
+.tc-teal .tor-code-inner{color:var(--teal);}
+.tc-teal .tor-source{background:rgba(16,200,176,0.08);border-color:rgba(16,200,176,0.25);color:var(--teal);}
+.tc-blue .tor-dot{border-color:var(--blue);background:rgba(48,112,224,0.12);}
+.tc-blue .tor-code-inner{color:var(--blue);}
+.tc-blue .tor-source{background:rgba(48,112,224,0.08);border-color:rgba(48,112,224,0.25);color:var(--blue);}
+.tc-red .tor-dot{border-color:var(--red);background:rgba(216,64,64,0.12);}
+.tc-red .tor-code-inner{color:var(--red);}
+.tc-red .tor-source{background:rgba(216,64,64,0.08);border-color:rgba(216,64,64,0.25);color:var(--red);}
+.tc-green .tor-dot{border-color:var(--green);background:rgba(32,200,112,0.12);}
+.tc-green .tor-code-inner{color:var(--green);}
+.tc-green .tor-source{background:rgba(32,200,112,0.08);border-color:rgba(32,200,112,0.25);color:var(--green);}
+.tc-purple .tor-dot{border-color:#8050f0;background:rgba(128,80,240,0.12);}
+.tc-purple .tor-code-inner{color:#8050f0;}
+.tc-purple .tor-source{background:rgba(128,80,240,0.08);border-color:rgba(128,80,240,0.25);color:#8050f0;}
+
+/* ── PROMISE SECTION ── */
+.promise-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:48px;}
+.promise-col{background:var(--ink2);border:1px solid var(--edge);border-radius:8px;padding:28px;position:relative;overflow:hidden;}
+.promise-col::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.promise-is::before{background:var(--green);}
+.promise-isnot::before{background:var(--red);}
+.promise-col-title{font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:20px;font-weight:600;}
+.promise-is .promise-col-title{color:var(--green);}
+.promise-isnot .promise-col-title{color:var(--red);}
+.promise-list{display:flex;flex-direction:column;gap:12px;}
+.promise-item{display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.6;color:var(--muted2);}
+.promise-item strong{color:var(--paper);}
+.pi-mark{flex-shrink:0;margin-top:2px;font-size:14px;}
+
+/* ── ROADMAP ── */
+.roadmap-section{background:var(--ink2);border-top:1px solid var(--edge);}
+.roadmap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:48px;border:1px solid var(--edge);border-radius:8px;overflow:hidden;}
+.rmap-card{background:var(--ink3);padding:28px;transition:background 0.2s;position:relative;}
+.rmap-card:hover{background:var(--ink4);}
+.rmap-phase{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.rmap-time{font-family:'Instrument Serif',serif;font-size:13px;color:var(--muted2);margin-bottom:14px;font-style:italic;}
+.rmap-title{font-size:14px;font-weight:600;color:var(--paper);margin-bottom:10px;}
+.rmap-items{display:flex;flex-direction:column;gap:8px;}
+.rmap-item{font-size:10px;color:var(--muted2);line-height:1.5;display:flex;gap:6px;}
+.rmap-item::before{content:'→';color:var(--gold);flex-shrink:0;}
+.rmap-status{
+  margin-top:16px;padding:4px 10px;border-radius:3px;
+  font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  display:inline-block;border:1px solid;
+}
+.rs-now{background:rgba(32,200,112,0.08);border-color:rgba(32,200,112,0.25);color:var(--green);}
+.rs-next{background:rgba(200,160,32,0.08);border-color:rgba(200,160,32,0.2);color:var(--gold);}
+.rs-future{background:rgba(58,80,112,0.1);border-color:var(--edge);color:var(--muted);}
+
+/* ── CREDENTIALS ── */
+.cred-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:48px;}
+.cred-card{background:var(--ink2);border:1px solid var(--edge);border-radius:8px;padding:24px;display:flex;gap:16px;align-items:flex-start;transition:border-color 0.2s;}
+.cred-card:hover{border-color:var(--edge2);}
+.cred-icon{font-size:24px;flex-shrink:0;}
+.cred-title{font-size:13px;font-weight:600;color:var(--paper);margin-bottom:6px;}
+.cred-body{font-size:11px;color:var(--muted2);line-height:1.7;}
+.cred-body strong{color:var(--paper);}
+
+/* ── CLOSING ── */
+.closing-section{
+  text-align:center;
+  background:linear-gradient(135deg,var(--ink) 0%,var(--ink3) 100%);
+  border-top:1px solid var(--edge);
+  position:relative;overflow:hidden;
+}
+.closing-section::before{
+  content:'';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(200,160,32,0.05) 0%,transparent 70%);
+}
+.closing-inner{position:relative;z-index:1;max-width:700px;margin:0 auto;}
+.closing-quote{
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(20px,2.5vw,32px);
+  line-height:1.5;color:var(--paper);
+  margin-bottom:24px;font-style:italic;
+}
+.closing-quote em{color:var(--gold2);}
+.closing-attr{font-size:11px;color:var(--muted);letter-spacing:1px;}
+.closing-attr strong{color:var(--muted2);}
+.closing-cta{margin-top:40px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.btn-gold{background:var(--gold);color:var(--ink);padding:13px 28px;border-radius:4px;font-family:'Geist Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border:none;cursor:pointer;transition:all 0.2s;}
+.btn-gold:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,160,32,0.3);}
+.btn-ghost{background:transparent;color:var(--paper2);padding:13px 28px;border-radius:4px;font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border:1px solid var(--edge2);cursor:pointer;transition:all 0.2s;}
+.btn-ghost:hover{border-color:var(--muted2);color:var(--paper);}
+
+/* FOOTER */
+footer{background:var(--ink);border-top:1px solid var(--edge);padding:40px 5vw;}
+.footer-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;}
+.footer-logo{font-family:'Instrument Serif',serif;font-size:18px;color:var(--paper);text-decoration:none;}
+.footer-logo span{color:var(--gold2);}
+.footer-links{display:flex;gap:24px;flex-wrap:wrap;}
+.footer-links a{font-size:11px;color:var(--muted2);text-decoration:none;transition:color 0.2s;letter-spacing:1px;}
+.footer-links a:hover{color:var(--paper);}
+.footer-note{font-size:9px;color:var(--muted);letter-spacing:1px;width:100%;margin-top:8px;padding-top:16px;border-top:1px solid var(--edge);}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .origin-grid,.promise-grid,.cred-grid,.roadmap-grid,.phil-grid{grid-template-columns:1fr;}
+  .nav-links{display:none;}
+}
+@media(max-width:600px){
+  nav,.about-hero,section{padding-left:16px;padding-right:16px;}
+  .trig-origin-row{grid-template-columns:60px 30px 1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="cur" id="cur"></div>
+<div class="cur-ring" id="curRing"></div>
+
+<!-- NAV -->
+<nav>
+<div class="nav-i">
+  <a href="index.html" class="nav-logo">Intelligent<span>Traders</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html#how">How It Works</a></li>
+    <li><a href="index.html#triggers">Triggers</a></li>
+    <li><a href="index.html#tools">Tools</a></li>
+    <li><a href="#" class="active">About</a></li>
+    <li><a href="index.html#waitlist" class="nav-cta">Get Early Access</a></li>
+  </ul>
+</div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     HERO
+══════════════════════════════════════ -->
+<div class="about-hero">
+<div class="hero-inner">
+  <div class="hero-eyebrow">About IntelligentTraders</div>
+  <h1 class="hero-h1">Built from <em>inside</em> the institution.<br>Designed for the retail trader.</h1>
+  <p class="hero-sub">
+    This is not a trading course built by a YouTuber.<br>
+    It is a framework built by someone who spent <strong>12 years inside banking risk rooms</strong> — and then asked the question nobody else was asking.
+  </p>
+  <div class="founder-strip">
+    <div class="founder-avatar">D</div>
+    <div>
+      <div class="founder-name">Deepanshu Tihaiya</div>
+      <div class="founder-role">Founder · IntelligentTraders</div>
+      <div class="founder-tags">
+        <div class="ftag">Scale II Manager</div>
+        <div class="ftag"></div>
+        <div class="ftag">12+ Yrs Credit</div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     ORIGIN STORY
+══════════════════════════════════════ -->
+<section class="origin-section">
+<div class="si">
+  <div class="eyebrow">The Origin Story</div>
+  <h2 class="sh2">Why this <em>exists</em></h2>
+
+  <div class="origin-grid reveal">
+    <div>
+      <p class="origin-pull">
+        "I am not a trader who became a banker.
+        I am a banker who became a trader —
+        and that distinction <em>changes everything.</em>"
+      </p>
+      <div class="origin-text">
+        <p>After 12 years inside  — reviewing borrower stress, sitting across credit committees, understanding how institutional capital actually behaves under pressure — I started trading options on the side.</p>
+        <p>Within months, I found myself asking a question nobody in the retail trading world seemed to be asking: <strong>If institutions are rule-bound — and they absolutely are, with VaR limits, drawdown thresholds, and forced rebalancing schedules — why is nobody mapping those rules?</strong></p>
+        <p>Instead, every trader I met was learning the same indicators. RSI. MACD. Supertrend. Bollinger Bands. Tools that institutions had already integrated into their algos. Tools that made retail behaviour <em>perfectly predictable</em> to the machines they were trading against.</p>
+        <p>The 90% loss rate in Indian F&O is not a mystery. It is a structural outcome. And IntelligentTraders is the answer to that structural problem — not another strategy, not another indicator, but a fundamentally different way of reading markets.</p>
+      </div>
+    </div>
+    <div class="origin-facts">
+      <div class="fact-row">
+        <div class="fact-icon">🏦</div>
+        <div class="fact-text"><strong>Inside the risk room</strong><br>12 years of credit committees, VaR frameworks, borrower stress analysis, and institutional capital behaviour — before a single options trade was placed.</div>
+      </div>
+      <div class="fact-row">
+        <div class="fact-icon">💡</div>
+        <div class="fact-text"><strong>The key realisation</strong><br>Institutions are not omniscient. They are rule-bound. And rules create <strong>predictable, observable, exploitable behaviour</strong> — if you know where to look.</div>
+      </div>
+      <div class="fact-row">
+        <div class="fact-icon">📊</div>
+        <div class="fact-text"><strong>Built bottom-up</strong><br>Every trigger in the IntelligentTraders framework emerged from a specific institutional rule observation — not from backtesting software or YouTube strategies.</div>
+      </div>
+      <div class="fact-row">
+        <div class="fact-icon">🎯</div>
+        <div class="fact-text"><strong>Validated against reality</strong><br>All 6 triggers stress-tested against real Indian market events — COVID 2020, Russia-Ukraine 2022, June 2024 election crash, October 2024 record FII selling.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     PHILOSOPHY
+══════════════════════════════════════ -->
+<section>
+<div class="si">
+  <div class="eyebrow">The Philosophy</div>
+  <h2 class="sh2">What we <em>believe</em></h2>
+  <p class="ssub">Four principles that make IntelligentTraders different from everything else in the Indian retail trading education space.</p>
+
+  <div class="phil-grid reveal">
+    <div class="phil-card pc1">
+      <div class="phil-num">01</div>
+      <div class="phil-title">Common sense born from real experience beats any textbook strategy</div>
+      <div class="phil-body">The most sophisticated algo built in a Mumbai trading room cannot replicate what a credit analyst learns reading actual borrower files and sitting in actual risk committees. That experiential intelligence is the foundation of everything here.</div>
+    </div>
+    <div class="phil-card pc2">
+      <div class="phil-num">02</div>
+      <div class="phil-title">Retail traders deserve intellectual honesty</div>
+      <div class="phil-body">The trading education industry profits from keeping retail traders dependent on strategies, indicators, and signals. IntelligentTraders profits only when traders genuinely understand the framework well enough to validate it themselves — which is why the tools are free and paper trading comes first.</div>
+    </div>
+    <div class="phil-card pc3">
+      <div class="phil-num">03</div>
+      <div class="phil-title">Patience is the only structural advantage retail has over institutions</div>
+      <div class="phil-body">A fund manager cannot hold cash for three months waiting for the perfect setup. A retail trader can. The ability to do nothing — to wait for a genuine institutional stress trigger before deploying capital — is the most powerful edge retail has and almost universally wastes.</div>
+    </div>
+    <div class="phil-card pc4">
+      <div class="phil-num">04</div>
+      <div class="phil-title">Validate before you monetise. Always.</div>
+      <div class="phil-body">Every trigger is stress-tested against real historical data. We show you the evidence. We ask you to paper trade it yourself for 90 days. Only then do we suggest you consider real capital. This is how we treat our own money — and yours deserves the same standard.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     TRIGGER ORIGINS
+══════════════════════════════════════ -->
+<section class="trigger-origins-section">
+<div class="si">
+  <div class="eyebrow">How The Triggers Were Born</div>
+  <h2 class="sh2">Each trigger came from a <em>specific real-world observation</em></h2>
+  <p class="ssub">Not from backtesting software. Not from YouTube. From 12 years of lived institutional intelligence.</p>
+
+  <div class="trig-timeline reveal">
+
+    <div class="trig-origin-row tc-gold">
+      <div class="tor-code"><div class="tor-code-inner">T1</div></div>
+      <div class="tor-line"><div class="tor-dot"></div><div class="tor-connector"></div></div>
+      <div class="tor-content">
+        <div class="tor-name">VaR Breach — VIX Spike</div>
+        <div class="tor-insight">Came from understanding how bank treasury desks manage daily loss limits. When VIX spikes beyond a threshold, the risk system fires automatically — there is no discretion. The desk must reduce positions regardless of their view. This forced mechanical selling is observable in VIX data in real time. Validated: COVID March 2020 (VIX 25→64), Russia-Ukraine February 2022 (+50% single week).</div>
+        <div class="tor-source">Source: Bank treasury VaR framework · NSE VIX daily data</div>
+      </div>
+    </div>
+
+    <div class="trig-origin-row tc-teal">
+      <div class="tor-code"><div class="tor-code-inner">T2</div></div>
+      <div class="tor-line"><div class="tor-dot"></div><div class="tor-connector"></div></div>
+      <div class="tor-content">
+        <div class="tor-name">FII Drawdown Limit</div>
+        <div class="tor-insight">Came from understanding how global fund mandates work. When FII net short futures cross ₹15,000 crore for multiple consecutive days, they are in drawdown management mode — mechanically reducing exposure per internal rules regardless of market view. Validated: October 2024 — record ₹1.14 lakh crore FII selling, driven entirely by mandate rules not India fundamentals.</div>
+        <div class="tor-source">Source: Global fund mandate structures · NSE FII participant data (published daily)</div>
+      </div>
+    </div>
+
+    <div class="trig-origin-row tc-blue">
+      <div class="tor-code"><div class="tor-code-inner">T3</div></div>
+      <div class="tor-line"><div class="tor-dot"></div><div class="tor-connector"></div></div>
+      <div class="tor-content">
+        <div class="tor-name">Max Pain Expiry Pin</div>
+        <div class="tor-insight">Came from understanding how options market makers delta-hedge their books. Their hedging activity on expiry day creates a mechanical gravitational pull toward the strike where maximum open interest sits — not manipulation, rule-following. Accuracy: 60–70% in calm markets. Fires every single expiry — the most calendar-predictable trigger in the system.</div>
+        <div class="tor-source">Source: Options market-making delta hedging mechanics · NSE option chain OI data</div>
+      </div>
+    </div>
+
+    <div class="trig-origin-row tc-red">
+      <div class="tor-code"><div class="tor-code-inner">T4</div></div>
+      <div class="tor-line"><div class="tor-dot"></div><div class="tor-connector"></div></div>
+      <div class="tor-content">
+        <div class="tor-name">Margin Call Cascade</div>
+        <div class="tor-insight">Came from understanding how leveraged positions unwind. When all sectors fall simultaneously with no news catalyst and advance-decline ratio drops below 0.20 — it is not fundamental selling. It is forced liquidation to meet margin calls. The signature: unrelated sectors (IT, pharma, FMCG, banks) all falling equally. Validated: June 4, 2024 — Nifty -5.93%, fully recovered in 27 days.</div>
+        <div class="tor-source">Source: Margin call mechanics · NSE advance-decline data · Sector correlation analysis</div>
+      </div>
+    </div>
+
+    <div class="trig-origin-row tc-green">
+      <div class="tor-code"><div class="tor-code-inner">T5</div></div>
+      <div class="tor-line"><div class="tor-dot"></div><div class="tor-connector"></div></div>
+      <div class="tor-content">
+        <div class="tor-name">Pre-Event IV Crush</div>
+        <div class="tor-insight">Came from understanding how institutional hedging desks buy options as portfolio insurance before known events and sell immediately after — regardless of outcome. This mechanical post-event de-hedging collapses implied volatility 30–50% within 30 minutes of every RBI policy, Budget, and major election result. Fires 8–10 times per year. The single most reliable trigger in the system — rated 10/10.</div>
+        <div class="tor-source">Source: Institutional portfolio hedging mechanics · IV Rank data · Every RBI policy event 2019–2024</div>
+      </div>
+    </div>
+
+    <div class="trig-origin-row tc-purple">
+      <div class="tor-code"><div class="tor-code-inner">T6</div></div>
+      <div class="tor-line"><div class="tor-dot"></div><div class="tor-connector"></div></div>
+      <div class="tor-content">
+        <div class="tor-name">Macro FII Rule Trigger</div>
+        <div class="tor-insight">Came from understanding how global EM allocation models work. When USDINR crosses key levels or US 10-year yields breach thresholds, global funds automatically reduce India weight per mandate — nothing to do with India fundamentals. Retail sees "India selling" and panics; the reality is a rule in a spreadsheet in New York triggered a non-discretionary reallocation. Validated: October 2024, October 2022, March 2020.</div>
+        <div class="tor-source">Source: Global EM allocation model mechanics · USDINR levels · US 10Y yield thresholds</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     CREDENTIALS
+══════════════════════════════════════ -->
+<section>
+<div class="si">
+  <div class="eyebrow">The Founder</div>
+  <h2 class="sh2">Deepanshu Tihaiya — <em>in full</em></h2>
+  <p class="ssub">The complete picture of the experience behind IntelligentTraders.</p>
+
+  <div class="cred-grid reveal">
+    <div class="cred-card">
+      <div class="cred-icon">🏦</div>
+      <div>
+        <div class="cred-title">Scale II Manager · Banking Sector</div>
+        <div class="cred-body">
+          <strong>12+ years</strong> in credit analysis across sectors including HAM infrastructure, MSME credit, AIF lending, and NPA resolution. Authored credit frameworks including a 12-dimension HAM lending assessment model for DGM Credit Sanctions.
+        </div>
+      </div>
+    </div>
+    <div class="cred-card">
+      <div class="cred-icon">📊</div>
+      <div>
+        <div class="cred-title">Active Options Trader — Nifty, BankNifty, Bitcoin</div>
+        <div class="cred-body">
+          Active trading across <strong>Nifty, BankNifty, Sensex options</strong> and Bitcoin options on Dhan. Developed the institutional stress trigger framework from direct personal trading experience. Paper trading the IntelligentTraders framework before recommending it to anyone else — intellectual honesty first.
+        </div>
+      </div>
+    </div>
+    <div class="cred-card">
+      <div class="cred-icon">🤖</div>
+      <div>
+        <div class="cred-title">AI Product Builder — GSTwala AI · PropertyGram</div>
+        <div class="cred-body">
+          Building AI-powered fintech tools that translate institutional intelligence into retail-accessible frameworks. <strong>GSTwala AI</strong> — GST compliance agent for CA firms. <strong>PropertyGram</strong> — owner-direct property listing platform. IntelligentTraders — the institutional stress intelligence platform.
+        </div>
+      </div>
+    </div>
+    <div class="cred-card">
+      <div class="cred-icon">📖</div>
+      <div>
+        <div class="cred-title">Author — The Conscious Code</div>
+        <div class="cred-body">
+          Author of <strong>The Conscious Code: A Digital Manifesto for the Awakening Human</strong> — a philosophical dialogue between a banker character (Manu) and an AI character (AI Deva) exploring Vedic philosophy, consciousness, and digital life. Available on Amazon KDP.
+        </div>
+      </div>
+    </div>
+    <div class="cred-card">
+      <div class="cred-icon">🎓</div>
+      <div>
+        <div class="cred-title">Education & Certification Path</div>
+        <div class="cred-body">
+          CAIIB qualified. Currently pursuing <strong>NISM Series XV (SEBI Research Analyst)</strong>, IGNOU MA Economics, and mapping CFA Level 1 progression. Target: SEBI RA registration to formally license the IntelligentTraders advisory framework within 12–18 months.
+        </div>
+      </div>
+    </div>
+    <div class="cred-card">
+      <div class="cred-icon">💡</div>
+      <div>
+        <div class="cred-title">Private Credit Advisory Vision</div>
+        <div class="cred-body">
+          Building toward a <strong>private credit advisory firm</strong> in Tier 2 cities (starting Bhopal) connecting HNI investors with MSME capital through structured debt instruments — secured NCDs, OCDs, CCDs, revenue-sharing structures. The genuine market gap where institutional intelligence meets under-served capital needs.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     PRODUCT PROMISE
+══════════════════════════════════════ -->
+<section style="background:var(--ink2);border-top:1px solid var(--edge);border-bottom:1px solid var(--edge);">
+<div class="si">
+  <div class="eyebrow">The Product Promise</div>
+  <h2 class="sh2">What IntelligentTraders <em>is</em> — and is not</h2>
+  <p class="ssub">Radical honesty about what this framework can and cannot do for you.</p>
+
+  <div class="promise-grid reveal">
+    <div class="promise-col promise-is">
+      <div class="promise-col-title">✓ What It Is</div>
+      <div class="promise-list">
+        <div class="promise-item"><div class="pi-mark">✓</div><div>A <strong>daily 10-minute system</strong> — five numbers, six triggers, one plain-language signal</div></div>
+        <div class="promise-item"><div class="pi-mark">✓</div><div>A <strong>framework for reading institutional forced behaviour</strong> — not predicting markets</div></div>
+        <div class="promise-item"><div class="pi-mark">✓</div><div><strong>Three free tools</strong> — Dashboard, Journal, Algo Framework — no subscription required to start</div></div>
+        <div class="promise-item"><div class="pi-mark">✓</div><div>A <strong>90-day paper trading validation system</strong> — prove it works in your hands before risking capital</div></div>
+        <div class="promise-item"><div class="pi-mark">✓</div><div><strong>API-ready code</strong> for Dhan, Zerodha, and Pine Script for TradingView</div></div>
+        <div class="promise-item"><div class="pi-mark">✓</div><div>A community of traders learning to <strong>read institutional behaviour</strong> rather than chase indicators</div></div>
+        <div class="promise-item"><div class="pi-mark">✓</div><div>Built by someone who is <strong>using this framework themselves</strong> — paper trading included</div></div>
+      </div>
+    </div>
+    <div class="promise-col promise-isnot">
+      <div class="promise-col-title">✗ What It Is Not</div>
+      <div class="promise-list">
+        <div class="promise-item"><div class="pi-mark">✗</div><div>A <strong>SEBI registered investment advisor</strong> — not yet. Working toward registration.</div></div>
+        <div class="promise-item"><div class="pi-mark">✗</div><div>A <strong>signals group</strong> — we teach the framework, not give fish</div></div>
+        <div class="promise-item"><div class="pi-mark">✗</div><div>A <strong>get-rich-quick course</strong> — the framework requires 90 days of paper trading before real capital</div></div>
+        <div class="promise-item"><div class="pi-mark">✗</div><div>A <strong>guarantee of profits</strong> — no honest framework can guarantee this and we will never claim it</div></div>
+        <div class="promise-item"><div class="pi-mark">✗</div><div>A <strong>replacement for your judgment and discipline</strong> — the framework tells you when, not how much emotion to bring</div></div>
+        <div class="promise-item"><div class="pi-mark">✗</div><div>Built on <strong>backtesting alone</strong> — every trigger validated against real events with real data</div></div>
+        <div class="promise-item"><div class="pi-mark">✗</div><div>For traders <strong>unwilling to paper trade first</strong> — if you skip validation, skip this framework entirely</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     ROADMAP
+══════════════════════════════════════ -->
+<section class="roadmap-section">
+<div class="si">
+  <div class="eyebrow">The Road Ahead</div>
+  <h2 class="sh2">Where IntelligentTraders <em>is going</em></h2>
+  <p class="ssub">A long game. Built honestly. One validated paper trade at a time.</p>
+
+  <div class="roadmap-grid reveal">
+    <div class="rmap-card">
+      <div class="rmap-phase">Phase 1</div>
+      <div class="rmap-time">Now — 3 months</div>
+      <div class="rmap-title">Validation</div>
+      <div class="rmap-items">
+        <div class="rmap-item">Three free tools — Dashboard, Journal, Algo</div>
+        <div class="rmap-item">Paper trading framework live</div>
+        <div class="rmap-item">Waitlist building — target 500 early members</div>
+        <div class="rmap-item">Weekly trigger analysis newsletter</div>
+        <div class="rmap-item">Founder paper trading publicly</div>
+      </div>
+      <div class="rmap-status rs-now">Active Now</div>
+    </div>
+    <div class="rmap-card">
+      <div class="rmap-phase">Phase 2</div>
+      <div class="rmap-time">3 — 6 months</div>
+      <div class="rmap-title">Community</div>
+      <div class="rmap-items">
+        <div class="rmap-item">Private community for validated paper traders</div>
+        <div class="rmap-item">Collective trigger win rate database</div>
+        <div class="rmap-item">Weekly institutional intelligence reports</div>
+        <div class="rmap-item">First paid membership tier — ₹299/month</div>
+        <div class="rmap-item">CA and banker network distribution</div>
+      </div>
+      <div class="rmap-status rs-next">Coming Next</div>
+    </div>
+    <div class="rmap-card">
+      <div class="rmap-phase">Phase 3</div>
+      <div class="rmap-time">6 — 12 months</div>
+      <div class="rmap-title">Live Platform</div>
+      <div class="rmap-items">
+        <div class="rmap-item">NSE API live data integration</div>
+        <div class="rmap-item">Automatic daily trigger calculation</div>
+        <div class="rmap-item">Push alerts when triggers fire</div>
+        <div class="rmap-item">Dhan + Zerodha auto-execution</div>
+        <div class="rmap-item">SEBI RA registration in progress</div>
+      </div>
+      <div class="rmap-status rs-future">Planned</div>
+    </div>
+    <div class="rmap-card">
+      <div class="rmap-phase">Phase 4</div>
+      <div class="rmap-time">12 — 18 months</div>
+      <div class="rmap-title">Advisory</div>
+      <div class="rmap-items">
+        <div class="rmap-item">SEBI RA formal registration</div>
+        <div class="rmap-item">Institutional intelligence research reports</div>
+        <div class="rmap-item">Private credit advisory arm — Bhopal</div>
+        <div class="rmap-item">HNI + MSME structured debt platform</div>
+        <div class="rmap-item">CFA + LSE PhD economics pathway</div>
+      </div>
+      <div class="rmap-status rs-future">Vision</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     CLOSING
+══════════════════════════════════════ -->
+<section class="closing-section">
+<div class="si">
+<div class="closing-inner reveal">
+  <div class="closing-quote">
+    "IntelligentTraders is not for everyone.
+    It is for the trader who is tired of losing to a game
+    whose rules they have never seen —
+    and ready to learn those rules from someone
+    <em>who lived inside them.</em>"
+  </div>
+  <div class="closing-attr">
+    <strong>— Deepanshu Tihaiya</strong><br>
+    Founder, IntelligentTraders · Scale II Manager · Banking Sector
+  </div>
+  <div class="closing-cta">
+    <a href="index.html#waitlist" class="btn-gold">→ Join the Waitlist</a>
+    <a href="index.html#tools" class="btn-ghost">Explore the Free Tools</a>
+  </div>
+</div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+<div class="footer-inner">
+  <a href="index.html" class="footer-logo">Intelligent<span>Traders</span></a>
+  <div class="footer-links">
+    <a href="index.html#how">How It Works</a>
+    <a href="index.html#triggers">6 Triggers</a>
+    <a href="index.html#tools">Free Tools</a>
+    <a href="#">About</a>
+    <a href="index.html#waitlist">Waitlist</a>
+  </div>
+  <div class="footer-note">
+    © 2025 IntelligentTraders · theintelligenttraders.in · Educational only · Not SEBI registered investment advice · Paper trade first, always.
+  </div>
+</div>
+</footer>
+
+<script>
+// CURSOR
+const cur=document.getElementById('cur');
+const ring=document.getElementById('curRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+});
+(function animRing(){
+  rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;
+  ring.style.left=rx+'px';ring.style.top=ry+'px';
+  requestAnimationFrame(animRing);
+})();
+
+// SCROLL REVEAL
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

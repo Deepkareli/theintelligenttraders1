@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstAlert ALGO — Institutional Intelligence Framework</title>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600;700&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#03050a;--bg2:#080c14;--bg3:#0d1320;--bg4:#121a28;
+  --border:#162030;--bord2:#1e2f45;
+  --text:#cce0f5;--muted:#3a5070;--muted2:#5a7090;
+  --green:#05f08a;--red:#f03058;--yellow:#f0c030;
+  --blue:#3080f0;--cyan:#05d8f0;--orange:#f07030;--purple:#8050f0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Azeret Mono',monospace;min-height:100vh;}
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(5,216,240,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(5,216,240,0.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+.w{max-width:1280px;margin:0 auto;padding:0 16px;position:relative;z-index:1;}
+
+/* HEADER */
+.hdr{padding:16px 0;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(3,5,10,0.97);backdrop-filter:blur(12px);z-index:100;}
+.hdr-i{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.logo{font-family:'Unbounded',sans-serif;font-size:18px;font-weight:900;background:linear-gradient(90deg,var(--cyan),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.logo-sub{font-size:9px;letter-spacing:3px;color:var(--muted);margin-top:2px;text-transform:uppercase;}
+.hdr-r{display:flex;gap:8px;align-items:center;}
+.badge{padding:4px 10px;border-radius:4px;font-size:9px;letter-spacing:2px;text-transform:uppercase;border:1px solid;}
+.b-cyan{background:rgba(5,216,240,0.07);border-color:rgba(5,216,240,0.25);color:var(--cyan);}
+.b-yellow{background:rgba(240,192,48,0.07);border-color:rgba(240,192,48,0.25);color:var(--yellow);}
+.b-muted{background:rgba(58,80,112,0.15);border-color:var(--border);color:var(--muted2);}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite;display:inline-block;margin-right:5px;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.2;}}
+
+/* SIGNAL BAR */
+.sigbar{margin:14px 0;padding:14px 20px;border-radius:8px;border:1px solid;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;transition:all 0.4s;}
+.sigbar.S-RED{background:linear-gradient(90deg,rgba(240,48,88,0.07),transparent);border-color:rgba(240,48,88,0.4);}
+.sigbar.S-YELLOW{background:linear-gradient(90deg,rgba(240,192,48,0.05),transparent);border-color:rgba(240,192,48,0.35);}
+.sigbar.S-GREEN{background:linear-gradient(90deg,rgba(5,240,138,0.04),transparent);border-color:rgba(5,240,138,0.25);}
+.sig-title{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:900;}
+.sig-title.red{color:var(--red);}
+.sig-title.yellow{color:var(--yellow);}
+.sig-title.green{color:var(--green);}
+.sig-desc{font-size:11px;color:var(--muted2);margin-top:4px;line-height:1.5;max-width:500px;}
+.sig-pills{display:flex;gap:6px;flex-wrap:wrap;}
+.pill{padding:3px 9px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid;}
+.p-red{background:rgba(240,48,88,0.1);border-color:rgba(240,48,88,0.3);color:var(--red);}
+.p-yellow{background:rgba(240,192,48,0.1);border-color:rgba(240,192,48,0.25);color:var(--yellow);}
+.p-muted{background:rgba(58,80,112,0.1);border-color:var(--border);color:var(--muted2);}
+
+/* LAYOUT */
+.grid2{display:grid;grid-template-columns:300px 1fr;gap:12px;margin-bottom:16px;}
+@media(max-width:880px){.grid2{grid-template-columns:1fr;}}
+
+/* PANELS */
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.ph{padding:9px 14px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.pt{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);}
+.pb{padding:14px;}
+
+/* INPUTS */
+.istack{display:flex;flex-direction:column;gap:9px;}
+.irow{display:flex;flex-direction:column;gap:4px;}
+.irow2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.ilabel{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.ifield,.iselect{background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-family:'Azeret Mono',monospace;font-size:12px;color:var(--text);outline:none;width:100%;transition:border-color 0.2s;}
+.ifield:focus,.iselect:focus{border-color:var(--cyan);}
+.iselect{appearance:none;cursor:pointer;}
+.iselect option{background:var(--bg4);}
+.runbtn{width:100%;background:linear-gradient(135deg,var(--cyan),var(--blue));border:none;border-radius:8px;padding:11px;font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;color:#000;cursor:pointer;transition:all 0.2s;letter-spacing:1px;margin-top:2px;}
+.runbtn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(5,216,240,0.25);}
+
+/* CONFLUENCE METER */
+.meter-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;}
+.meter-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.meter-score{font-family:'Unbounded',sans-serif;font-size:32px;font-weight:900;text-align:center;line-height:1;}
+.meter-zone{font-size:9px;letter-spacing:2px;text-transform:uppercase;text-align:center;margin:5px 0 10px;}
+.mbar-wrap{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.mbar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--cyan),var(--green));transition:width 0.8s cubic-bezier(.34,1.56,.64,1);}
+.mbar-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:5px;}
+
+/* SIZER */
+.sizer-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sc{background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:10px;}
+.sc-lbl{font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;}
+.sc-val{font-size:15px;font-weight:600;color:var(--cyan);}
+.sc-sub{font-size:9px;color:var(--muted);margin-top:2px;}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:12px;overflow-x:auto;}
+.tab{flex:1;min-width:72px;padding:7px 8px;border-radius:6px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;text-align:center;transition:all 0.2s;color:var(--muted);white-space:nowrap;}
+.tab.active{background:var(--bg4);color:var(--cyan);}
+.tc{display:none;}
+.tc.active{display:block;animation:fu 0.25s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* INDICATOR CARDS */
+.indgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px;margin-bottom:12px;}
+.ic{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;transition:border-color 0.2s;}
+.ic.bull{border-color:rgba(5,240,138,0.35);background:rgba(5,240,138,0.04);}
+.ic.bear{border-color:rgba(240,48,88,0.35);background:rgba(240,48,88,0.04);}
+.ic-name{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.ic-val{font-size:15px;font-weight:600;letter-spacing:-0.5px;line-height:1;margin-bottom:4px;}
+.ic-val.bull{color:var(--green);}
+.ic-val.bear{color:var(--red);}
+.ic-val.neut{color:var(--text);}
+.ic-sig{font-size:9px;padding:2px 6px;border-radius:3px;display:inline-block;font-weight:600;}
+.ic-sig.bull{background:rgba(5,240,138,0.1);color:var(--green);}
+.ic-sig.bear{background:rgba(240,48,88,0.1);color:var(--red);}
+.ic-sig.neut{background:rgba(90,112,144,0.08);color:var(--muted2);}
+.ic-trap{font-size:9px;color:var(--orange);margin-top:5px;line-height:1.4;}
+
+/* TRIGGER ROWS */
+.trig-list{display:flex;flex-direction:column;gap:8px;}
+.trow{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:10px;}
+.trow.fr{border-color:rgba(240,48,88,0.4);background:rgba(240,48,88,0.05);}
+.trow.fw{border-color:rgba(240,192,48,0.35);background:rgba(240,192,48,0.04);}
+.tcode{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;text-align:center;}
+.tcode.red{color:var(--red);}
+.tcode.yellow{color:var(--yellow);}
+.tcode.grey{color:var(--muted);}
+.tname{font-size:11px;font-weight:600;margin-bottom:2px;}
+.tdetail{font-size:9px;color:var(--muted2);line-height:1.5;}
+.tbadge{padding:3px 8px;border-radius:4px;font-size:9px;font-weight:600;white-space:nowrap;border:1px solid;}
+.tb-f{background:rgba(240,48,88,0.1);border-color:rgba(240,48,88,0.3);color:var(--red);}
+.tb-w{background:rgba(240,192,48,0.08);border-color:rgba(240,192,48,0.25);color:var(--yellow);}
+.tb-c{background:rgba(58,80,112,0.06);border-color:var(--border);color:var(--muted);}
+
+/* DECISION BOX */
+.dbox{background:var(--bg3);border:1px solid var(--bord2);border-radius:8px;padding:16px;margin-bottom:12px;}
+.dtitle{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;color:var(--cyan);margin-bottom:10px;letter-spacing:1px;}
+.drule{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px;line-height:1.6;}
+.drule:last-child{border-bottom:none;}
+.dico{font-size:13px;flex-shrink:0;margin-top:1px;}
+.dtxt{color:var(--muted2);}
+.dtxt strong{color:var(--text);}
+.g{color:var(--green);}
+.r{color:var(--red);}
+.y{color:var(--yellow);}
+.c{color:var(--cyan);}
+
+/* TRADE SIGNAL */
+.tsbox{border-radius:8px;border:1px solid;padding:16px;margin-bottom:12px;}
+.tsbox.ts-r{border-color:rgba(240,48,88,0.4);background:rgba(240,48,88,0.04);}
+.tsbox.ts-y{border-color:rgba(240,192,48,0.35);background:rgba(240,192,48,0.03);}
+.tsbox.ts-g{border-color:rgba(5,240,138,0.3);background:rgba(5,240,138,0.03);}
+.ts-title{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;margin-bottom:10px;}
+.ts-title.red{color:var(--red);}
+.ts-title.yellow{color:var(--yellow);}
+.ts-title.green{color:var(--green);}
+.ts-body{font-size:11px;line-height:1.9;color:var(--muted2);}
+.ts-body strong{color:var(--text);}
+
+/* READING BOX */
+.rbox{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;font-size:11px;line-height:1.8;color:var(--muted2);}
+.rbox strong{color:var(--text);}
+
+/* CODE */
+.cwrap{background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px;}
+.chdr{padding:8px 14px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.clang{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);}
+.cbtn{background:var(--bg4);border:1px solid var(--bord2);border-radius:4px;padding:4px 12px;font-family:'Azeret Mono',monospace;font-size:10px;color:var(--muted2);cursor:pointer;transition:all 0.15s;}
+.cbtn:hover{color:var(--cyan);border-color:rgba(5,216,240,0.3);}
+.cbtn.ok{color:var(--green);border-color:rgba(5,240,138,0.3);}
+.cbody{padding:14px;font-size:11px;line-height:1.8;color:#7aa0c0;overflow-x:auto;max-height:420px;overflow-y:auto;white-space:pre;}
+
+/* CHART */
+.chart-area{background:var(--bg3);border:1px solid var(--border);border-radius:8px;height:180px;position:relative;overflow:hidden;margin-bottom:12px;}
+.chart-lbl{position:absolute;top:8px;left:12px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+canvas{width:100%;height:100%;}
+
+/* FOOTER */
+.footer{border-top:1px solid var(--border);padding:16px 0;text-align:center;font-size:9px;color:var(--muted);letter-spacing:1px;line-height:2;}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--bord2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+<div class="w">
+<div class="hdr-i">
+  <div>
+    <div class="logo">INSTALERT ALGO</div>
+    <div class="logo-sub">Institutional Intelligence Trading Framework v1.0</div>
+  </div>
+  <div class="hdr-r">
+    <div class="badge b-cyan"><span class="dot"></span>SIMULATION</div>
+    <div class="badge b-yellow">PAPER MODE</div>
+    <div class="badge b-muted" id="clk">--:--:--</div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="w" style="padding-top:14px;padding-bottom:40px;">
+
+<!-- SIGNAL BAR -->
+<div class="sigbar S-GREEN" id="sigbar">
+  <div>
+    <div class="sig-title green" id="sig-title">⬤ STANDBY — AWAITING INPUT</div>
+    <div class="sig-desc" id="sig-desc">Enter today's market data and run analysis to generate institutional confluence signal.</div>
+  </div>
+  <div class="sig-pills" id="sig-pills">
+    <span class="pill p-muted">NO TRIGGERS</span>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="grid2">
+
+<!-- LEFT -->
+<div>
+  <div class="panel">
+    <div class="ph"><div class="pt">⚡ Market Data Input</div><div style="font-size:9px;color:var(--cyan);">DAILY</div></div>
+    <div class="pb">
+      <div class="istack">
+        <div class="irow">
+          <div class="ilabel">Underlying</div>
+          <select class="iselect" id="i-ul">
+            <option value="NIFTY">Nifty 50</option>
+            <option value="BANKNIFTY">Bank Nifty</option>
+            <option value="SENSEX">Sensex</option>
+            <option value="FINNIFTY">Fin Nifty</option>
+          </select>
+        </div>
+        <div class="irow2">
+          <div class="irow"><div class="ilabel">Spot Price</div><input class="ifield" id="i-spot" type="number" placeholder="24500"></div>
+          <div class="irow"><div class="ilabel">Day Change %</div><input class="ifield" id="i-dc" type="number" placeholder="-1.2" step="0.1"></div>
+        </div>
+        <div class="irow2">
+          <div class="irow"><div class="ilabel">India VIX</div><input class="ifield" id="i-vix" type="number" placeholder="16.5" step="0.1"></div>
+          <div class="irow"><div class="ilabel">VIX Change %</div><input class="ifield" id="i-vc" type="number" placeholder="8.2" step="0.1"></div>
+        </div>
+        <div class="irow2">
+          <div class="irow"><div class="ilabel">IV Rank (0-100)</div><input class="ifield" id="i-ivr" type="number" placeholder="65" min="0" max="100"></div>
+          <div class="irow"><div class="ilabel">Put-Call Ratio</div><input class="ifield" id="i-pcr" type="number" placeholder="0.85" step="0.01"></div>
+        </div>
+        <div class="irow"><div class="ilabel">FII Net Futures ₹Cr (negative=short)</div><input class="ifield" id="i-fii" type="number" placeholder="-12500"></div>
+        <div class="irow2">
+          <div class="irow"><div class="ilabel">Adv-Decline Ratio</div><input class="ifield" id="i-adr" type="number" placeholder="0.22" step="0.01"></div>
+          <div class="irow"><div class="ilabel">Max Pain Strike</div><input class="ifield" id="i-mp" type="number" placeholder="24400"></div>
+        </div>
+        <div class="irow2">
+          <div class="irow"><div class="ilabel">20 EMA</div><input class="ifield" id="i-e20" type="number" placeholder="24200"></div>
+          <div class="irow"><div class="ilabel">200 EMA</div><input class="ifield" id="i-e200" type="number" placeholder="22800"></div>
+        </div>
+        <div class="irow2">
+          <div class="irow"><div class="ilabel">RSI (14)</div><input class="ifield" id="i-rsi" type="number" placeholder="58" min="0" max="100"></div>
+          <div class="irow"><div class="ilabel">Capital ₹</div><input class="ifield" id="i-cap" type="number" placeholder="100000"></div>
+        </div>
+        <button class="runbtn" onclick="go()">▶ RUN ANALYSIS</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFLUENCE METER -->
+  <div class="meter-wrap">
+    <div class="meter-lbl">Confluence Score</div>
+    <div class="meter-score" id="conf-score" style="color:var(--muted);">—</div>
+    <div class="meter-zone" id="conf-zone" style="color:var(--muted);">AWAITING ANALYSIS</div>
+    <div class="mbar-wrap"><div class="mbar-fill" id="conf-bar" style="width:0%;"></div></div>
+    <div class="mbar-labels"><span>0 No Trade</span><span>50 Watch</span><span>100 Full Size</span></div>
+  </div>
+
+  <!-- POSITION SIZER -->
+  <div class="panel">
+    <div class="ph"><div class="pt">📐 Position Sizer</div></div>
+    <div class="pb">
+      <div class="sizer-grid">
+        <div class="sc"><div class="sc-lbl">MAX AT RISK</div><div class="sc-val" id="sz-r">—</div><div class="sc-sub">2% rule</div></div>
+        <div class="sc"><div class="sc-lbl">REC. SIZE</div><div class="sc-val" id="sz-s">—</div><div class="sc-sub">by triggers</div></div>
+        <div class="sc"><div class="sc-lbl">STOP-LOSS ₹</div><div class="sc-val" id="sz-sl">—</div><div class="sc-sub">30% of premium</div></div>
+        <div class="sc"><div class="sc-lbl">TARGET ₹</div><div class="sc-val" id="sz-t">—</div><div class="sc-sub">2R minimum</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div>
+  <div class="tabs">
+    <div class="tab active" onclick="st('indicators')">Indicators</div>
+    <div class="tab" onclick="st('triggers')">Inst. Triggers</div>
+    <div class="tab" onclick="st('decision')">Decision</div>
+    <div class="tab" onclick="st('dhan')">Dhan API</div>
+    <div class="tab" onclick="st('zerodha')">Zerodha API</div>
+    <div class="tab" onclick="st('pine')">Pine Script</div>
+  </div>
+
+  <!-- INDICATORS TAB -->
+  <div class="tc active" id="tab-indicators">
+    <div style="font-size:9px;color:var(--orange);margin-bottom:8px;padding:6px 10px;background:rgba(240,112,48,0.06);border:1px solid rgba(240,112,48,0.2);border-radius:6px;">
+      ⚠ TRAP DETECTION MODE — Indicators show WHERE RETAIL IS POSITIONED, not your entry signal. Entry comes from triggers.
+    </div>
+    <div class="indgrid" id="indgrid"></div>
+    <div class="rbox" id="ind-reading">Run analysis to see indicator confluence and institutional trap detection.</div>
+    <div class="chart-area"><div class="chart-lbl">PRICE + EMA OVERLAY (SIMULATED)</div><canvas id="cv"></canvas></div>
+  </div>
+
+  <!-- TRIGGERS TAB -->
+  <div class="tc" id="tab-triggers">
+    <div class="trig-list" id="triglist"></div>
+  </div>
+
+  <!-- DECISION TAB -->
+  <div class="tc" id="tab-decision">
+    <div class="tsbox ts-g" id="tsbox">
+      <div class="ts-title green" id="ts-title">⬤ AWAITING ANALYSIS</div>
+      <div class="ts-body" id="ts-body">Run analysis to generate decision engine output.</div>
+    </div>
+    <div class="dbox">
+      <div class="dtitle">DECISION ENGINE — 6 CORE RULES</div>
+      <div class="drule"><div class="dico">🔴</div><div class="dtxt"><strong>Rule 1:</strong> <span class="r">Institutional trigger must fire first.</span> Indicators alone = no trade. Trigger is the permission slip.</div></div>
+      <div class="drule"><div class="dico">📊</div><div class="dtxt"><strong>Rule 2:</strong> <span class="y">Indicator confluence ≥ 60%</span> in trigger direction adds conviction. Below 60% = half size or skip.</div></div>
+      <div class="drule"><div class="dico">⚡</div><div class="dtxt"><strong>Rule 3:</strong> <span class="c">2+ triggers = 2% capital. 1 trigger = 1% capital. 0 triggers = 0 trades.</span></div></div>
+      <div class="drule"><div class="dico">🛑</div><div class="dtxt"><strong>Rule 4:</strong> <span class="r">RSI > 75 + trigger says buy</span> = retail overbought. Institutions already moved. Skip or 50% size.</div></div>
+      <div class="drule"><div class="dico">💰</div><div class="dtxt"><strong>Rule 5:</strong> <span class="g">IV Rank > 70 = SELL premium only.</span> Buying options here = buying expensive insurance from institutions.</div></div>
+      <div class="drule"><div class="dico">🎯</div><div class="dtxt"><strong>Rule 6:</strong> <span class="c">PCR below 0.7 = retail euphoria = bearish. PCR above 1.3 = retail panic = bullish.</span> Always read PCR as contrarian.</div></div>
+    </div>
+  </div>
+
+  <!-- DHAN API TAB -->
+  <div class="tc" id="tab-dhan">
+    <div class="cwrap">
+      <div class="chdr"><div class="clang">Python · Dhan API · Paper Trading Ready</div><button class="cbtn" onclick="cp('dhan-code',this)">Copy</button></div>
+      <div class="cbody" id="dhan-code"></div>
+    </div>
+  </div>
+
+  <!-- ZERODHA API TAB -->
+  <div class="tc" id="tab-zerodha">
+    <div class="cwrap">
+      <div class="chdr"><div class="clang">Python · Zerodha Kite API · Paper Trading Ready</div><button class="cbtn" onclick="cp('z-code',this)">Copy</button></div>
+      <div class="cbody" id="z-code"></div>
+    </div>
+  </div>
+
+  <!-- PINE SCRIPT TAB -->
+  <div class="tc" id="tab-pine">
+    <div class="cwrap">
+      <div class="chdr"><div class="clang">Pine Script v5 · TradingView · All Indicators + Signals</div><button class="cbtn" onclick="cp('pine-code',this)">Copy</button></div>
+      <div class="cbody" id="pine-code"></div>
+    </div>
+  </div>
+
+</div>
+</div><!-- end grid -->
+
+<div class="footer">
+  INSTALERT ALGO · Institutional Intelligence Trading Framework<br>
+  Layer 1: Indicator Engine (trap detection) · Layer 2: Institutional Trigger Engine · Layer 3: Decision Engine<br>
+  ⚠ Paper trading only until validated · Not SEBI registered advice · Max 2% capital per trade
+</div>
+</div>
+
+<script>
+// CLOCK
+setInterval(()=>{
+  const t=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  document.getElementById('clk').textContent=t+' IST';
+},1000);
+
+// TABS
+function st(name){
+  const names=['indicators','triggers','decision','dhan','zerodha','pine'];
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',names[i]===name));
+  document.querySelectorAll('.tc').forEach(el=>el.classList.toggle('active',el.id==='tab-'+name));
+}
+
+// COPY
+function cp(id,btn){
+  navigator.clipboard.writeText(document.getElementById(id).innerText).then(()=>{
+    btn.textContent='✓ Copied!';btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);
+  });
+}
+
+// GET INPUT
+function inp(id,def=0){return parseFloat(document.getElementById(id).value)||def;}
+
+// INDICATORS
+function calcInds(d){
+  const spot=d.spot,e20=d.e20,e200=d.e200,rsi=d.rsi,vix=d.vix,ivr=d.ivr,pcr=d.pcr;
+  const macdRaw=((spot-e20)/e20*100);
+  const bbUpper=e20*1.02,bbLower=e20*0.98,bbPct=((spot-bbLower)/(bbUpper-bbLower)*100);
+  const vwap=spot*(1-d.dc/200);
+  const atr=vix*e20/500;
+  const stLower=e20-3*atr;
+  return [
+    {name:'RSI (14)',val:rsi.toFixed(1),sig:rsi>70?'bear':rsi<30?'bull':'neut',trap:rsi>70?'Retail overbought — institutions selling TO you here.':rsi<30?'Retail panic — institutional accumulation zone.':'No extreme positioning.'},
+    {name:'EMA 20/200',val:spot>e20?'Above EMA':'Below EMA',sig:spot>e20&&e20>e200?'bull':spot<e20&&e20<e200?'bear':'neut',trap:spot>e20?`Stop hunt zone below EMA20 (${e20.toFixed(0)}). Algos target this.`:`Short squeeze above EMA20 likely before trend resumes.`},
+    {name:'MACD',val:macdRaw.toFixed(2)+'%',sig:macdRaw>0.4?'bull':macdRaw<-0.4?'bear':'neut',trap:'MACD crossovers pre-detected by institutional algos 2-3 candles early.'},
+    {name:'Bollinger Band',val:`BB ${bbPct.toFixed(0)}%`,sig:bbPct>100?'bear':bbPct<0?'bull':'neut',trap:bbPct>100?'Above upper BB — retail FOMO. Institutional short zone.':bbPct<0?'Below lower BB — retail panic. Institutional buy zone.':'Inside bands. Normal.'},
+    {name:'VWAP',val:spot>vwap?'Above VWAP':'Below VWAP',sig:spot>vwap?'bull':'bear',trap:'Institutions use VWAP for large order execution, not as trading signal.'},
+    {name:'Supertrend',val:spot>stLower?'Bullish':'Bearish',sig:spot>stLower?'bull':'bear',trap:`Supertrend flips at ${stLower.toFixed(0)} are pre-programmed into institutional algos.`},
+    {name:'Put-Call Ratio',val:pcr.toFixed(2),sig:pcr<0.7?'bear':pcr>1.3?'bull':'neut',trap:pcr<0.7?`PCR ${pcr} — retail euphoria. Contrarian BEARISH.`:pcr>1.3?`PCR ${pcr} — retail panic. Contrarian BULLISH.`:'Balanced sentiment.'},
+    {name:'OBV',val:d.dc>0.5?'Rising':d.dc<-0.5?'Falling':'Flat',sig:d.dc>0.5?'bull':d.dc<-0.5?'bear':'neut',trap:'OBV divergences reveal hidden institutional accumulation/distribution.'},
+    {name:'IV Rank',val:`IVR ${ivr}`,sig:ivr>70?'bear':ivr<30?'bull':'neut',trap:ivr>70?`IVR ${ivr} — premiums expensive. Sell options, don't buy.`:ivr<30?`IVR ${ivr} — premiums cheap. Good time to buy spreads.`:'Normal IV environment.'}
+  ];
+}
+
+// TRIGGERS
+function calcTrigs(d){
+  const {vix,vc,fii,ivr,adr,spot,mp,dc} = d;
+  const painDiff=Math.abs(spot-mp)/spot*100;
+  const t=[];
+  const tdef=(code,name,state,detail,action)=>t.push({code,name,state,detail,action});
+
+  tdef('T1','VaR Breach — VIX Spike',
+    vc>15?'red':vc>8?'yellow':'clear',
+    `VIX: ${vix} | Change: ${vc>0?'+':''}${vc}%`,
+    vc>15?'Wait 30–45 min. Buy ATM calls or sell OTM puts.':vc>8?'Building. Monitor. Reduce longs.':'No VaR stress.'
+  );
+  tdef('T2','FII Drawdown Limit',
+    fii<-15000?'red':fii<-8000?'yellow':'clear',
+    `FII Net Futures: ₹${(fii/100).toFixed(0)} Cr`,
+    fii<-15000?'Do NOT buy calls. Wait for FII short reduction 2 consecutive days.':fii<-8000?'FII building shorts. Avoid longs.':'FII neutral.'
+  );
+  tdef('T3','Max Pain Expiry Pin',
+    painDiff<0.5&&vix<15?'red':painDiff<1.5?'yellow':'clear',
+    `Spot: ${spot} | Max Pain: ${mp} | Diff: ${painDiff.toFixed(1)}%`,
+    painDiff<0.5&&vix<15?'Sell ATM straddle after 1:30 PM. Gamma + theta crushing.':painDiff<1.5?'Near Max Pain. Watch after 1:30 PM.':'Far from Max Pain.'
+  );
+  tdef('T4','Margin Call Cascade',
+    adr<0.2?'red':adr<0.4?'yellow':'clear',
+    `A/D Ratio: ${adr} | Day Change: ${dc}%`,
+    adr<0.2?'BUY CALLS in tranches. Forced liquidation not fundamental. 3–27 day recovery.':adr<0.4?'Broad selling. Watch A/D for <0.20.':'Normal breadth.'
+  );
+  tdef('T5','Pre-Event IV Crush',
+    ivr>70?'red':ivr>50?'yellow':'clear',
+    `IV Rank: ${ivr} | VIX: ${vix}`,
+    ivr>70?'SELL PREMIUM. Straddle/Strangle. IV crush 30–50% post-event. NEVER buy here.':ivr>50?'IV building. Scale into short premium.':'IV normal.'
+  );
+  tdef('T6','Macro FII Rule Trigger',
+    fii<-20000?'red':fii<-12000?'yellow':'clear',
+    `Sustained FII outflow + USDINR pressure`,
+    fii<-20000?'Do NOT bottom-fish. Wait for USDINR stabilisation.':fii<-12000?'Macro pressure. Hedge with put spreads.':'No macro trigger.'
+  );
+  return t;
+}
+
+// MAIN
+function go(){
+  const d={
+    spot: inp('i-spot',24500), dc: inp('i-dc',0),
+    vix:  inp('i-vix',16),     vc:  inp('i-vc',0),
+    ivr:  inp('i-ivr',40),     pcr: inp('i-pcr',0.85),
+    fii:  inp('i-fii',0),      adr: inp('i-adr',0.6),
+    mp:   inp('i-mp',24400),   e20: inp('i-e20',24200),
+    e200: inp('i-e200',22800), rsi: inp('i-rsi',55),
+    cap:  inp('i-cap',100000), ul:  document.getElementById('i-ul').value
+  };
+
+  const inds=calcInds(d);
+  const trigs=calcTrigs(d);
+  const redT=trigs.filter(t=>t.state==='red');
+  const yellT=trigs.filter(t=>t.state==='yellow');
+  const bullI=inds.filter(i=>i.sig==='bull').length;
+  const bearI=inds.filter(i=>i.sig==='bear').length;
+  const totI=inds.length;
+
+  renderInds(inds,bullI,bearI,totI,d);
+  renderTrigs(trigs);
+  renderDecision(d,inds,trigs,redT,yellT,bullI,bearI,totI);
+  renderConfluence(redT,yellT,bullI,bearI,totI);
+  renderSizer(d,redT);
+  renderChart(d);
+  renderCodes(d,redT,yellT);
+}
+
+// RENDER INDICATORS
+function renderInds(inds,bullI,bearI,totI,d){
+  document.getElementById('indgrid').innerHTML=inds.map(i=>`
+    <div class="ic ${i.sig}">
+      <div class="ic-name">${i.name}</div>
+      <div class="ic-val ${i.sig}">${i.val}</div>
+      <div class="ic-sig ${i.sig}">${i.sig==='bull'?'BULLISH':i.sig==='bear'?'BEARISH':'NEUTRAL'}</div>
+      <div class="ic-trap">${i.trap}</div>
+    </div>`).join('');
+
+  const bullNames=inds.filter(i=>i.sig==='bull').map(i=>'<strong>'+i.name+'</strong>').join(', ')||'None';
+  const bearNames=inds.filter(i=>i.sig==='bear').map(i=>'<strong>'+i.name+'</strong>').join(', ')||'None';
+  document.getElementById('ind-reading').innerHTML=`
+    <strong>Indicator Confluence: ${bullI} Bullish / ${bearI} Bearish / ${totI-bullI-bearI} Neutral</strong><br><br>
+    <span class="g">▲ Bullish (${(bullI/totI*100).toFixed(0)}%):</span> ${bullNames}<br>
+    <span class="r">▼ Bearish (${(bearI/totI*100).toFixed(0)}%):</span> ${bearNames}<br><br>
+    <span style="color:var(--orange);">⚠ Institutional Trap:</span> These signals are visible to algo systems milliseconds before you. 
+    ${bullI>bearI?`Retail bulls positioned — watch for stop hunt below EMA20 (${d.e20}).`:`Retail bears positioned — watch for short squeeze above EMA20.`}<br><br>
+    <strong class="c">Your edge:</strong> Use this to know WHERE retail is trapped, not as your entry trigger. Entry = Triggers tab.`;
+}
+
+// RENDER TRIGGERS
+function renderTrigs(trigs){
+  document.getElementById('triglist').innerHTML=trigs.map(t=>{
+    const rc=t.state==='red'?'fr':t.state==='yellow'?'fw':'';
+    const cc=t.state==='red'?'red':t.state==='yellow'?'yellow':'grey';
+    const bc=t.state==='red'?'tb-f':t.state==='yellow'?'tb-w':'tb-c';
+    const bt=t.state==='red'?'FIRED':t.state==='yellow'?'WATCH':'CLEAR';
+    return `<div class="trow ${rc}">
+      <div class="tcode ${cc}">${t.code}</div>
+      <div><div class="tname">${t.name}</div><div class="tdetail">${t.detail}<br><em>${t.action}</em></div></div>
+      <div class="tbadge ${bc}">${bt}</div>
+    </div>`;
+  }).join('');
+}
+
+// RENDER DECISION
+function renderDecision(d,inds,trigs,redT,yellT,bullI,bearI,totI){
+  let boxC,titleC,title,body,barC,statC,statT,statD;
+
+  if(redT.length>=2){
+    boxC='ts-r';titleC='red';barC='S-RED';statC='red';
+    statT='🔴 HIGH CONVICTION — '+redT.length+' TRIGGERS';
+    statD=redT.length+' institutional stress triggers active simultaneously. Maximum exploitable opportunity.';
+    const dir=redT.some(t=>t.code==='T4')||bullI>=bearI?'BULLISH':'BEARISH';
+    const strat=d.ivr>70?'SHORT STRADDLE / STRANGLE':dir==='BULLISH'?'BULL CALL SPREAD':'BEAR PUT SPREAD';
+    title='🚨 '+redT.length+' TRIGGERS ACTIVE — '+dir;
+    body=`<strong>Strategy: <span class="${dir==='BULLISH'?'g':'r'}">${strat}</span></strong><br><br>
+      <span class="g">Triggers fired:</span> ${redT.map(t=>t.code+' '+t.name).join(' | ')}<br><br>
+      <strong>Position:</strong> <span class="g">2% capital = ₹${(d.cap*0.02).toLocaleString('en-IN')}</span><br>
+      <strong>Stop-loss:</strong> <span class="r">30% of premium</span><br>
+      <strong>Target:</strong> <span class="g">2R (60% gain on premium)</span><br>
+      <strong>Time stop:</strong> <span class="y">Exit in 5 trading days if thesis not playing</span><br><br>
+      <strong>Reasoning:</strong> ${redT.map(t=>t.action).join(' | ')}`;
+  } else if(redT.length===1){
+    boxC='ts-r';titleC='red';barC='S-RED';statC='red';
+    statT='⚡ SINGLE TRIGGER — '+redT[0].code;
+    statD='One trigger fired. Half-size. Confirm with indicator confluence.';
+    title='⚡ '+redT[0].code+' — '+redT[0].name;
+    body=`<strong>Half-size entry (1% capital = ₹${(d.cap*0.01).toLocaleString('en-IN')})</strong><br><br>
+      <span class="g">Action:</span> ${redT[0].action}<br><br>
+      <strong>Indicator check:</strong> ${bullI>bearI?`<span class="g">${bullI}/${totI} bullish — adds conviction.</span>`:bearI>bullI?`<span class="r">${bearI}/${totI} bearish — adds conviction.</span>`:'Mixed — reduce size further.'}<br><br>
+      <span class="y">Wait for second trigger or strong confluence before adding size.</span>`;
+  } else if(yellT.length>=2){
+    boxC='ts-y';titleC='yellow';barC='S-YELLOW';statC='yellow';
+    statT='👀 WATCH MODE — '+yellT.length+' BUILDING';
+    statD='Triggers approaching activation. No trade yet.';
+    title='👀 WATCH — '+yellT.map(t=>t.code).join('+');
+    body=`<strong>NO TRADE YET.</strong><br><br>
+      <span class="y">Building:</span> ${yellT.map(t=>t.code+' '+t.name).join(', ')}<br><br>
+      Check FII data at 6 PM · Set VIX alert at +15% · Watch A/D through day.<br><br>
+      <span class="r">DO NOT ENTER.</span> Capital protection is the trade.`;
+  } else {
+    boxC='ts-g';titleC='green';barC='S-GREEN';statC='green';
+    statT='✅ NO TRIGGER — DO NOTHING';
+    statD='All triggers clear. Market in normal price discovery. No exploitable stress.';
+    title='✅ NO INSTITUTIONAL STRESS ACTIVE';
+    body=`<strong>DO NOTHING TODAY.</strong><br><br>
+      No trigger active = you are looking at market noise. This is exactly where retail traders lose money — confusing noise for signal.<br><br>
+      <span class="g">Correct action:</span> Sit in cash. Review framework. Come back tomorrow.<br>
+      <span class="r">Wrong action:</span> Trading indicators alone. This is how 90% lose.<br><br>
+      <strong>Your advantage over institutions:</strong> You can hold cash indefinitely. They cannot.`;
+  }
+
+  document.getElementById('tsbox').className='tsbox '+boxC;
+  document.getElementById('ts-title').className='ts-title '+titleC;
+  document.getElementById('ts-title').textContent=title;
+  document.getElementById('ts-body').innerHTML=body;
+  document.getElementById('sigbar').className='sigbar '+barC;
+  document.getElementById('sig-title').className='sig-title '+statC;
+  document.getElementById('sig-title').textContent=statT;
+  document.getElementById('sig-desc').textContent=statD;
+  document.getElementById('sig-pills').innerHTML=redT.length>=2?'<span class="pill p-red">HIGH CONFIDENCE</span><span class="pill p-red">FULL SIZE</span>':
+    redT.length===1?'<span class="pill p-yellow">MEDIUM CONF</span><span class="pill p-yellow">HALF SIZE</span>':
+    '<span class="pill p-muted">NO SIGNAL</span><span class="pill p-muted">WAIT</span>';
+}
+
+// CONFLUENCE
+function renderConfluence(redT,yellT,bullI,bearI,totI){
+  const indS=Math.max(bullI,bearI)/totI*35;
+  const trigS=redT.length*25+yellT.length*8;
+  const score=Math.min(100,Math.round(indS+trigS));
+  const zone=score>=80?{t:'MAXIMUM CONFLUENCE',c:'var(--red)'}:score>=60?{t:'HIGH CONFLUENCE',c:'var(--yellow)'}:score>=40?{t:'MODERATE — WATCH',c:'var(--blue)'}:{t:'LOW — NO TRADE',c:'var(--muted2)'};
+  document.getElementById('conf-score').textContent=score;
+  document.getElementById('conf-score').style.color=zone.c;
+  document.getElementById('conf-zone').textContent=zone.t;
+  document.getElementById('conf-zone').style.color=zone.c;
+  document.getElementById('conf-bar').style.width=score+'%';
+}
+
+// SIZER
+function renderSizer(d,redT){
+  const pct=redT.length>=2?0.02:redT.length===1?0.01:0;
+  const risk=d.cap*pct;
+  document.getElementById('sz-r').textContent=pct>0?'₹'+risk.toLocaleString('en-IN'):'₹0';
+  document.getElementById('sz-s').textContent=pct>0?(pct*100).toFixed(0)+'% capital':'No trade';
+  document.getElementById('sz-sl').textContent=pct>0?'₹'+(risk*0.3).toLocaleString('en-IN'):'—';
+  document.getElementById('sz-t').textContent=pct>0?'₹'+(risk*0.6).toLocaleString('en-IN'):'—';
+}
+
+// CHART
+function renderChart(d){
+  const canvas=document.getElementById('cv');
+  const area=document.getElementById('cv').parentElement;
+  canvas.width=area.offsetWidth;canvas.height=area.offsetHeight;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const W=canvas.width,H=canvas.height,N=60;
+  const px=[],e20s=[];
+  let p=d.spot*0.96;
+  for(let i=0;i<N;i++){p+=p*(Math.random()-0.48)*0.007;px.push(p);}
+  px[N-1]=d.spot;
+  const mn=Math.min(...px)*0.999,mx=Math.max(...px)*1.001;
+  const sy=v=>(H-20)-(v-mn)/(mx-mn)*(H-40)+15;
+  const sx=i=>20+i/(N-1)*(W-40);
+  // EMA line
+  ctx.beginPath();ctx.strokeStyle='rgba(240,192,48,0.35)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.moveTo(20,sy(d.e20));ctx.lineTo(W-20,sy(d.e20));ctx.stroke();ctx.setLineDash([]);
+  // 200 EMA
+  ctx.beginPath();ctx.strokeStyle='rgba(240,112,48,0.25)';ctx.lineWidth=1;ctx.setLineDash([2,6]);
+  ctx.moveTo(20,sy(d.e200));ctx.lineTo(W-20,sy(d.e200));ctx.stroke();ctx.setLineDash([]);
+  // Price
+  const col=d.dc>=0?'rgba(5,240,138,0.8)':'rgba(240,48,88,0.8)';
+  ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=1.5;
+  px.forEach((p,i)=>i===0?ctx.moveTo(sx(i),sy(p)):ctx.lineTo(sx(i),sy(p)));ctx.stroke();
+  // Fill
+  ctx.beginPath();px.forEach((p,i)=>i===0?ctx.moveTo(sx(i),sy(p)):ctx.lineTo(sx(i),sy(p)));
+  ctx.lineTo(sx(N-1),H-10);ctx.lineTo(sx(0),H-10);ctx.closePath();
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,d.dc>=0?'rgba(5,240,138,0.1)':'rgba(240,48,88,0.1)');
+  g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.fill();
+  // Labels
+  ctx.fillStyle='rgba(90,112,144,0.7)';ctx.font='9px Azeret Mono';
+  ctx.fillText('EMA20: '+d.e20.toFixed(0),24,sy(d.e20)-4);
+  ctx.fillText('EMA200: '+d.e200.toFixed(0),24,sy(d.e200)-4);
+  ctx.fillStyle=d.dc>=0?'rgba(5,240,138,0.9)':'rgba(240,48,88,0.9)';
+  ctx.fillText(d.ul+': '+d.spot.toFixed(0)+' ('+(d.dc>0?'+':'')+d.dc+'%)',24,26);
+}
+
+// GENERATE CODES
+function renderCodes(d,redT,yellT){
+  const ul=d.ul,cap=d.cap,spot=d.spot;
+  const dhan=`# ═══════════════════════════════════════════════════════
+# INSTALERT ALGO — Dhan API · Paper Trading Framework
+# Underlying: ${ul} | Capital: ₹${cap.toLocaleString('en-IN')}
+# ═══════════════════════════════════════════════════════
+# Install: pip install dhanhq pandas numpy requests
+
+from dhanhq import dhanhq
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta, date
+import json
+
+# ── CONFIG ────────────────────────────────────────────
+CLIENT_ID    = "YOUR_DHAN_CLIENT_ID"
+ACCESS_TOKEN = "YOUR_DHAN_ACCESS_TOKEN"
+CAPITAL      = ${cap}
+UNDERLYING   = "${ul}"
+PAPER_TRADE  = True  # Set False ONLY after 30 validated paper trades
+
+dhan = dhanhq(CLIENT_ID, ACCESS_TOKEN)
+
+# ── LAYER 1: INDICATOR ENGINE (Trap Detection) ────────
+class IndicatorEngine:
+    @staticmethod
+    def calculate(df: pd.DataFrame) -> dict:
+        c = df['close']; h = df['high']; l = df['low']
+        
+        # RSI
+        d = c.diff()
+        rsi = 100 - (100 / (1 + d.clip(lower=0).rolling(14).mean() /
+                             (-d.clip(upper=0)).rolling(14).mean()))
+        
+        # EMAs
+        ema20  = c.ewm(span=20,  adjust=False).mean()
+        ema200 = c.ewm(span=200, adjust=False).mean()
+        
+        # MACD
+        macd     = c.ewm(span=12,adjust=False).mean() - c.ewm(span=26,adjust=False).mean()
+        macd_sig = macd.ewm(span=9, adjust=False).mean()
+        macd_hist= macd - macd_sig
+        
+        # Bollinger Bands
+        bb_mid   = c.rolling(20).mean()
+        bb_std   = c.rolling(20).std()
+        bb_pct   = (c - (bb_mid - 2*bb_std)) / (4*bb_std)
+        
+        # Supertrend
+        hl2 = (h + l) / 2
+        atr = (h - l).rolling(14).mean()
+        st_lower = hl2 - 3 * atr
+        
+        # VWAP
+        vwap = (c * df['volume']).cumsum() / df['volume'].cumsum()
+        
+        row = df.index[-1]
+        spot = c.iloc[-1]
+        
+        signals = {
+            'rsi':    'BULL' if rsi.iloc[-1] < 30 else 'BEAR' if rsi.iloc[-1] > 70 else 'NEUT',
+            'ema':    'BULL' if spot > ema20.iloc[-1] > ema200.iloc[-1] else
+                      'BEAR' if spot < ema20.iloc[-1] else 'NEUT',
+            'macd':   'BULL' if macd_hist.iloc[-1] > 0 else 'BEAR',
+            'bb':     'BULL' if bb_pct.iloc[-1] < 0 else 'BEAR' if bb_pct.iloc[-1] > 1 else 'NEUT',
+            'st':     'BULL' if spot > st_lower.iloc[-1] else 'BEAR',
+            'vwap':   'BULL' if spot > vwap.iloc[-1] else 'BEAR',
+        }
+        bull = sum(1 for v in signals.values() if v == 'BULL')
+        bear = sum(1 for v in signals.values() if v == 'BEAR')
+        signals['score'] = {'bull': bull, 'bear': bear, 'total': len(signals) - 1}
+        return signals
+
+# ── LAYER 2: INSTITUTIONAL TRIGGER ENGINE ────────────
+class TriggerEngine:
+    def __init__(self, config: dict):
+        self.c = config
+
+    def check(self) -> dict:
+        c = self.c
+        vc  = c.get('vix_chg', 0)
+        fii = c.get('fii', 0)
+        adr = c.get('adr', 1)
+        ivr = c.get('ivr', 40)
+        sp  = c.get('spot', 0)
+        mp  = c.get('maxpain', sp)
+        pdiff = abs(sp - mp) / sp * 100 if sp > 0 else 99
+
+        return {
+            'T1': 'RED'    if vc > 15    else 'YELLOW' if vc > 8       else 'CLEAR',
+            'T2': 'RED'    if fii<-15000 else 'YELLOW' if fii<-8000    else 'CLEAR',
+            'T3': 'RED'    if pdiff<0.5  else 'YELLOW' if pdiff<1.5    else 'CLEAR',
+            'T4': 'RED'    if adr<0.20   else 'YELLOW' if adr<0.40     else 'CLEAR',
+            'T5': 'RED'    if ivr>70     else 'YELLOW' if ivr>50       else 'CLEAR',
+            'T6': 'RED'    if fii<-20000 else 'YELLOW' if fii<-12000   else 'CLEAR',
+        }
+
+# ── LAYER 3: DECISION ENGINE ──────────────────────────
+class DecisionEngine:
+    def __init__(self, capital: float):
+        self.capital = capital
+
+    def decide(self, ind: dict, trig: dict) -> dict:
+        red  = [k for k,v in trig.items() if v=='RED']
+        bull = ind['score']['bull']
+        bear = ind['score']['bear']
+
+        if not red:
+            return {'signal': 'NO_TRADE', 'reason': 'No institutional trigger', 'size': 0}
+
+        # T5 fired = sell premium only
+        if 'T5' in red:
+            return {'signal': 'SELL_PREMIUM', 'strategy': 'SHORT_STRADDLE',
+                    'size_pct': 0.02 if len(red)>=2 else 0.01,
+                    'risk': self.capital * (0.02 if len(red)>=2 else 0.01),
+                    'triggers': red}
+
+        # Direction
+        if 'T4' in red: direction = 'BULLISH'  # cascade = recovery
+        elif bull > bear: direction = 'BULLISH'
+        elif bear > bull: direction = 'BEARISH'
+        else: direction = 'NEUTRAL'
+
+        strat = ('BULL_CALL_SPREAD' if direction=='BULLISH' else
+                 'BEAR_PUT_SPREAD'  if direction=='BEARISH' else 'IRON_CONDOR')
+        size  = 0.02 if len(red)>=2 else 0.01
+        risk  = self.capital * size
+
+        return {
+            'signal': direction, 'strategy': strat,
+            'triggers': red, 'ind_conf': f"{max(bull,bear)}/{ind['score']['total']}",
+            'size_pct': size, 'risk': risk,
+            'stop_loss': risk * 0.30, 'target': risk * 0.60,
+            'time_stop_days': 5, 'paper': PAPER_TRADE
+        }
+
+# ── PAPER EXECUTOR ────────────────────────────────────
+class PaperExecutor:
+    def __init__(self): self.trades = []
+
+    def execute(self, decision: dict):
+        if decision['signal'] == 'NO_TRADE':
+            print(f"NO TRADE — {decision['reason']}")
+            return None
+        trade = {**decision, 'timestamp': datetime.now().isoformat(), 'status': 'OPEN'}
+        self.trades.append(trade)
+        print(f"[PAPER] {trade['signal']} | {trade['strategy']}")
+        print(f"  Risk: ₹{trade['risk']:,.0f} | SL: ₹{trade['stop_loss']:,.0f} | Target: ₹{trade['target']:,.0f}")
+        return trade
+
+# ── RUN ───────────────────────────────────────────────
+def run(market_config: dict):
+    print(f"INSTALERT ALGO — {datetime.now():%Y-%m-%d %H:%M}")
+    trig = TriggerEngine(market_config).check()
+    # For live: fetch df from dhan.get_historical_data() then:
+    # ind = IndicatorEngine.calculate(df)
+    ind  = {'score': {'bull': 3, 'bear': 2, 'total': 6}}  # replace with live
+    dec  = DecisionEngine(CAPITAL).decide(ind, trig)
+    trade= PaperExecutor().execute(dec)
+    print(json.dumps(dec, indent=2, default=str))
+    return trade
+
+if __name__ == "__main__":
+    run({
+        'spot': ${spot}, 'vix_chg': ${d.vc}, 'ivr': ${d.ivr},
+        'fii':  ${d.fii}, 'adr': ${d.adr}, 'maxpain': ${d.mp}
+    })`;
+
+  const zerodha=`# ═══════════════════════════════════════════════════════
+# INSTALERT ALGO — Zerodha Kite API · Paper Trading
+# Underlying: ${ul} | Capital: ₹${cap.toLocaleString('en-IN')}
+# ═══════════════════════════════════════════════════════
+# Install: pip install kiteconnect pandas numpy
+
+from kiteconnect import KiteConnect
+import pandas as pd
+import numpy as np
+from datetime import datetime, date, timedelta
+import json
+
+# ── CONFIG ────────────────────────────────────────────
+API_KEY      = "YOUR_ZERODHA_API_KEY"
+ACCESS_TOKEN = "YOUR_ZERODHA_ACCESS_TOKEN"
+CAPITAL      = ${cap}
+UNDERLYING   = "${ul}"
+PAPER_TRADE  = True  # MANDATORY until 30 paper trades validated
+
+kite = KiteConnect(api_key=API_KEY)
+kite.set_access_token(ACCESS_TOKEN)
+
+TOKENS = {"NIFTY": 256265, "BANKNIFTY": 260105, "SENSEX": 265, "FINNIFTY": 257801}
+
+# ── FETCH DATA ────────────────────────────────────────
+def fetch(symbol: str, interval="day", days=200) -> pd.DataFrame:
+    token = TOKENS.get(symbol, 256265)
+    to_dt = date.today()
+    fr_dt = to_dt - timedelta(days=days)
+    records = kite.historical_data(token, fr_dt, to_dt, interval)
+    df = pd.DataFrame(records)
+    df.set_index('date', inplace=True)
+    return df
+
+# ── INDICATORS ────────────────────────────────────────
+def indicators(df: pd.DataFrame) -> dict:
+    c = df['close']
+    delta = c.diff()
+    rsi = 100 - (100 / (1 + delta.clip(lower=0).rolling(14).mean() /
+                        (-delta.clip(upper=0)).rolling(14).mean()))
+    ema20  = c.ewm(span=20,  adjust=False).mean()
+    ema200 = c.ewm(span=200, adjust=False).mean()
+    macd   = c.ewm(span=12,adjust=False).mean() - c.ewm(span=26,adjust=False).mean()
+    macd_h = macd - macd.ewm(span=9,adjust=False).mean()
+    bb_mid = c.rolling(20).mean()
+    bb_pct = (c - (bb_mid - 2*c.rolling(20).std())) / (4*c.rolling(20).std())
+    spot   = c.iloc[-1]
+    sigs = {
+        'rsi':  'BULL' if rsi.iloc[-1]<30 else 'BEAR' if rsi.iloc[-1]>70 else 'NEUT',
+        'ema':  'BULL' if spot>ema20.iloc[-1]>ema200.iloc[-1] else 'BEAR' if spot<ema20.iloc[-1] else 'NEUT',
+        'macd': 'BULL' if macd_h.iloc[-1]>0 else 'BEAR',
+        'bb':   'BULL' if bb_pct.iloc[-1]<0 else 'BEAR' if bb_pct.iloc[-1]>1 else 'NEUT',
+    }
+    bull = sum(1 for v in sigs.values() if v=='BULL')
+    bear = sum(1 for v in sigs.values() if v=='BEAR')
+    sigs['score'] = {'bull':bull,'bear':bear,'total':len(sigs)-1}
+    return sigs
+
+# ── TRIGGERS (same logic as Dhan version) ────────────
+def triggers(cfg: dict) -> dict:
+    vc=cfg.get('vix_chg',0); fii=cfg.get('fii',0)
+    adr=cfg.get('adr',1);    ivr=cfg.get('ivr',40)
+    sp=cfg.get('spot',0);    mp=cfg.get('maxpain',sp)
+    pd_=abs(sp-mp)/sp*100 if sp>0 else 99
+    return {
+        'T1':'RED' if vc>15 else 'YELLOW' if vc>8 else 'CLEAR',
+        'T2':'RED' if fii<-15000 else 'YELLOW' if fii<-8000 else 'CLEAR',
+        'T3':'RED' if pd_<0.5 else 'YELLOW' if pd_<1.5 else 'CLEAR',
+        'T4':'RED' if adr<0.2 else 'YELLOW' if adr<0.4 else 'CLEAR',
+        'T5':'RED' if ivr>70 else 'YELLOW' if ivr>50 else 'CLEAR',
+        'T6':'RED' if fii<-20000 else 'YELLOW' if fii<-12000 else 'CLEAR',
+    }
+
+# ── DECISION ──────────────────────────────────────────
+def decide(ind: dict, trig: dict, capital: float) -> dict:
+    red  = [k for k,v in trig.items() if v=='RED']
+    bull = ind['score']['bull']; bear = ind['score']['bear']
+    if not red: return {'signal':'NO_TRADE','reason':'No trigger','size':0}
+    if 'T5' in red:
+        return {'signal':'SELL_PREMIUM','strategy':'SHORT_STRADDLE',
+                'risk':capital*(0.02 if len(red)>=2 else 0.01),'triggers':red}
+    direction = 'BULLISH' if 'T4' in red or bull>bear else 'BEARISH' if bear>bull else 'NEUTRAL'
+    strat = 'BULL_CALL_SPREAD' if direction=='BULLISH' else 'BEAR_PUT_SPREAD'
+    size  = 0.02 if len(red)>=2 else 0.01
+    risk  = capital * size
+    return {'signal':direction,'strategy':strat,'triggers':red,
+            'risk':risk,'stop_loss':risk*0.3,'target':risk*0.6,'paper':PAPER_TRADE}
+
+# ── PAPER ORDER ───────────────────────────────────────
+def paper_order(dec: dict):
+    if dec['signal']=='NO_TRADE':
+        print("NO TRADE"); return
+    print(f"[PAPER] {dec['strategy']} | Risk: ₹{dec['risk']:,.0f}")
+    return {**dec,'timestamp':datetime.now().isoformat(),'status':'PAPER_OPEN'}
+
+# ── MAIN ──────────────────────────────────────────────
+if __name__=="__main__":
+    cfg = {
+        'spot':${spot},'vix_chg':${d.vc},'ivr':${d.ivr},
+        'fii':${d.fii},'adr':${d.adr},'maxpain':${d.mp}
+    }
+    # df  = fetch(UNDERLYING)  # uncomment for live data
+    # ind = indicators(df)
+    ind = {'score':{'bull':3,'bear':2,'total':5}}  # replace with live
+    trg = triggers(cfg)
+    dec = decide(ind, trg, CAPITAL)
+    paper_order(dec)
+    print(json.dumps(dec, indent=2, default=str))`;
+
+  const pine=`//@version=5
+// ═══════════════════════════════════════════════════════
+// INSTALERT ALGO — Pine Script v5 · TradingView
+// All 9 Indicators + 6 Institutional Triggers + Alerts
+// Copy this entire script into TradingView Pine Editor
+// ═══════════════════════════════════════════════════════
+
+indicator("InstAlert Algo", overlay=true, max_labels_count=500)
+
+// ── INPUTS ────────────────────────────────────────────
+g1 = "Institutional Data (update daily)"
+i_vix     = input.float(${d.vix},  "India VIX",          group=g1)
+i_vc      = input.float(${d.vc},   "VIX Change %",        group=g1)
+i_fii     = input.float(${d.fii},  "FII Net Futures ₹Cr", group=g1)
+i_ivr     = input.float(${d.ivr},  "IV Rank (0-100)",     group=g1)
+i_adr     = input.float(${d.adr},  "Advance-Decline",     group=g1)
+i_mp      = input.float(${d.mp},   "Max Pain Strike",     group=g1)
+i_pcr     = input.float(${d.pcr},  "Put-Call Ratio",      group=g1)
+
+g2 = "Indicators"
+i_rlen    = input.int(14,   "RSI Period",       group=g2)
+i_ef      = input.int(20,   "EMA Fast",         group=g2)
+i_es      = input.int(200,  "EMA Slow",         group=g2)
+i_blen    = input.int(20,   "BB Length",        group=g2)
+i_bmult   = input.float(2.0,"BB Mult",          group=g2)
+i_stf     = input.float(3.0,"Supertrend Factor",group=g2)
+i_stp     = input.int(14,   "Supertrend Period",group=g2)
+
+// ── LAYER 1: INDICATORS ───────────────────────────────
+// RSI
+rsi = ta.rsi(close, i_rlen)
+rsi_bull = rsi < 30
+rsi_bear = rsi > 70
+
+// EMAs
+ef  = ta.ema(close, i_ef)
+es  = ta.ema(close, i_es)
+plot(ef, "EMA20",  color=color.new(color.yellow, 40), linewidth=1)
+plot(es, "EMA200", color=color.new(color.orange, 40), linewidth=2)
+ema_bull = close > ef and ef > es
+ema_bear = close < ef and ef < es
+
+// MACD
+[ml, ms, mh] = ta.macd(close, 12, 26, 9)
+macd_bull = mh > 0 and mh > mh[1]
+macd_bear = mh < 0 and mh < mh[1]
+
+// Bollinger Bands
+[bm, bu, bl] = ta.bb(close, i_blen, i_bmult)
+bb_pct  = (close - bl) / (bu - bl)
+bb_bull = close < bl
+bb_bear = close > bu
+pu = plot(bu, "BB Upper", color=color.new(color.blue,75))
+pl = plot(bl, "BB Lower", color=color.new(color.blue,75))
+fill(pu, pl, color=color.new(color.blue, 92))
+
+// Supertrend
+[stv, std] = ta.supertrend(i_stf, i_stp)
+st_bull = std < 0
+st_bear = std > 0
+plot(st_bull ? stv : na, "ST+", color=color.new(color.green,20), linewidth=2, style=plot.style_linebr)
+plot(st_bear ? stv : na, "ST-", color=color.new(color.red,20),   linewidth=2, style=plot.style_linebr)
+
+// VWAP
+vwap = ta.vwap(hlc3)
+plot(vwap, "VWAP", color=color.new(color.purple, 40))
+vwap_bull = close > vwap
+vwap_bear = close < vwap
+
+// Stochastic
+[sk, sd] = ta.stoch(close, high, low, 14), ta.sma(ta.stoch(close, high, low, 14), 3)
+stoch_bull = sk < 20
+stoch_bear = sk > 80
+
+// OBV
+obv = ta.obv
+obv_bull = obv > obv[5]
+obv_bear = obv < obv[5]
+
+// Confluence
+bull_c = (rsi_bull?1:0)+(ema_bull?1:0)+(macd_bull?1:0)+(bb_bull?1:0)+(st_bull?1:0)+(vwap_bull?1:0)+(stoch_bull?1:0)+(obv_bull?1:0)
+bear_c = (rsi_bear?1:0)+(ema_bear?1:0)+(macd_bear?1:0)+(bb_bear?1:0)+(st_bear?1:0)+(vwap_bear?1:0)+(stoch_bear?1:0)+(obv_bear?1:0)
+ind_bull = bull_c >= 5
+ind_bear = bear_c >= 5
+
+// ── LAYER 2: INSTITUTIONAL TRIGGERS ──────────────────
+t1r = i_vc > 15
+t1y = i_vc > 8 and not t1r
+t2r = i_fii < -15000
+t2y = i_fii < -8000 and not t2r
+t3r = math.abs(close - i_mp) / close * 100 < 0.5 and i_vix < 15
+t4r = i_adr < 0.20
+t4y = i_adr < 0.40 and not t4r
+t5r = i_ivr > 70
+t5y = i_ivr > 50 and not t5r
+t6r = i_fii < -20000
+
+red_c  = (t1r?1:0)+(t2r?1:0)+(t3r?1:0)+(t4r?1:0)+(t5r?1:0)+(t6r?1:0)
+yel_c  = (t1y?1:0)+(t2y?1:0)+(t4y?1:0)+(t5y?1:0)
+
+// ── LAYER 3: DECISION ENGINE ──────────────────────────
+no_trade    = red_c == 0
+sell_prem   = t5r and red_c >= 1
+buy_sig     = red_c >= 2 and (t4r or ind_bull) and not sell_prem
+sell_sig    = red_c >= 2 and ind_bear and not sell_prem and not t4r
+single_trig = red_c == 1 and not sell_prem
+
+// ── VISUALS ───────────────────────────────────────────
+bgcolor(buy_sig    ? color.new(color.green,  93) : na)
+bgcolor(sell_sig   ? color.new(color.red,    93) : na)
+bgcolor(sell_prem  ? color.new(color.orange, 95) : na)
+bgcolor(yel_c >= 2 and red_c == 0 ? color.new(color.yellow, 96) : na)
+
+plotshape(buy_sig,  "BUY",        shape.triangleup,   location.belowbar, color.green,  size=size.normal)
+plotshape(sell_sig, "SELL",       shape.triangledown, location.abovebar, color.red,    size=size.normal)
+plotshape(sell_prem,"SELL PREM",  shape.diamond,      location.abovebar, color.orange, size=size.small)
+plotshape(single_trig,"1 TRIGGER",shape.circle,       location.belowbar, color.yellow, size=size.small)
+
+if buy_sig
+    label.new(bar_index, low,  "⚡ BUY\\n"+str.tostring(red_c)+"T | "+str.tostring(bull_c)+"/8 IND",
+      color=color.new(color.green,10), textcolor=color.white, style=label.style_label_up, size=size.small)
+if sell_sig
+    label.new(bar_index, high, "⚡ SELL\\n"+str.tostring(red_c)+"T | "+str.tostring(bear_c)+"/8 IND",
+      color=color.new(color.red,10), textcolor=color.white, style=label.style_label_down, size=size.small)
+if sell_prem
+    label.new(bar_index, high, "💰 SELL PREM\\nIVR:"+str.tostring(i_ivr),
+      color=color.new(color.orange,10), textcolor=color.white, style=label.style_label_down, size=size.small)
+
+// ── INFO TABLE ────────────────────────────────────────
+var t = table.new(position.top_right, 2, 12,
+  bgcolor=color.new(color.black,65), border_color=color.new(color.gray,75), border_width=1)
+f(c,r,txt,clr) => table.cell(t,c,r,txt,text_color=clr,text_size=size.small)
+f(0,0,"INSTALERT",color.aqua)
+f(1,0,str.tostring(red_c)+" RED",red_c>=2?color.red:red_c==1?color.yellow:color.gray)
+f(0,1,"T1 VIX",color.gray)   f(1,1,t1r?"🔴":t1y?"🟡":"✅",t1r?color.red:t1y?color.yellow:color.green)
+f(0,2,"T2 FII",color.gray)   f(1,2,t2r?"🔴":t2y?"🟡":"✅",t2r?color.red:t2y?color.yellow:color.green)
+f(0,3,"T3 PAIN",color.gray)  f(1,3,t3r?"🔴":"✅",t3r?color.red:color.green)
+f(0,4,"T4 CASC",color.gray)  f(1,4,t4r?"🔴":t4y?"🟡":"✅",t4r?color.red:t4y?color.yellow:color.green)
+f(0,5,"T5 IV",color.gray)    f(1,5,t5r?"🔴":t5y?"🟡":"✅",t5r?color.red:t5y?color.yellow:color.green)
+f(0,6,"T6 MACRO",color.gray) f(1,6,t6r?"🔴":"✅",t6r?color.red:color.green)
+f(0,7,"SIGNAL",color.gray)   f(1,7,buy_sig?"BUY":sell_sig?"SELL":sell_prem?"SELL PREM":single_trig?"WATCH":"WAIT",buy_sig?color.green:sell_sig?color.red:sell_prem?color.orange:color.gray)
+f(0,8,"IND BULL",color.gray) f(1,8,str.tostring(bull_c)+"/8",bull_c>=5?color.green:color.gray)
+f(0,9,"IND BEAR",color.gray) f(1,9,str.tostring(bear_c)+"/8",bear_c>=5?color.red:color.gray)
+f(0,10,"PCR",color.gray)     f(1,10,str.tostring(i_pcr),i_pcr<0.7?color.red:i_pcr>1.3?color.green:color.gray)
+f(0,11,"SIZE",color.gray)    f(1,11,red_c>=2?"2% CAP":red_c==1?"1% CAP":"NO TRADE",red_c>=2?color.red:red_c==1?color.yellow:color.gray)
+
+// ── ALERTS ────────────────────────────────────────────
+alertcondition(buy_sig,     "INSTALERT BUY",      "InstAlert: BUY — "+str.tostring(red_c)+" triggers fired")
+alertcondition(sell_sig,    "INSTALERT SELL",     "InstAlert: SELL — "+str.tostring(red_c)+" triggers fired")
+alertcondition(sell_prem,   "INSTALERT SELL PREM","InstAlert: SELL PREMIUM — IV Crush setup active")
+alertcondition(t1r,         "T1 VaR BREACH",      "T1: VIX spike >15%. VaR breach confirmed.")
+alertcondition(t4r,         "T4 CASCADE",         "T4: Margin cascade. A/D < 0.20. Recovery setup.")
+alertcondition(red_c >= 2,  "MULTI-TRIGGER",      "InstAlert: "+str.tostring(red_c)+" triggers fired simultaneously")`;
+
+  document.getElementById('dhan-code').textContent=dhan;
+  document.getElementById('z-code').textContent=zerodha;
+  document.getElementById('pine-code').textContent=pine;
+}
+
+// INIT
+document.getElementById('indgrid').innerHTML=[
+  'RSI (14)','EMA 20/200','MACD','Bollinger Band','VWAP','Supertrend','Put-Call Ratio','OBV','IV Rank'
+].map(n=>`<div class="ic neut"><div class="ic-name">${n}</div><div class="ic-val neut" style="font-size:12px;color:var(--muted);">—</div><div class="ic-sig neut">AWAITING</div></div>`).join('');
+
+document.getElementById('triglist').innerHTML=[
+  ['T1','VaR Breach — VIX Spike'],['T2','FII Drawdown Limit'],['T3','Max Pain Expiry Pin'],
+  ['T4','Margin Call Cascade'],['T5','Pre-Event IV Crush'],['T6','Macro FII Rule Trigger']
+].map(([c,n])=>`<div class="trow"><div class="tcode grey">${c}</div><div><div class="tname">${n}</div><div class="tdetail">Enter data and run analysis.</div></div><div class="tbadge tb-c">—</div></div>`).join('');
+
+renderCodes({spot:24500,vc:0,ivr:40,fii:0,adr:0.6,mp:24400,cap:100000,ul:'NIFTY',vix:16,dc:0,e20:24200,e200:22800,rsi:55,pcr:0.85},[],[]);
+</script>
+</body>
+</html>
