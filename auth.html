@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - IntelligentTraders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0a0c10;--ink2:#12161e;--ink3:#181d28;--edge:#242c3d;--paper:#e8edf5;--muted:#4a5a70;--muted2:#6a7a90;--gold:#c8a020;--gold2:#e8c040;--teal:#10c8b0;--red:#d84040;--green:#20c870;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--ink);color:var(--paper);font-family:"Geist Mono","Courier New",monospace;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.card{background:var(--ink2);border:1px solid var(--edge);border-radius:12px;padding:40px;max-width:480px;width:100%;text-align:center;}
+.logo{font-family:"Instrument Serif",Georgia,serif;font-size:22px;color:var(--paper);margin-bottom:6px;}
+.logo span{color:var(--gold2);}
+.eyebrow{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:28px;}
+.status-icon{font-size:48px;margin-bottom:16px;}
+.title{font-family:"Instrument Serif",Georgia,serif;font-size:22px;color:var(--paper);margin-bottom:10px;}
+.desc{font-size:11px;color:var(--muted2);line-height:1.8;margin-bottom:24px;}
+.btn{display:block;width:100%;background:linear-gradient(135deg,var(--gold),#906010);color:var(--ink);padding:14px 32px;border-radius:8px;font-family:"Instrument Serif",Georgia,serif;font-size:16px;font-style:italic;text-decoration:none;transition:all 0.2s;border:none;cursor:pointer;text-align:center;margin-bottom:10px;}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,160,32,0.3);}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.btn-sec{display:block;width:100%;background:transparent;color:var(--muted2);padding:11px 32px;border-radius:8px;font-family:"Geist Mono","Courier New",monospace;font-size:11px;text-decoration:none;transition:all 0.2s;border:1px solid var(--edge);cursor:pointer;text-align:center;letter-spacing:1px;}
+.btn-sec:hover{border-color:var(--muted);color:var(--paper);}
+.note{font-size:9px;color:var(--muted);margin-top:16px;line-height:1.7;letter-spacing:0.5px;}
+.sbox{background:rgba(32,200,112,0.08);border:1px solid rgba(32,200,112,0.25);border-radius:8px;padding:16px;margin-top:20px;display:none;}
+.sbox .st{font-size:13px;color:var(--green);font-weight:600;margin-bottom:6px;}
+.sbox .sd{font-size:11px;color:var(--muted2);line-height:1.6;}
+.ebox{background:rgba(216,64,64,0.08);border:1px solid rgba(216,64,64,0.25);border-radius:8px;padding:16px;margin-top:20px;display:none;}
+.ebox .et{font-size:13px;color:var(--red);font-weight:600;margin-bottom:6px;}
+.ebox .ed{font-size:11px;color:var(--muted2);line-height:1.6;}
+.loading{font-size:11px;color:var(--gold);margin-top:16px;display:none;letter-spacing:1px;}
+.step-row{display:flex;align-items:flex-start;gap:12px;text-align:left;margin-bottom:12px;}
+.step-num{background:var(--ink3);border:1px solid var(--edge);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--gold);flex-shrink:0;margin-top:1px;}
+.step-text{font-size:11px;color:var(--muted2);line-height:1.6;}
+.step-text strong{color:var(--paper);}
+footer{margin-top:24px;font-size:9px;color:var(--muted);letter-spacing:1px;text-align:center;line-height:1.8;}
+</style>
+</head>
+<body>
+<div class="card" id="mainCard">
+  <div class="logo">Intelligent<span>Traders</span></div>
+  <div class="eyebrow">Daily Market Data Login</div>
+  <div class="status-icon" id="statusIcon">&#128274;</div>
+  <div class="title" id="cardTitle">Authorise Live Data</div>
+  <div class="desc" id="cardDesc">
+    Login with Zerodha once every morning to get real-time NSE market data on your dashboard.
+  </div>
+
+  <div id="stepsView">
+    <div class="step-row">
+      <div class="step-num">1</div>
+      <div class="step-text">Click the button below — you will be redirected to <strong>Zerodha login</strong></div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">2</div>
+      <div class="step-text">Login with your Zerodha credentials and <strong>approve the connection</strong></div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">3</div>
+      <div class="step-text">You will be redirected back here automatically — <strong>token saved for today</strong></div>
+    </div>
+  </div>
+
+  <div style="margin-top:20px;">
+    <button class="btn" id="loginBtn" onclick="doLogin()">&#10022; Login with Zerodha</button>
+    <a href="/dashboard.html" class="btn-sec">Skip — Use Simulated Data</a>
+  </div>
+
+  <div class="loading" id="loading">&#9711; Processing your login...</div>
+
+  <div class="sbox" id="sbox">
+    <div class="st">&#9989; Login Successful!</div>
+    <div class="sd" id="sboxDesc">Live NSE data access granted for today. Redirecting to dashboard...</div>
+  </div>
+
+  <div class="ebox" id="ebox">
+    <div class="et">&#9888; Login Failed</div>
+    <div class="ed" id="eboxDesc">Please try again.</div>
+  </div>
+
+  <p class="note">
+    Your Zerodha password is never seen or stored by IntelligentTraders.<br>
+    Only a temporary read-only token is stored in your browser.
+  </p>
+</div>
+
+<footer>
+  IntelligentTraders &middot; Powered by Zerodha Kite Connect<br>
+  <a href="/index.html" style="color:var(--gold);text-decoration:none;">&#8592; Back to Home</a>
+</footer>
+
+<script>
+var API_KEY = "zyra6665x2qon7pq";
+
+// Redirect to Zerodha login directly from browser
+function doLogin() {
+  var btn = document.getElementById("loginBtn");
+  btn.disabled = true;
+  btn.textContent = "Redirecting to Zerodha...";
+  var loginUrl = "https://kite.zerodha.com/connect/login?v=3&api_key=" + API_KEY;
+  window.location.href = loginUrl;
+}
+
+// Handle callback when Zerodha redirects back
+window.onload = function() {
+  var params = new URLSearchParams(window.location.search);
+  var requestToken = params.get("request_token");
+  var status = params.get("status");
+
+  // Check if already logged in today
+  var token = localStorage.getItem("kite_access_token");
+  var tokenDate = localStorage.getItem("kite_token_date");
+  if(token && tokenDate === new Date().toDateString() && !requestToken) {
+    document.getElementById("statusIcon").textContent = "✅";
+    document.getElementById("cardTitle").textContent = "Already Connected";
+    document.getElementById("cardDesc").textContent = "Live data is active for today.";
+    document.getElementById("stepsView").style.display = "none";
+    document.getElementById("loginBtn").textContent = "✦ Go to Dashboard";
+    document.getElementById("loginBtn").onclick = function() { window.location.href = "/dashboard.html"; };
+    document.getElementById("loginBtn").disabled = false;
+    return;
+  }
+
+  if(status === "cancelled") {
+    showError("Login was cancelled. Click below to try again.");
+    return;
+  }
+
+  if(requestToken && status === "success") {
+    // Exchange request token for access token via Netlify function
+    document.getElementById("stepsView").style.display = "none";
+    document.getElementById("loginBtn").style.display = "none";
+    document.getElementById("loading").style.display = "block";
+    document.getElementById("statusIcon").textContent = "⟳";
+    document.getElementById("cardTitle").textContent = "Completing Login...";
+    document.getElementById("cardDesc").style.display = "none";
+
+    fetch("/.netlify/functions/marketdata?action=callback&request_token=" + encodeURIComponent(requestToken))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        document.getElementById("loading").style.display = "none";
+        if(data.success && data.access_token) {
+          localStorage.setItem("kite_access_token", data.access_token);
+          localStorage.setItem("kite_token_date", new Date().toDateString());
+          document.getElementById("statusIcon").textContent = "✅";
+          document.getElementById("cardTitle").textContent = "Login Successful!";
+          document.getElementById("sbox").style.display = "block";
+          document.getElementById("sboxDesc").textContent = "Live NSE data access granted. Redirecting to dashboard in 3 seconds...";
+          setTimeout(function() { window.location.href = "/dashboard.html"; }, 3000);
+        } else {
+          showError(data.error || "Token exchange failed. Please try again.");
+        }
+      })
+      .catch(function(e) {
+        document.getElementById("loading").style.display = "none";
+        showError("Network error: " + e.message + ". Please try again.");
+      });
+  }
+};
+
+function showError(msg) {
+  document.getElementById("ebox").style.display = "block";
+  document.getElementById("eboxDesc").textContent = msg;
+  document.getElementById("loginBtn").style.display = "block";
+  document.getElementById("loginBtn").disabled = false;
+  document.getElementById("loginBtn").textContent = "✦ Try Again";
+  document.getElementById("loginBtn").onclick = doLogin;
+  document.getElementById("loading").style.display = "none";
+}
+</script>
+</body>
+</html>
