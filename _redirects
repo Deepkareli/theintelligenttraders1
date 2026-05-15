@@ -1,0 +1,9 @@
+/about    /about.html    200
+/dashboard    /dashboard.html    200
+/journal    /journal.html    200
+/algo    /algo.html    200
+/about.html    /about.html    200
+/dashboard.html    /dashboard.html    200
+/journal.html    /journal.html    200
+/algo.html    /algo.html    200
+/*    /index.html    200
