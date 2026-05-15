@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstAlert — Paper Trading Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Clash+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0a0a0f;
+    --bg2:     #111118;
+    --bg3:     #181820;
+    --border:  #22222e;
+    --border2: #2e2e3e;
+    --text:    #f0f0f8;
+    --muted:   #52526a;
+    --muted2:  #6e6e8a;
+    --green:   #00e87a;
+    --red:     #ff4060;
+    --yellow:  #ffc840;
+    --blue:    #4080ff;
+    --purple:  #9060ff;
+    --cyan:    #00d4ff;
+    --green-dim: rgba(0,232,122,0.08);
+    --red-dim:   rgba(255,64,96,0.08);
+    --yellow-dim:rgba(255,200,64,0.08);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Clash Display', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* noise texture overlay */
+  body::after {
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events:none;
+    z-index:9999;
+    opacity:0.4;
+  }
+
+  .wrap { max-width:1120px; margin:0 auto; padding:0 20px; }
+
+  /* ── HEADER ── */
+  .header {
+    padding: 24px 0 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #4080ff, #9060ff);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    box-shadow: 0 0 16px rgba(64,128,255,0.3);
+  }
+
+  .brand-name {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .brand-name span { color: var(--cyan); }
+
+  .brand-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .phase-badge {
+    background: var(--yellow-dim);
+    border: 1px solid rgba(255,200,64,0.25);
+    color: var(--yellow);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 5px 12px;
+    border-radius: 20px;
+  }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin: 24px 0;
+  }
+
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .stat-card:hover { border-color: var(--border2); }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .stat-card.c-green::before { background: var(--green); }
+  .stat-card.c-red::before   { background: var(--red); }
+  .stat-card.c-yellow::before{ background: var(--yellow); }
+  .stat-card.c-blue::before  { background: var(--blue); }
+  .stat-card.c-purple::before{ background: var(--purple); }
+  .stat-card.c-cyan::before  { background: var(--cyan); }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .stat-value.green  { color: var(--green); }
+  .stat-value.red    { color: var(--red); }
+  .stat-value.yellow { color: var(--yellow); }
+  .stat-value.blue   { color: var(--blue); }
+  .stat-value.purple { color: var(--purple); }
+  .stat-value.cyan   { color: var(--cyan); }
+  .stat-value.white  { color: var(--text); }
+
+  .stat-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 5px;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted2);
+  }
+
+  /* ── NEW TRADE FORM ── */
+  .form-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .form-input, .form-select {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    appearance: none;
+  }
+
+  .form-input:focus, .form-select:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 2px rgba(0,212,255,0.08);
+  }
+
+  .form-select option { background: var(--bg3); }
+
+  .form-textarea {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    outline: none;
+    resize: vertical;
+    min-height: 60px;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+
+  .form-textarea:focus { border-color: var(--cyan); }
+
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--cyan), var(--blue));
+    border: none;
+    border-radius: 10px;
+    padding: 11px 24px;
+    font-family: 'Clash Display', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #000;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,212,255,0.25);
+  }
+
+  .btn-secondary {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 11px 20px;
+    font-family: 'Clash Display', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted2);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover { color: var(--text); border-color: var(--muted); }
+
+  /* ── TRIGGER MINI BUTTONS ── */
+  .trigger-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .t-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    color: var(--muted2);
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .t-btn:hover { border-color: var(--border2); color: var(--text); }
+  .t-btn.sel-1 { background: rgba(0,212,255,0.12); border-color: rgba(0,212,255,0.4); color: var(--cyan); }
+  .t-btn.sel-2 { background: rgba(255,200,64,0.1); border-color: rgba(255,200,64,0.35); color: var(--yellow); }
+  .t-btn.sel-3 { background: rgba(64,128,255,0.1); border-color: rgba(64,128,255,0.35); color: var(--blue); }
+  .t-btn.sel-4 { background: rgba(255,64,96,0.1);  border-color: rgba(255,64,96,0.35);  color: var(--red); }
+  .t-btn.sel-5 { background: rgba(0,232,122,0.1);  border-color: rgba(0,232,122,0.35);  color: var(--green); }
+  .t-btn.sel-6 { background: rgba(144,96,255,0.1); border-color: rgba(144,96,255,0.35); color: var(--purple); }
+
+  /* ── TRADE TABLE ── */
+  .trades-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .trades-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .trades-table th {
+    background: var(--bg3);
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .trades-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    color: var(--text);
+  }
+
+  .trades-table tr:last-child td { border-bottom: none; }
+  .trades-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .td-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted2);
+    white-space: nowrap;
+  }
+
+  .td-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .tc-1 { background: rgba(0,212,255,0.1);  color: var(--cyan);   border: 1px solid rgba(0,212,255,0.2); }
+  .tc-2 { background: rgba(255,200,64,0.1); color: var(--yellow); border: 1px solid rgba(255,200,64,0.2); }
+  .tc-3 { background: rgba(64,128,255,0.1); color: var(--blue);   border: 1px solid rgba(64,128,255,0.2); }
+  .tc-4 { background: rgba(255,64,96,0.1);  color: var(--red);    border: 1px solid rgba(255,64,96,0.2); }
+  .tc-5 { background: rgba(0,232,122,0.1);  color: var(--green);  border: 1px solid rgba(0,232,122,0.2); }
+  .tc-6 { background: rgba(144,96,255,0.1); color: var(--purple); border: 1px solid rgba(144,96,255,0.2); }
+
+  .td-pnl {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .pnl-pos { color: var(--green); }
+  .pnl-neg { color: var(--red); }
+  .pnl-open { color: var(--muted2); }
+
+  .status-badge {
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  .sb-open   { background: rgba(255,200,64,0.1); color: var(--yellow); border: 1px solid rgba(255,200,64,0.2); }
+  .sb-win    { background: rgba(0,232,122,0.1);  color: var(--green);  border: 1px solid rgba(0,232,122,0.2); }
+  .sb-loss   { background: rgba(255,64,96,0.1);  color: var(--red);    border: 1px solid rgba(255,64,96,0.2); }
+  .sb-rules  { background: rgba(144,96,255,0.1); color: var(--purple); border: 1px solid rgba(144,96,255,0.2); }
+
+  .rule-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+  }
+
+  .rb-followed { background: rgba(0,232,122,0.08); color: var(--green); }
+  .rb-broken   { background: rgba(255,64,96,0.1);  color: var(--red); }
+
+  .action-btns {
+    display: flex;
+    gap: 6px;
+  }
+
+  .action-btn {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    color: var(--muted2);
+    transition: all 0.15s;
+  }
+
+  .action-btn:hover { color: var(--text); border-color: var(--border2); }
+  .action-btn.close-btn:hover { color: var(--green); border-color: rgba(0,232,122,0.3); }
+  .action-btn.del-btn:hover { color: var(--red); border-color: rgba(255,64,96,0.3); }
+
+  .empty-state {
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+
+  .empty-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--muted2);
+    margin-bottom: 8px;
+  }
+
+  .empty-desc {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    line-height: 1.7;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+
+  /* ── TRIGGER PERFORMANCE ── */
+  .perf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .perf-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .perf-card:hover { border-color: var(--border2); }
+
+  .perf-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .perf-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .perf-name {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .perf-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .perf-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .perf-key {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .perf-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .win-bar-wrap {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  .win-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+
+  /* ── RULES CHECKLIST ── */
+  .rules-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+
+  .rule-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .rule-item:last-child { border-bottom: none; }
+
+  .rule-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 24px;
+    padding-top: 1px;
+  }
+
+  .rule-text {
+    font-size: 13px;
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .rule-text strong { color: var(--cyan); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 28px;
+    width: 100%;
+    max-width: 480px;
+    animation: modalIn 0.2s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .modal-grid { display: grid; gap: 14px; margin-bottom: 20px; }
+
+  .modal-actions { display: flex; gap: 10px; }
+
+  /* ── JOURNAL NOTES ── */
+  .notes-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .note-entry {
+    display: flex;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .note-entry:last-child { border-bottom: none; }
+
+  .note-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 80px;
+    padding-top: 2px;
+  }
+
+  .note-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted2);
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+
+  .progress-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted2);
+    min-width: 140px;
+    letter-spacing: 0.5px;
+  }
+
+  .progress-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+
+  .progress-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 0;
+    margin-top: 8px;
+  }
+
+  .footer-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+    margin-bottom: 20px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    color: var(--muted);
+  }
+
+  .tab.active {
+    background: var(--bg3);
+    color: var(--cyan);
+    box-shadow: 0 0 10px rgba(0,212,255,0.08);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeUp 0.3s ease; }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:640px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .form-grid { grid-template-columns: 1fr; }
+    .perf-grid { grid-template-columns: repeat(2, 1fr); }
+    .trades-table th:nth-child(5),
+    .trades-table td:nth-child(5) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="wrap">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">📓</div>
+        <div>
+          <div class="brand-name">Inst<span>Alert</span> Journal</div>
+          <div class="brand-tag">Paper Trading Validator · Trigger-Based System</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="phase-badge">📍 PHASE 1 — VALIDATION</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" style="padding-top:24px; padding-bottom:40px;">
+
+  <!-- STATS ROW -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card c-blue">
+      <div class="stat-label">Total Trades</div>
+      <div class="stat-value blue" id="st-total">0</div>
+      <div class="stat-sub">paper trades logged</div>
+    </div>
+    <div class="stat-card c-green">
+      <div class="stat-label">Win Rate</div>
+      <div class="stat-value green" id="st-winrate">—</div>
+      <div class="stat-sub">closed trades only</div>
+    </div>
+    <div class="stat-card c-cyan">
+      <div class="stat-label">Paper P&L</div>
+      <div class="stat-value cyan" id="st-pnl">₹0</div>
+      <div class="stat-sub">notional on ₹1L capital</div>
+    </div>
+    <div class="stat-card c-yellow">
+      <div class="stat-label">Avg R-Multiple</div>
+      <div class="stat-value yellow" id="st-rmult">—</div>
+      <div class="stat-sub">winner ÷ loser avg</div>
+    </div>
+    <div class="stat-card c-purple">
+      <div class="stat-label">Rules Followed</div>
+      <div class="stat-value purple" id="st-rules">—</div>
+      <div class="stat-sub">discipline score</div>
+    </div>
+    <div class="stat-card c-red">
+      <div class="stat-label">Best Trigger</div>
+      <div class="stat-value red" id="st-best">—</div>
+      <div class="stat-sub">highest win rate</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('log')">Trade Log</div>
+    <div class="tab" onclick="switchTab('new')">New Trade</div>
+    <div class="tab" onclick="switchTab('perf')">By Trigger</div>
+    <div class="tab" onclick="switchTab('rules')">Rulebook</div>
+    <div class="tab" onclick="switchTab('journal')">Journal</div>
+  </div>
+
+  <!-- TAB: TRADE LOG -->
+  <div class="tab-content active" id="tab-log">
+    <div class="section-head">
+      <div class="section-title">📋 All Paper Trades</div>
+      <button class="btn-secondary" onclick="switchTab('new')" style="padding:6px 14px;font-size:11px;">+ New Trade</button>
+    </div>
+    <div class="trades-wrap">
+      <table class="trades-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Trigger</th>
+            <th>Trade</th>
+            <th>Entry ₹</th>
+            <th>Exit ₹</th>
+            <th>P&L %</th>
+            <th>Rules</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tradesBody">
+          <!-- filled by JS -->
+        </tbody>
+      </table>
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">📊</div>
+        <div class="empty-title">No trades logged yet</div>
+        <div class="empty-desc">Start your paper trading journey. Every trade logged here validates the InstAlert trigger framework. Your first trade is the most important one.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: NEW TRADE -->
+  <div class="tab-content" id="tab-new">
+    <div class="form-card">
+      <div class="section-head">
+        <div class="section-title">📝 Log New Paper Trade</div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input class="form-input" type="date" id="f-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Underlying</label>
+          <select class="form-select" id="f-underlying">
+            <option value="Nifty">Nifty 50</option>
+            <option value="BankNifty">Bank Nifty</option>
+            <option value="Sensex">Sensex</option>
+            <option value="FinNifty">Fin Nifty</option>
+            <option value="Stock">Individual Stock</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Trade Type</label>
+          <select class="form-select" id="f-type">
+            <option value="Long Call">Long Call (CE Buy)</option>
+            <option value="Long Put">Long Put (PE Buy)</option>
+            <option value="Bull Call Spread">Bull Call Spread</option>
+            <option value="Bear Put Spread">Bear Put Spread</option>
+            <option value="Short Straddle">Short Straddle (Sell)</option>
+            <option value="Short Strangle">Short Strangle (Sell)</option>
+            <option value="Iron Condor">Iron Condor</option>
+            <option value="Sell Put">Sell Put (CSP)</option>
+            <option value="Sell Call">Sell Call (CC)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Strike / Expiry</label>
+          <input class="form-input" type="text" id="f-strike" placeholder="e.g. 24500 CE Jun 26">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Entry Premium (₹)</label>
+          <input class="form-input" type="number" id="f-entry" placeholder="e.g. 120">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Lots</label>
+          <input class="form-input" type="number" id="f-lots" value="1" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stop-Loss (₹ premium)</label>
+          <input class="form-input" type="number" id="f-sl" placeholder="e.g. 84 (30% of 120)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target (₹ premium)</label>
+          <input class="form-input" type="number" id="f-target" placeholder="e.g. 240 (2x entry)">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label">Trigger(s) That Fired</label>
+        <div class="trigger-selector" id="triggerSelector">
+          <div class="t-btn" data-t="1" onclick="toggleTrigger(this)">T1 VaR/VIX</div>
+          <div class="t-btn" data-t="2" onclick="toggleTrigger(this)">T2 FII Drawdown</div>
+          <div class="t-btn" data-t="3" onclick="toggleTrigger(this)">T3 Max Pain</div>
+          <div class="t-btn" data-t="4" onclick="toggleTrigger(this)">T4 Cascade</div>
+          <div class="t-btn" data-t="5" onclick="toggleTrigger(this)">T5 IV Crush</div>
+          <div class="t-btn" data-t="6" onclick="toggleTrigger(this)">T6 Macro FII</div>
+        </div>
+      </div>
+
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group">
+          <label class="form-label">India VIX at Entry</label>
+          <input class="form-input" type="number" id="f-vix" placeholder="e.g. 18.5" step="0.1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">IV Rank at Entry</label>
+          <input class="form-input" type="number" id="f-ivrank" placeholder="e.g. 72" min="0" max="100">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label">Trade Rationale (why this trigger, why now)</label>
+        <textarea class="form-textarea" id="f-rationale" placeholder="e.g. VIX spiked 18% today — T1 fired. All sectors down with no news, A/D ratio 0.15 — T4 also fired. Buying Nifty call spread as forced liquidation recovery play. Expecting 3–5 week recovery..."></textarea>
+      </div>
+
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">Rules Checklist</label>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--muted2);">
+            <input type="checkbox" id="rc1" style="accent-color:var(--cyan);">
+            Trigger clearly fired (not wishful thinking)
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--muted2);">
+            <input type="checkbox" id="rc2" style="accent-color:var(--cyan);">
+            Position size ≤ 2% of capital (≤ ₹2,000 on ₹1L)
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--muted2);">
+            <input type="checkbox" id="rc3" style="accent-color:var(--cyan);">
+            Stop-loss defined BEFORE entry (30% premium loss)
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--muted2);">
+            <input type="checkbox" id="rc4" style="accent-color:var(--cyan);">
+            NOT buying options in final 7 days before expiry
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--muted2);">
+            <input type="checkbox" id="rc5" style="accent-color:var(--cyan);">
+            NOT trading during no-trigger / noise period
+          </label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary" onclick="logTrade()">📝 Log This Trade</button>
+        <button class="btn-secondary" onclick="clearForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: PERFORMANCE BY TRIGGER -->
+  <div class="tab-content" id="tab-perf">
+    <div class="section-head">
+      <div class="section-title">📈 Performance By Trigger</div>
+    </div>
+
+    <!-- Progress toward validation -->
+    <div class="progress-section">
+      <div class="section-title" style="margin-bottom:14px;">🎯 Validation Progress — Target: 30 Trades Per Trigger</div>
+      <div id="progressBars">
+        <!-- Rendered by JS -->
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:12px;line-height:1.7;">
+        Statistical significance requires minimum 20–30 trades per trigger. <br>
+        A trigger with 30+ trades and >55% win rate is validated for live trading consideration.
+      </div>
+    </div>
+
+    <div class="perf-grid" id="perfGrid">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+
+  <!-- TAB: RULEBOOK -->
+  <div class="tab-content" id="tab-rules">
+    <div class="section-head">
+      <div class="section-title">📜 The InstAlert Rulebook — Non-Negotiable</div>
+    </div>
+    <div class="rules-box">
+      <div class="rule-item">
+        <div class="rule-num">01</div>
+        <div class="rule-text"><strong>No Trigger = No Trade.</strong> If none of the 6 institutional stress triggers are active, do absolutely nothing. The market is just noise. Protecting capital is a valid and profitable action.</div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-num">02</div>
+        <div class="rule-text"><strong>Single Trigger = Half Size.</strong> Maximum 1% of capital (₹1,000 on ₹1L). One trigger firing without confirmation is hypothesis, not edge.</div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-num">03</div>
+        <div class="rule-text"><strong>Double Trigger = Full Size.</strong> Maximum 2% of capital (₹2,000 on ₹1L) per trade when 2+ triggers fire simultaneously. This is the highest-conviction setup.</div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-num">04</div>
+        <div class="rule-text"><strong>Stop-Loss at 30% Premium Loss.</strong> If you paid ₹120 for an option, your stop is ₹84. No exceptions. No "let me hold a bit more." Exit automatically.</div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-num">05</div>
+        <div class="rule-text"><strong>Never Buy Options in Final 7 Days.</strong> Theta decay accelerates violently. You are fighting time and the market maker simultaneously. This rule alone saves 20% of losses.</div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-num">06</div>
+        <div class="rule-text"><strong>5-Day Time Stop.</strong> If the trade thesis hasn't played out within 5 trading days, exit regardless of P&L. Institutional stress events are sharp and brief, not multi-week.</div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-num">07</div>
+        <div class="rule-text"><strong>Book 50% at 1R, Let Rest Run.</strong> When premium doubles (2x entry), sell half position. Move stop-loss to breakeven on remaining. Protect the win while letting it grow.</div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-num">08</div>
+        <div class="rule-text"><strong>IV Rank &gt; 70 = Sell, Not Buy.</strong> When premiums are expensive (T5 setup), you are on the wrong side of the trade buying options. Sell premium instead — Iron Condor or Strangle.</div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-num">09</div>
+        <div class="rule-text"><strong>Never Add to a Losing Trade.</strong> "Averaging down" on an options position is how retail accounts get wiped. If the trigger was right and market moved against you — the trigger was premature. Exit and wait for re-entry.</div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-num">10</div>
+        <div class="rule-text"><strong>Review Every Trade Within 24 Hours.</strong> Log rationale, what you expected vs what happened, which rule was followed or broken. The journal is the product. The trades are just data.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: JOURNAL -->
+  <div class="tab-content" id="tab-journal">
+    <div class="section-head">
+      <div class="section-title">🗒️ Trading Journal — Weekly Reflections</div>
+      <button class="btn-secondary" onclick="openJournalModal()" style="padding:6px 14px;font-size:11px;">+ Add Entry</button>
+    </div>
+
+    <div class="notes-section">
+      <div id="journalEntries">
+        <div class="note-entry">
+          <div class="note-date">Getting Started</div>
+          <div class="note-text">Welcome to Phase 1 — Validation. Your goal for the next 90 days is NOT to make money. It is to discover which of the 6 triggers has the highest win rate in your hands, with your discipline. Log every trade. Review every week. The data you build here is more valuable than any profit.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- CLOSE TRADE MODAL -->
+<div class="modal-overlay" id="closeModal">
+  <div class="modal">
+    <div class="modal-title">📊 Close Trade</div>
+    <div class="modal-grid">
+      <div class="form-group">
+        <label class="form-label">Exit Premium (₹)</label>
+        <input class="form-input" type="number" id="m-exit" placeholder="e.g. 210">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Exit Date</label>
+        <input class="form-input" type="date" id="m-exitdate">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Exit Reason</label>
+        <select class="form-select" id="m-reason">
+          <option value="Target hit">🎯 Target hit</option>
+          <option value="Stop-loss hit">🛑 Stop-loss hit (rule followed)</option>
+          <option value="5-day time stop">⏰ 5-day time stop (rule followed)</option>
+          <option value="Manual exit - thesis played">✅ Manual exit — thesis played</option>
+          <option value="Manual exit - thesis wrong">❌ Manual exit — thesis wrong</option>
+          <option value="Held past stop (rule broken)">⚠️ Held past stop (rule broken)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Lesson Learned</label>
+        <textarea class="form-textarea" id="m-lesson" placeholder="What did this trade teach you? What would you do differently?"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="closeTrade()">Close Trade</button>
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- JOURNAL MODAL -->
+<div class="modal-overlay" id="journalModal">
+  <div class="modal">
+    <div class="modal-title">🗒️ Weekly Journal Entry</div>
+    <div class="modal-grid">
+      <div class="form-group">
+        <label class="form-label">Week Of</label>
+        <input class="form-input" type="date" id="j-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reflection</label>
+        <textarea class="form-textarea" id="j-text" style="min-height:100px;" placeholder="What triggers fired this week? What trades did you take? What rules did you follow or break? What patterns are you noticing in your own behaviour?"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveJournal()">Save Entry</button>
+      <button class="btn-secondary" onclick="closeJournalModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="footer">
+    <div class="footer-text">
+      InstAlert Paper Trading Journal · Phase 1: Validation (90 days · 30 trades minimum per trigger)<br>
+      Goal: Find which triggers perform best in YOUR hands before risking real capital.<br>
+      All data stored locally in your browser. Export regularly.
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+const TRIGGER_META = {
+  1: { name:'T1 VaR/VIX',      color:'#00d4ff', score:9  },
+  2: { name:'T2 FII Drawdown', color:'#ffc840', score:8  },
+  3: { name:'T3 Max Pain',     color:'#4080ff', score:7  },
+  4: { name:'T4 Cascade',      color:'#ff4060', score:9  },
+  5: { name:'T5 IV Crush',     color:'#00e87a', score:10 },
+  6: { name:'T6 Macro FII',    color:'#9060ff', score:7  }
+};
+
+const TC_CLASS = { 1:'tc-1', 2:'tc-2', 3:'tc-3', 4:'tc-4', 5:'tc-5', 6:'tc-6' };
+
+let trades = JSON.parse(localStorage.getItem('instAlert_trades') || '[]');
+let journalEntries = JSON.parse(localStorage.getItem('instAlert_journal') || '[]');
+let closingTradeId = null;
+let selectedTriggers = [];
+
+// ── INIT ──────────────────────────────────────────────────────────
+function init() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('f-date').value = today;
+  document.getElementById('m-exitdate').value = today;
+  document.getElementById('j-date').value = today;
+  renderAll();
+}
+
+function renderAll() {
+  renderTradesTable();
+  renderStats();
+  renderPerfGrid();
+  renderProgressBars();
+  renderJournal();
+}
+
+// ── TRIGGER SELECTOR ──────────────────────────────────────────────
+function toggleTrigger(el) {
+  const t = parseInt(el.dataset.t);
+  const idx = selectedTriggers.indexOf(t);
+  if(idx >= 0) {
+    selectedTriggers.splice(idx, 1);
+    el.className = 't-btn';
+  } else {
+    selectedTriggers.push(t);
+    el.className = `t-btn sel-${t}`;
+  }
+}
+
+// ── LOG TRADE ─────────────────────────────────────────────────────
+function logTrade() {
+  const entry = parseFloat(document.getElementById('f-entry').value);
+  if(!entry || !document.getElementById('f-date').value) {
+    alert('Please fill in at least the Date and Entry Premium.'); return;
+  }
+  if(selectedTriggers.length === 0) {
+    alert('Please select at least one trigger that fired.'); return;
+  }
+
+  const rules = [
+    document.getElementById('rc1').checked,
+    document.getElementById('rc2').checked,
+    document.getElementById('rc3').checked,
+    document.getElementById('rc4').checked,
+    document.getElementById('rc5').checked,
+  ];
+  const rulesScore = rules.filter(Boolean).length;
+
+  const trade = {
+    id: Date.now(),
+    date: document.getElementById('f-date').value,
+    underlying: document.getElementById('f-underlying').value,
+    type: document.getElementById('f-type').value,
+    strike: document.getElementById('f-strike').value,
+    entry: entry,
+    lots: parseInt(document.getElementById('f-lots').value) || 1,
+    sl: parseFloat(document.getElementById('f-sl').value) || (entry * 0.7),
+    target: parseFloat(document.getElementById('f-target').value) || (entry * 2),
+    triggers: [...selectedTriggers],
+    vix: parseFloat(document.getElementById('f-vix').value) || null,
+    ivrank: parseFloat(document.getElementById('f-ivrank').value) || null,
+    rationale: document.getElementById('f-rationale').value,
+    rulesScore: rulesScore,
+    rulesTotal: 5,
+    status: 'open',
+    exit: null,
+    exitDate: null,
+    exitReason: null,
+    lesson: null,
+    pnlPct: null
+  };
+
+  trades.unshift(trade);
+  save();
+  clearForm();
+  renderAll();
+  switchTab('log');
+}
+
+// ── CLOSE TRADE ───────────────────────────────────────────────────
+function openCloseModal(id) {
+  closingTradeId = id;
+  document.getElementById('m-exitdate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('m-exit').value = '';
+  document.getElementById('m-lesson').value = '';
+  document.getElementById('closeModal').classList.add('open');
+}
+
+function closeTrade() {
+  const exit = parseFloat(document.getElementById('m-exit').value);
+  if(!exit) { alert('Enter exit premium.'); return; }
+
+  const trade = trades.find(t => t.id === closingTradeId);
+  if(!trade) return;
+
+  trade.exit = exit;
+  trade.exitDate = document.getElementById('m-exitdate').value;
+  trade.exitReason = document.getElementById('m-reason').value;
+  trade.lesson = document.getElementById('m-lesson').value;
+  trade.pnlPct = ((exit - trade.entry) / trade.entry * 100).toFixed(1);
+  trade.status = parseFloat(trade.pnlPct) >= 0 ? 'win' : 'loss';
+
+  if(trade.exitReason.includes('broken')) {
+    trade.rulesBroken = true;
+  }
+
+  save();
+  renderAll();
+  closeModal();
+}
+
+function closeModal() {
+  document.getElementById('closeModal').classList.remove('open');
+  closingTradeId = null;
+}
+
+function deleteTrade(id) {
+  if(!confirm('Delete this trade?')) return;
+  trades = trades.filter(t => t.id !== id);
+  save();
+  renderAll();
+}
+
+// ── RENDER TRADES TABLE ───────────────────────────────────────────
+function renderTradesTable() {
+  const tbody = document.getElementById('tradesBody');
+  const empty = document.getElementById('emptyState');
+
+  if(trades.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  tbody.innerHTML = trades.map(t => {
+    const triggerBadges = t.triggers.map(n =>
+      `<span class="td-trigger ${TC_CLASS[n]}">${TRIGGER_META[n].name}</span>`
+    ).join(' ');
+
+    const pnlHtml = t.pnlPct !== null
+      ? `<span class="td-pnl ${parseFloat(t.pnlPct) >= 0 ? 'pnl-pos' : 'pnl-neg'}">${t.pnlPct > 0 ? '+' : ''}${t.pnlPct}%</span>`
+      : `<span class="td-pnl pnl-open">Open</span>`;
+
+    const statusClass = { open:'sb-open', win:'sb-win', loss:'sb-loss' }[t.status] || 'sb-open';
+    const statusText = { open:'OPEN', win:'WIN ✓', loss:'LOSS' }[t.status] || 'OPEN';
+
+    const rulesBadge = t.rulesScore === t.rulesTotal
+      ? `<span class="rule-badge rb-followed">${t.rulesScore}/${t.rulesTotal}</span>`
+      : `<span class="rule-badge rb-broken">${t.rulesScore}/${t.rulesTotal}</span>`;
+
+    const actionBtns = t.status === 'open'
+      ? `<button class="action-btn close-btn" onclick="openCloseModal(${t.id})">Close</button>
+         <button class="action-btn del-btn" onclick="deleteTrade(${t.id})">Del</button>`
+      : `<button class="action-btn del-btn" onclick="deleteTrade(${t.id})">Del</button>`;
+
+    return `
+      <tr>
+        <td class="td-date">${t.date}</td>
+        <td>${triggerBadges}</td>
+        <td style="font-size:12px;font-weight:600;">${t.underlying} ${t.type}<br>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">${t.strike || '—'}</span>
+        </td>
+        <td style="font-family:'DM Mono',monospace;">₹${t.entry}</td>
+        <td style="font-family:'DM Mono',monospace;">${t.exit ? '₹'+t.exit : '—'}</td>
+        <td>${pnlHtml}</td>
+        <td>${rulesBadge}</td>
+        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+        <td><div class="action-btns">${actionBtns}</div></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ── RENDER STATS ──────────────────────────────────────────────────
+function renderStats() {
+  const closed = trades.filter(t => t.status !== 'open');
+  const wins = closed.filter(t => t.status === 'win');
+  const losses = closed.filter(t => t.status === 'loss');
+
+  const winRate = closed.length ? (wins.length / closed.length * 100).toFixed(0) + '%' : '—';
+
+  const totalPnlPct = closed.reduce((sum, t) => sum + parseFloat(t.pnlPct || 0), 0);
+  const paperPnl = (totalPnlPct / 100 * 100000 / 10).toFixed(0); // rough notional
+
+  const avgWin = wins.length ? wins.reduce((s,t) => s + parseFloat(t.pnlPct), 0) / wins.length : 0;
+  const avgLoss = losses.length ? Math.abs(losses.reduce((s,t) => s + parseFloat(t.pnlPct), 0) / losses.length) : 0;
+  const rMult = avgLoss > 0 ? (avgWin / avgLoss).toFixed(2) : '—';
+
+  const rulesScores = trades.map(t => t.rulesScore / t.rulesTotal * 100);
+  const avgRules = rulesScores.length ? (rulesScores.reduce((a,b) => a+b, 0) / rulesScores.length).toFixed(0) + '%' : '—';
+
+  // Best trigger
+  let bestTrigger = '—';
+  let bestWR = 0;
+  for(let n = 1; n <= 6; n++) {
+    const tClosed = closed.filter(t => t.triggers.includes(n));
+    const tWins = tClosed.filter(t => t.status === 'win');
+    if(tClosed.length >= 3) {
+      const wr = tWins.length / tClosed.length;
+      if(wr > bestWR) { bestWR = wr; bestTrigger = `T${n}`; }
+    }
+  }
+
+  document.getElementById('st-total').textContent = trades.length;
+  document.getElementById('st-winrate').textContent = winRate;
+  document.getElementById('st-pnl').textContent = (paperPnl >= 0 ? '+' : '') + '₹' + Math.abs(paperPnl).toLocaleString('en-IN');
+  document.getElementById('st-pnl').className = `stat-value ${parseFloat(paperPnl) >= 0 ? 'green' : 'red'}`;
+  document.getElementById('st-rmult').textContent = rMult !== '—' ? rMult + 'R' : '—';
+  document.getElementById('st-rules').textContent = avgRules;
+  document.getElementById('st-best').textContent = bestTrigger;
+}
+
+// ── RENDER PERF GRID ──────────────────────────────────────────────
+function renderPerfGrid() {
+  const grid = document.getElementById('perfGrid');
+  grid.innerHTML = [1,2,3,4,5,6].map(n => {
+    const meta = TRIGGER_META[n];
+    const tTrades = trades.filter(t => t.triggers.includes(n));
+    const tClosed = tTrades.filter(t => t.status !== 'open');
+    const tWins = tClosed.filter(t => t.status === 'win');
+    const tLosses = tClosed.filter(t => t.status === 'loss');
+    const wr = tClosed.length ? (tWins.length / tClosed.length * 100).toFixed(0) + '%' : '—';
+    const avgPnl = tClosed.length ? (tClosed.reduce((s,t) => s + parseFloat(t.pnlPct||0), 0) / tClosed.length).toFixed(1) : '—';
+    const wrNum = tClosed.length ? tWins.length / tClosed.length : 0;
+
+    return `
+      <div class="perf-card">
+        <div class="perf-trigger">
+          <div class="perf-dot" style="background:${meta.color};box-shadow:0 0 6px ${meta.color}40;"></div>
+          <div class="perf-name">${meta.name}</div>
+        </div>
+        <div class="perf-stats">
+          <div class="perf-row">
+            <span class="perf-key">Trades</span>
+            <span class="perf-val" style="color:var(--text);">${tTrades.length}</span>
+          </div>
+          <div class="perf-row">
+            <span class="perf-key">Win Rate</span>
+            <span class="perf-val" style="color:${wrNum > 0.55 ? 'var(--green)' : wrNum > 0.4 ? 'var(--yellow)' : 'var(--red)'};">${wr}</span>
+          </div>
+          <div class="perf-row">
+            <span class="perf-key">Avg P&L %</span>
+            <span class="perf-val" style="color:${avgPnl > 0 ? 'var(--green)' : avgPnl < 0 ? 'var(--red)' : 'var(--muted2)'};">${avgPnl !== '—' ? (avgPnl > 0 ? '+' : '') + avgPnl + '%' : '—'}</span>
+          </div>
+          <div class="perf-row">
+            <span class="perf-key">Reliability</span>
+            <span class="perf-val" style="color:var(--muted2);">${meta.score}/10</span>
+          </div>
+        </div>
+        <div class="win-bar-wrap">
+          <div class="win-bar-fill" style="width:${(wrNum*100).toFixed(0)}%;background:${meta.color};"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── RENDER PROGRESS BARS ──────────────────────────────────────────
+function renderProgressBars() {
+  const wrap = document.getElementById('progressBars');
+  const TARGET = 30;
+  wrap.innerHTML = [1,2,3,4,5,6].map(n => {
+    const meta = TRIGGER_META[n];
+    const count = trades.filter(t => t.triggers.includes(n)).length;
+    const pct = Math.min(100, (count / TARGET * 100)).toFixed(0);
+    return `
+      <div class="progress-row">
+        <div class="progress-label">${meta.name}</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" style="width:${pct}%;background:${meta.color};"></div>
+        </div>
+        <div class="progress-val">${count}/${TARGET}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── JOURNAL ───────────────────────────────────────────────────────
+function openJournalModal() {
+  document.getElementById('journalModal').classList.add('open');
+}
+
+function closeJournalModal() {
+  document.getElementById('journalModal').classList.remove('open');
+}
+
+function saveJournal() {
+  const text = document.getElementById('j-text').value;
+  const date = document.getElementById('j-date').value;
+  if(!text) { alert('Write something first.'); return; }
+  journalEntries.unshift({ date, text });
+  localStorage.setItem('instAlert_journal', JSON.stringify(journalEntries));
+  renderJournal();
+  closeJournalModal();
+}
+
+function renderJournal() {
+  const wrap = document.getElementById('journalEntries');
+  const entries = [
+    ...journalEntries,
+    { date:'Getting Started', text:'Welcome to Phase 1 — Validation. Your goal for the next 90 days is NOT to make money. It is to discover which of the 6 triggers has the highest win rate in your hands, with your discipline. Log every trade. Review every week. The data you build here is more valuable than any profit.' }
+  ];
+  wrap.innerHTML = entries.map(e => `
+    <div class="note-entry">
+      <div class="note-date">${e.date}</div>
+      <div class="note-text">${e.text}</div>
+    </div>
+  `).join('');
+}
+
+// ── TABS ──────────────────────────────────────────────────────────
+function switchTab(name) {
+  const tabs = ['log','new','perf','rules','journal'];
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', tabs[i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(el => {
+    el.classList.toggle('active', el.id === 'tab-'+name);
+  });
+}
+
+// ── SAVE ──────────────────────────────────────────────────────────
+function save() {
+  localStorage.setItem('instAlert_trades', JSON.stringify(trades));
+}
+
+// ── CLEAR FORM ────────────────────────────────────────────────────
+function clearForm() {
+  ['f-strike','f-entry','f-lots','f-sl','f-target','f-vix','f-ivrank','f-rationale'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = el.type === 'number' && id === 'f-lots' ? '1' : '';
+  });
+  ['rc1','rc2','rc3','rc4','rc5'].forEach(id => {
+    document.getElementById(id).checked = false;
+  });
+  selectedTriggers = [];
+  document.querySelectorAll('.t-btn').forEach(el => el.className = 't-btn');
+}
+
+init();
+</script>
+</body>
+</html>
