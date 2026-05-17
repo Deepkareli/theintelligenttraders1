@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Real-time Black-Scholes options pricing engine. Calculate all Greeks instantly — Delta, Gamma, Theta, Vega, Vanna, Charm. Market maker model for Nifty options traders.">
+<title>Options Engine — IntelligentTraders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   SITE-WIDE VARIABLES — matches theintelligenttraders.com
+═══════════════════════════════════════ */
+:root {
+  --bg: #050810;
+  --bg2: #080c18;
+  --surface: #0d1220;
+  --surface2: #111828;
+  --border: #1a2236;
+  --border2: #243050;
+  --gold: #c8a84b;
+  --gold2: #e8c870;
+  --gold-dim: rgba(200,168,75,0.15);
+  --red: #e8445a;
+  --green: #00c896;
+  --blue: #4a9eff;
+  --purple: #9b6dff;
+  --cyan: #00d4ff;
+  --orange: #ff8c42;
+  --text: #d8e0f0;
+  --text2: #8a9ab8;
+  --muted: #4a5a78;
+  --font-main: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-main);
+  font-size:15px;
+  line-height:1.6;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+body::before {
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(200,168,75,0.06) 0%, transparent 70%),
+    repeating-linear-gradient(rgba(26,34,54,0.4) 0px, rgba(26,34,54,0.4) 1px, transparent 1px, transparent 48px),
+    repeating-linear-gradient(90deg, rgba(26,34,54,0.4) 0px, rgba(26,34,54,0.4) 1px, transparent 1px, transparent 48px);
+}
+
+/* ═══ NAV — exact match to site ═══ */
+nav {
+  position:sticky; top:0; z-index:200;
+  background:rgba(5,8,16,0.92);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;
+}
+.nav-inner {
+  max-width:1100px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between;
+  height:60px;
+}
+.nav-logo {
+  font-family:var(--font-mono);
+  font-size:15px; font-weight:700;
+  color:var(--gold2);
+  text-decoration:none;
+  letter-spacing:-0.3px;
+}
+.nav-links {
+  display:flex; align-items:center; gap:4px;
+  list-style:none;
+}
+.nav-links a {
+  padding:6px 14px;
+  font-size:13px; font-weight:500;
+  color:var(--text2);
+  text-decoration:none;
+  border-radius:6px;
+  transition:all .2s;
+  white-space:nowrap;
+}
+.nav-links a:hover { color:var(--text); background:var(--surface); }
+.nav-links a.active {
+  color:var(--gold2);
+  background:var(--gold-dim);
+  border:1px solid rgba(200,168,75,0.2);
+}
+.nav-badge {
+  font-size:9px; letter-spacing:1.5px; text-transform:uppercase;
+  background:rgba(200,168,75,0.15); border:1px solid rgba(200,168,75,0.3);
+  color:var(--gold); padding:4px 10px; border-radius:4px;
+  font-family:var(--font-mono);
+}
+@media(max-width:768px){
+  .nav-links { display:none; }
+}
+
+/* ═══ WRAP ═══ */
+.wrap { max-width:1100px; margin:0 auto; padding:0 20px; position:relative; z-index:1; }
+
+/* ═══ PAGE HERO ═══ */
+.page-hero {
+  padding:52px 0 36px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:32px;
+}
+.hero-tag {
+  display:inline-flex; align-items:center; gap:7px;
+  font-family:var(--font-mono); font-size:10px; letter-spacing:2px;
+  text-transform:uppercase; color:var(--gold);
+  background:var(--gold-dim); border:1px solid rgba(200,168,75,0.25);
+  padding:5px 12px; border-radius:4px; margin-bottom:18px;
+}
+.hero-tag .dot { width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 1.4s infinite; }
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(.8);}}
+.page-hero h1 {
+  font-size:clamp(28px,4.5vw,46px);
+  font-weight:700; line-height:1.1;
+  color:var(--text); margin-bottom:12px;
+  letter-spacing:-1px;
+}
+.page-hero h1 em { color:var(--gold2); font-style:normal; }
+.page-hero p {
+  font-size:15px; color:var(--text2);
+  max-width:580px; line-height:1.7; margin-bottom:20px;
+}
+.hero-pills { display:flex; flex-wrap:wrap; gap:8px; }
+.pill {
+  font-family:var(--font-mono); font-size:10px; letter-spacing:1px;
+  padding:4px 10px; border-radius:4px;
+  background:var(--surface); border:1px solid var(--border);
+  color:var(--text2);
+}
+
+/* ═══ SECTION LABEL ═══ */
+.slabel {
+  font-family:var(--font-mono); font-size:9px; letter-spacing:2.5px;
+  text-transform:uppercase; color:var(--muted);
+  margin-bottom:12px;
+  display:flex; align-items:center; gap:10px;
+}
+.slabel::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ═══ QUICK INPUT PANEL ═══ */
+.input-panel {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-top:2px solid var(--gold);
+  border-radius:10px;
+  padding:24px;
+  margin-bottom:20px;
+}
+.input-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(155px,1fr));
+  gap:14px; margin-bottom:16px;
+}
+.ifield { display:flex; flex-direction:column; gap:5px; }
+.ifield label {
+  font-family:var(--font-mono); font-size:9px; letter-spacing:1.5px;
+  text-transform:uppercase; color:var(--muted);
+}
+.ifield input, .ifield select {
+  background:var(--bg2); border:1px solid var(--border2);
+  border-radius:6px; color:var(--text);
+  font-family:var(--font-mono); font-size:14px; font-weight:500;
+  padding:10px 12px; outline:none; transition:border .15s; width:100%;
+}
+.ifield input:focus, .ifield select:focus { border-color:var(--gold); }
+.ifield select option { background:var(--surface); }
+.calc-btn {
+  width:100%; padding:13px;
+  background:linear-gradient(135deg,var(--gold),#b8781a);
+  border:none; border-radius:8px;
+  color:#000; font-family:var(--font-mono);
+  font-size:12px; font-weight:700; letter-spacing:1.5px;
+  cursor:pointer; transition:opacity .15s;
+}
+.calc-btn:hover { opacity:.85; }
+.iv-strip {
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  margin-top:14px; padding:12px 16px;
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:8px;
+}
+.iv-strip-lbl { font-family:var(--font-mono); font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); }
+.iv-strip-val { font-family:var(--font-mono); font-size:20px; font-weight:700; color:var(--cyan); }
+.iv-strip-note { font-size:12px; color:var(--text2); }
+.iv-strip-money { margin-left:auto; font-family:var(--font-mono); font-size:12px; font-weight:700; }
+
+/* ═══ STATUS STRIP ═══ */
+.status-strip {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:1px; background:var(--border);
+  border:1px solid var(--border); border-radius:8px;
+  overflow:hidden; margin-bottom:20px;
+}
+.ss-item { background:var(--surface); padding:14px 16px; }
+.ss-lbl { font-family:var(--font-mono); font-size:8px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+.ss-val { font-size:18px; font-weight:700; font-family:var(--font-mono); }
+.ss-sub { font-size:10px; color:var(--muted); margin-top:2px; }
+.c-gold { color:var(--gold2); }
+.c-green { color:var(--green); }
+.c-red { color:var(--red); }
+.c-blue { color:var(--blue); }
+.c-purple { color:var(--purple); }
+.c-cyan { color:var(--cyan); }
+.c-orange { color:var(--orange); }
+
+/* ═══ GREEKS GRID ═══ */
+.greeks-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:12px; margin-bottom:20px;
+}
+.gcard {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:10px; padding:18px; position:relative; overflow:hidden;
+}
+.gcard::before { content:''; position:absolute; top:0;left:0;right:0;height:2px; }
+.gcard.delta::before { background:var(--blue); }
+.gcard.gamma::before { background:var(--green); }
+.gcard.theta::before { background:var(--red); }
+.gcard.vega::before  { background:var(--purple); }
+.gcard.rho::before   { background:var(--gold); }
+.gcard.vanna::before { background:var(--cyan); }
+.gcard.charm::before { background:var(--orange); }
+.gcard.speed::before { background:#c070ff; }
+.gsym {
+  font-family:var(--font-mono); font-size:38px; font-weight:700;
+  opacity:.07; position:absolute; top:4px; right:10px; line-height:1;
+}
+.gname { font-family:var(--font-mono); font-size:8px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.gval { font-size:22px; font-weight:700; font-family:var(--font-mono); margin-bottom:2px; }
+.gcard.delta .gval { color:var(--blue); }
+.gcard.gamma .gval { color:var(--green); }
+.gcard.theta .gval { color:var(--red); }
+.gcard.vega  .gval { color:var(--purple); }
+.gcard.rho   .gval { color:var(--gold); }
+.gcard.vanna .gval { color:var(--cyan); }
+.gcard.charm .gval { color:var(--orange); }
+.gcard.speed .gval { color:#c070ff; }
+.gsub { font-size:11px; color:var(--text2); margin-bottom:10px; }
+.gmini {
+  margin-top:10px; padding-top:10px; border-top:1px solid var(--border);
+  display:grid; grid-template-columns:1fr 1fr; gap:5px;
+}
+.gm-item .gm-l { font-size:9px; color:var(--muted); font-family:var(--font-mono); }
+.gm-item .gm-v { font-size:11px; font-weight:600; font-family:var(--font-mono); }
+
+/* ═══ PANELS ═══ */
+.panel {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:10px; padding:20px; margin-bottom:20px;
+}
+.panel-title {
+  font-family:var(--font-mono); font-size:9px; letter-spacing:2px;
+  text-transform:uppercase; color:var(--muted);
+  margin-bottom:16px; padding-bottom:10px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:8px;
+}
+.panel-title::before {
+  content:''; width:3px; height:12px;
+  background:var(--gold); border-radius:2px; flex-shrink:0;
+}
+
+/* ═══ DECOMP ═══ */
+.decomp-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.decomp-lbl { width:75px; font-family:var(--font-mono); font-size:10px; color:var(--muted); text-align:right; flex-shrink:0; }
+.decomp-track { flex:1; height:22px; background:var(--bg2); border-radius:4px; overflow:hidden; border:1px solid var(--border); }
+.decomp-fill { height:100%; border-radius:3px; display:flex; align-items:center; padding-left:8px; font-family:var(--font-mono); font-size:10px; font-weight:700; color:#000; transition:width .5s ease; }
+.df-i { background:var(--blue); }
+.df-e { background:var(--green); }
+.decomp-amt { width:55px; font-family:var(--font-mono); font-size:11px; font-weight:700; text-align:right; flex-shrink:0; }
+
+/* ═══ GRIDS ═══ */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+.three-col { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+@media(max-width:700px){ .two-col,.three-col { grid-template-columns:1fr; } }
+
+/* ═══ MINI STAT ═══ */
+.mini-stat { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:12px 14px; }
+.ms-lbl { font-family:var(--font-mono); font-size:8px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+.ms-val { font-family:var(--font-mono); font-size:17px; font-weight:700; }
+
+/* ═══ TABLE ═══ */
+.dtbl { width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:12px; }
+.dtbl th { background:var(--bg2); color:var(--muted); font-size:8px; letter-spacing:1.5px; text-transform:uppercase; padding:9px 11px; text-align:left; border-bottom:1px solid var(--border); }
+.dtbl td { padding:8px 11px; border-bottom:1px solid var(--border); color:var(--text); }
+.dtbl tr:last-child td { border-bottom:none; }
+.dtbl tr.cur td { background:rgba(200,168,75,0.05); font-weight:600; }
+.pos { color:var(--green); }
+.neg { color:var(--red); }
+.neu { color:var(--gold2); }
+.hi  { color:var(--blue); }
+
+/* ═══ IV SENS ═══ */
+.iv-sens { display:grid; grid-template-columns:repeat(auto-fit,minmax(85px,1fr)); gap:8px; }
+.ivs-item { background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:10px; text-align:center; }
+.ivs-lbl { font-family:var(--font-mono); font-size:8px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+.ivs-val { font-family:var(--font-mono); font-size:15px; font-weight:700; }
+.ivs-pnl { font-family:var(--font-mono); font-size:10px; margin-top:2px; }
+
+/* ═══ PNL CALC ═══ */
+.pnl-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:12px; }
+.pnl-out { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:16px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; text-align:center; }
+.po-lbl { font-family:var(--font-mono); font-size:8px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+.po-val { font-family:var(--font-mono); font-size:20px; font-weight:700; }
+@media(max-width:600px){ .pnl-grid,.pnl-out{ grid-template-columns:1fr; } }
+
+/* ═══ THETA PROJ ═══ */
+.theta-proj { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:14px; margin-top:12px; }
+.tp-row { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid rgba(26,34,54,0.7); font-family:var(--font-mono); font-size:11px; }
+.tp-row:last-child { border-bottom:none; }
+.tp-time { color:var(--muted); }
+.tp-prem { color:var(--text); font-weight:600; }
+.tp-loss { color:var(--red); }
+
+/* ═══ GAUGE ═══ */
+.gauge-row { display:flex; align-items:center; gap:10px; margin-top:12px; }
+.gauge-lbl { font-family:var(--font-mono); font-size:10px; color:var(--muted); width:55px; text-align:right; flex-shrink:0; }
+.gauge-track { flex:1; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; border:1px solid var(--border); }
+.gauge-fill { height:100%; border-radius:3px; transition:width .4s; }
+.gauge-end { font-family:var(--font-mono); font-size:10px; color:var(--muted); }
+
+/* ═══ BREAKEVEN ═══ */
+.be-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:10px; }
+.be-item { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:14px; }
+.be-lbl { font-family:var(--font-mono); font-size:8px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+.be-val { font-family:var(--font-mono); font-size:18px; font-weight:700; }
+.be-sub { font-size:11px; color:var(--muted); margin-top:3px; }
+
+/* ═══ DISCLAIMER ═══ */
+.disclaimer {
+  text-align:center; font-size:11px; color:var(--muted);
+  padding:16px; border-top:1px solid var(--border);
+  margin-top:8px;
+}
+
+/* ═══ FOOTER ═══ */
+footer {
+  background:var(--bg2); border-top:1px solid var(--border);
+  padding:40px 0 24px; margin-top:48px;
+}
+.footer-inner { max-width:1100px; margin:0 auto; padding:0 20px; }
+.footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:32px; margin-bottom:32px; }
+@media(max-width:768px){ .footer-grid{ grid-template-columns:1fr 1fr; } }
+.footer-brand .logo { font-family:var(--font-mono); font-size:16px; font-weight:700; color:var(--gold2); margin-bottom:10px; }
+.footer-brand p { font-size:13px; color:var(--text2); line-height:1.6; max-width:280px; }
+.footer-col h4 { font-family:var(--font-mono); font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+.footer-col a { display:block; font-size:13px; color:var(--text2); text-decoration:none; margin-bottom:7px; transition:color .15s; }
+.footer-col a:hover { color:var(--gold2); }
+.footer-bottom { border-top:1px solid var(--border); padding-top:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+.footer-bottom p { font-size:11px; color:var(--muted); }
+
+canvas { display:block; width:100% !important; }
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-inner">
+    <a href="https://theintelligenttraders1.netlify.app/" class="nav-logo">IntelligentTraders</a>
+    <ul class="nav-links">
+      <li><a href="https://theintelligenttraders1.netlify.app/dashboard">Dashboard</a></li>
+      <li><a href="https://theintelligenttraders1.netlify.app/journal">Journal</a></li>
+      <li><a href="https://theintelligenttraders1.netlify.app/algo">Algo</a></li>
+      <li><a href="#" class="active">Options Engine</a></li>
+      <li><a href="https://theintelligenttraders1.netlify.app/about">About</a></li>
+    </ul>
+    <div class="nav-badge">OPTIONS ENGINE</div>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<div class="wrap">
+<div class="page-hero">
+  <div class="hero-tag"><div class="dot"></div>Real-Time Calculation</div>
+  <h1>Market Maker <em>Options Engine</em></h1>
+  <p>Enter spot and premium from your broker screen. The engine reverse-engineers IV and calculates every Greek instantly — exactly how institutional market makers price options tick by tick.</p>
+  <div class="hero-pills">
+    <span class="pill">Black-Scholes Model</span>
+    <span class="pill">8 Greeks</span>
+    <span class="pill">IV Reverse-Engineered</span>
+    <span class="pill">Scenario Engine</span>
+    <span class="pill">Theta Bleed Schedule</span>
+    <span class="pill">Expiry Payoff Chart</span>
+    <span class="pill">P&L Calculator</span>
+  </div>
+</div>
+
+<!-- ══ QUICK INPUT ══ -->
+<div class="slabel">Step 1 — Enter from your Zerodha / Dhan screen</div>
+<div class="input-panel">
+  <div class="input-grid">
+    <div class="ifield">
+      <label>Option Type</label>
+      <select id="q_type" onchange="quickUpdate()">
+        <option value="call">CALL (CE)</option>
+        <option value="put">PUT (PE)</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>Nifty Spot Price</label>
+      <input type="number" id="q_spot" value="23643" oninput="quickUpdate()">
+    </div>
+    <div class="ifield">
+      <label>Market Premium (₹)</label>
+      <input type="number" id="q_prem" value="191" step="0.5" oninput="quickUpdate()">
+    </div>
+    <div class="ifield">
+      <label>Strike Price</label>
+      <input type="number" id="q_strike" value="23700" oninput="quickUpdate()">
+    </div>
+    <div class="ifield">
+      <label>Days to Expiry</label>
+      <input type="number" id="q_dte" value="2" min="1" max="365" oninput="quickUpdate()">
+    </div>
+    <div class="ifield">
+      <label>Risk-Free Rate %</label>
+      <input type="number" id="q_rate" value="6.5" step="0.25" oninput="quickUpdate()">
+    </div>
+  </div>
+  <button class="calc-btn" onclick="quickUpdate()">⟳ &nbsp; CALCULATE ALL GREEKS</button>
+  <div class="iv-strip">
+    <span class="iv-strip-lbl">Implied Volatility</span>
+    <span class="iv-strip-val" id="live_iv">—</span>
+    <span class="iv-strip-note">% — reverse-engineered from your market premium via Newton-Raphson</span>
+    <span class="iv-strip-money" id="live_money">—</span>
+  </div>
+</div>
+
+<!-- ══ STATUS STRIP ══ -->
+<div class="slabel">Live Position Status</div>
+<div class="status-strip">
+  <div class="ss-item"><div class="ss-lbl">BS Fair Value</div><div class="ss-val c-gold" id="s_call">—</div><div class="ss-sub" id="s_call_sub">—</div></div>
+  <div class="ss-item"><div class="ss-lbl">Intrinsic Value</div><div class="ss-val c-blue" id="s_intr">—</div><div class="ss-sub">Hard value right now</div></div>
+  <div class="ss-item"><div class="ss-lbl">Extrinsic Value</div><div class="ss-val c-green" id="s_extr">—</div><div class="ss-sub" id="s_extr_pct">—</div></div>
+  <div class="ss-item"><div class="ss-lbl">Moneyness</div><div class="ss-val" id="s_money">—</div><div class="ss-sub" id="s_money_pts">—</div></div>
+  <div class="ss-item"><div class="ss-lbl">Expiry Break-Even</div><div class="ss-val c-orange" id="s_bemove">—</div><div class="ss-sub">Move needed from spot</div></div>
+  <div class="ss-item"><div class="ss-lbl">P(Expire ITM)</div><div class="ss-val c-cyan" id="s_prob">—</div><div class="ss-sub">N(d₂) — true probability</div></div>
+</div>
+
+<!-- ══ GREEKS ══ -->
+<div class="slabel">Greeks Dashboard — All 8 Sensitivities</div>
+<div class="greeks-grid">
+
+  <div class="gcard delta">
+    <div class="gsym">Δ</div>
+    <div class="gname">Delta · ∂C/∂S</div>
+    <div class="gval" id="g_delta">—</div>
+    <div class="gsub">Premium change per 1 Nifty point</div>
+    <div class="gmini">
+      <div class="gm-item"><div class="gm-l">Per 50 pts</div><div class="gm-v c-blue" id="g_d50">—</div></div>
+      <div class="gm-item"><div class="gm-l">Per 100 pts</div><div class="gm-v c-blue" id="g_d100">—</div></div>
+      <div class="gm-item"><div class="gm-l">Hedge ratio</div><div class="gm-v" id="g_dhedge">—</div></div>
+      <div class="gm-item"><div class="gm-l">Put delta</div><div class="gm-v" id="g_putd">—</div></div>
+    </div>
+  </div>
+
+  <div class="gcard gamma">
+    <div class="gsym">Γ</div>
+    <div class="gname">Gamma · ∂²C/∂S²</div>
+    <div class="gval" id="g_gamma">—</div>
+    <div class="gsub">Delta change per 1 Nifty point</div>
+    <div class="gmini">
+      <div class="gm-item"><div class="gm-l">Δ after +100</div><div class="gm-v c-green" id="g_gup">—</div></div>
+      <div class="gm-item"><div class="gm-l">Δ after −100</div><div class="gm-v c-red" id="g_gdn">—</div></div>
+      <div class="gm-item"><div class="gm-l">Gamma P&L/100</div><div class="gm-v c-green" id="g_gpnl">—</div></div>
+      <div class="gm-item"><div class="gm-l">Dollar gamma</div><div class="gm-v" id="g_dgamma">—</div></div>
+    </div>
+  </div>
+
+  <div class="gcard theta">
+    <div class="gsym">Θ</div>
+    <div class="gname">Theta · ∂C/∂t</div>
+    <div class="gval" id="g_theta">—</div>
+    <div class="gsub">Premium lost per calendar day</div>
+    <div class="gmini">
+      <div class="gm-item"><div class="gm-l">Per hour</div><div class="gm-v c-red" id="g_thr">—</div></div>
+      <div class="gm-item"><div class="gm-l">Per minute</div><div class="gm-v c-red" id="g_tmin">—</div></div>
+      <div class="gm-item"><div class="gm-l">Weekend (3d)</div><div class="gm-v c-red" id="g_twknd">—</div></div>
+      <div class="gm-item"><div class="gm-l">Till expiry</div><div class="gm-v c-red" id="g_ttotal">—</div></div>
+    </div>
+  </div>
+
+  <div class="gcard vega">
+    <div class="gsym">V</div>
+    <div class="gname">Vega · ∂C/∂σ</div>
+    <div class="gval" id="g_vega">—</div>
+    <div class="gsub">Premium change per 1% IV move</div>
+    <div class="gmini">
+      <div class="gm-item"><div class="gm-l">+1% IV</div><div class="gm-v c-green" id="g_vp1">—</div></div>
+      <div class="gm-item"><div class="gm-l">−1% IV</div><div class="gm-v c-red" id="g_vm1">—</div></div>
+      <div class="gm-item"><div class="gm-l">+3% IV</div><div class="gm-v c-green" id="g_vp3">—</div></div>
+      <div class="gm-item"><div class="gm-l">−3% IV</div><div class="gm-v c-red" id="g_vm3">—</div></div>
+    </div>
+  </div>
+
+  <div class="gcard rho">
+    <div class="gsym">ρ</div>
+    <div class="gname">Rho · ∂C/∂r</div>
+    <div class="gval" id="g_rho">—</div>
+    <div class="gsub">Premium change per 1% rate move</div>
+    <div class="gmini">
+      <div class="gm-item"><div class="gm-l">RBI +25bps</div><div class="gm-v c-green" id="g_rup">—</div></div>
+      <div class="gm-item"><div class="gm-l">RBI −25bps</div><div class="gm-v c-red" id="g_rdn">—</div></div>
+      <div class="gm-item"><div class="gm-l">Put rho</div><div class="gm-v" id="g_putrho">—</div></div>
+      <div class="gm-item"><div class="gm-l">Impact rank</div><div class="gm-v" style="color:var(--muted)">Lowest</div></div>
+    </div>
+  </div>
+
+  <div class="gcard vanna">
+    <div class="gsym">Λ</div>
+    <div class="gname">Vanna · ∂Δ/∂σ</div>
+    <div class="gval" id="g_vanna">—</div>
+    <div class="gsub">Delta change when IV changes</div>
+    <div class="gmini">
+      <div class="gm-item"><div class="gm-l">IV spike +3%</div><div class="gm-v c-cyan" id="g_van3">—</div></div>
+      <div class="gm-item"><div class="gm-l">IV crush −3%</div><div class="gm-v c-red" id="g_vanm3">—</div></div>
+      <div class="gm-item"><div class="gm-l">Use</div><div class="gm-v" style="color:var(--muted);font-size:9px">Crash hedge</div></div>
+      <div class="gm-item"><div class="gm-l">Order</div><div class="gm-v" style="color:var(--muted)">2nd</div></div>
+    </div>
+  </div>
+
+  <div class="gcard charm">
+    <div class="gsym">∂Δ</div>
+    <div class="gname">Charm · ∂Δ/∂t</div>
+    <div class="gval" id="g_charm">—</div>
+    <div class="gsub">Delta drift per day from time</div>
+    <div class="gmini">
+      <div class="gm-item"><div class="gm-l">Δ tomorrow</div><div class="gm-v c-orange" id="g_ctmr">—</div></div>
+      <div class="gm-item"><div class="gm-l">Δ in 2 days</div><div class="gm-v c-orange" id="g_c2d">—</div></div>
+      <div class="gm-item"><div class="gm-l">OTM effect</div><div class="gm-v" style="color:var(--muted);font-size:9px">Δ→0 fast</div></div>
+      <div class="gm-item"><div class="gm-l">ITM effect</div><div class="gm-v" style="color:var(--muted);font-size:9px">Δ→1 fast</div></div>
+    </div>
+  </div>
+
+  <div class="gcard speed">
+    <div class="gsym">∂Γ</div>
+    <div class="gname">Speed · ∂Γ/∂S</div>
+    <div class="gval" id="g_speed">—</div>
+    <div class="gsub">Gamma change per 1 Nifty point</div>
+    <div class="gmini">
+      <div class="gm-item"><div class="gm-l">Γ after +50</div><div class="gm-v" id="g_sup">—</div></div>
+      <div class="gm-item"><div class="gm-l">Γ after −50</div><div class="gm-v" id="g_sdn">—</div></div>
+      <div class="gm-item"><div class="gm-l">Order</div><div class="gm-v" style="color:var(--muted)">3rd</div></div>
+      <div class="gm-item"><div class="gm-l">Impact</div><div class="gm-v" style="color:var(--muted);font-size:9px">Large moves</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ DECOMPOSITION ══ -->
+<div class="slabel">Premium Decomposition</div>
+<div class="panel">
+  <div class="panel-title">Intrinsic vs Extrinsic Breakdown</div>
+  <div class="decomp-row">
+    <div class="decomp-lbl">Intrinsic</div>
+    <div class="decomp-track"><div class="decomp-fill df-i" id="df_i" style="width:0%">0%</div></div>
+    <div class="decomp-amt c-blue" id="da_i">—</div>
+  </div>
+  <div class="decomp-row">
+    <div class="decomp-lbl">Extrinsic</div>
+    <div class="decomp-track"><div class="decomp-fill df-e" id="df_e" style="width:100%">100%</div></div>
+    <div class="decomp-amt c-green" id="da_e">—</div>
+  </div>
+  <div class="three-col" style="margin-top:14px;">
+    <div class="mini-stat"><div class="ms-lbl">Break-Even Move / Day</div><div class="ms-val c-orange" id="be_daily">—</div></div>
+    <div class="mini-stat"><div class="ms-lbl">Expiry Break-Even Spot</div><div class="ms-val c-gold" id="be_spot">—</div></div>
+    <div class="mini-stat"><div class="ms-lbl">Lot Value (65 shares)</div><div class="ms-val c-green" id="lot_val">—</div></div>
+  </div>
+</div>
+
+<!-- ══ SCENARIO + THETA ══ -->
+<div class="slabel">Scenario Engine &amp; Theta Schedule</div>
+<div class="two-col">
+
+  <div class="panel">
+    <div class="panel-title">Scenario Engine — Spot Movement vs Premium</div>
+    <table class="dtbl">
+      <thead><tr><th>Move</th><th>Spot</th><th>Premium</th><th>P&L / lot</th><th>Status</th></tr></thead>
+      <tbody id="scenario_body"></tbody>
+    </table>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="panel" style="margin-bottom:0;">
+      <div class="panel-title">Theta Bleed — Time Decay</div>
+      <div class="three-col">
+        <div class="mini-stat"><div class="ms-lbl">Per Minute</div><div class="ms-val c-red" id="t_min">—</div></div>
+        <div class="mini-stat"><div class="ms-lbl">Per Hour</div><div class="ms-val c-red" id="t_hr">—</div></div>
+        <div class="mini-stat"><div class="ms-lbl">Per Day</div><div class="ms-val c-red" id="t_day">—</div></div>
+      </div>
+      <div class="gauge-row">
+        <div class="gauge-lbl" id="g_dte_l">—</div>
+        <div class="gauge-track"><div class="gauge-fill" id="g_dte_f" style="width:50%;background:var(--red);"></div></div>
+        <div class="gauge-end">Expiry</div>
+      </div>
+      <div class="theta-proj" id="theta_proj"></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:0;">
+      <div class="panel-title">IV Sensitivity — Premium at Different Volatilities</div>
+      <div class="iv-sens" id="ivSensGrid"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ P&L CALCULATOR ══ -->
+<div class="slabel">P&L Calculator</div>
+<div class="panel">
+  <div class="panel-title">Trade Position P&L</div>
+  <div class="pnl-grid">
+    <div class="ifield"><label>Entry Premium (₹)</label><input type="number" id="pnl_entry" value="191" step="0.5" oninput="calcPnl()"></div>
+    <div class="ifield"><label>Current / Exit Premium (₹)</label><input type="number" id="pnl_current" value="191" step="0.5" oninput="calcPnl()"></div>
+    <div class="ifield"><label>Number of Lots</label><input type="number" id="pnl_lots" value="1" min="1" oninput="calcPnl()"></div>
+  </div>
+  <div class="pnl-out">
+    <div><div class="po-lbl">P&L Per Share</div><div class="po-val" id="pnl_share">—</div></div>
+    <div><div class="po-lbl">P&L Per Lot</div><div class="po-val" id="pnl_lot">—</div></div>
+    <div><div class="po-lbl">Total P&L</div><div class="po-val" id="pnl_total">—</div></div>
+  </div>
+</div>
+
+<!-- ══ PAYOFF CHART ══ -->
+<div class="slabel">Expiry Day Payoff Chart</div>
+<div class="panel">
+  <div class="panel-title">Premium at Every Spot Level on Expiry Day</div>
+  <canvas id="payoffChart" height="200"></canvas>
+</div>
+
+<!-- ══ BREAKEVEN DASHBOARD ══ -->
+<div class="slabel">Break-Even Dashboard</div>
+<div class="panel" style="margin-bottom:8px;">
+  <div class="panel-title">All Break-Even Metrics</div>
+  <div class="be-grid" id="beDash"></div>
+</div>
+
+<div class="disclaimer">
+  ⚠ Educational only · Not SEBI registered investment advice · All calculations are theoretical Black-Scholes outputs · Always paper trade first
+</div>
+</div><!-- end wrap -->
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">IntelligentTraders</div>
+        <p>Trade institutions, not against them. India's first institutional stress intelligence platform for retail options traders.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Tools</h4>
+        <a href="https://theintelligenttraders1.netlify.app/dashboard">Signal Dashboard</a>
+        <a href="https://theintelligenttraders1.netlify.app/journal">Paper Journal</a>
+        <a href="https://theintelligenttraders1.netlify.app/algo">Algo Framework</a>
+        <a href="#">Options Engine</a>
+      </div>
+      <div class="footer-col">
+        <h4>Learn</h4>
+        <a href="https://theintelligenttraders1.netlify.app/#triggers">6 Triggers</a>
+        <a href="https://theintelligenttraders1.netlify.app/#how">How It Works</a>
+        <a href="https://theintelligenttraders1.netlify.app/#framework">Three-Layer System</a>
+        <a href="https://theintelligenttraders1.netlify.app/#faq">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="https://theintelligenttraders1.netlify.app/about">About Deepanshu</a>
+        <a href="https://theintelligenttraders1.netlify.app/#waitlist">Early Access</a>
+        <a href="mailto:hello@theintelligenttraders.in">hello@theintelligenttraders.in</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 IntelligentTraders · theintelligenttraders.in</p>
+      <p>⚠ Educational only · Not SEBI registered investment advice · Paper trade first, always</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ═══ MATH ═══ */
+function normCDF(x){
+  const t=1/(1+0.2316419*Math.abs(x));
+  const d=0.3989422820*Math.exp(-0.5*x*x);
+  const p=d*t*(0.3193815+t*(-0.3565638+t*(1.7814779+t*(-1.8212560+t*1.3302744))));
+  return x>=0?1-p:p;
+}
+function normPDF(x){return Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI);}
+
+function bs(S,K,T,r,sigma,type='call'){
+  if(T<=0.0001||sigma<=0.001){
+    const ci=Math.max(S-K,0),pi=Math.max(K-S,0);
+    const i=type==='call'?ci:pi;
+    return{call:ci,put:pi,price:i,delta:type==='call'?(ci>0?1:0):(pi>0?-1:0),gamma:0,theta:0,vega:0,rho:0,d1:0,d2:0,Nd1:0,Nd2:type==='call'?(ci>0?1:0):0,Nnd2:type==='put'?(pi>0?1:0):0,nd1:0,eRT:1,sigma,S,K,T,r};
+  }
+  const sq=Math.sqrt(T);
+  const d1=(Math.log(S/K)+(r+sigma*sigma/2)*T)/(sigma*sq);
+  const d2=d1-sigma*sq;
+  const Nd1=normCDF(d1),Nd2=normCDF(d2),Nnd1=normCDF(-d1),Nnd2=normCDF(-d2);
+  const nd1=normPDF(d1),eRT=Math.exp(-r*T);
+  const call=S*Nd1-K*eRT*Nd2;
+  const put=K*eRT*Nnd2-S*Nnd1;
+  const price=type==='call'?call:put;
+  const delta=type==='call'?Nd1:Nd1-1;
+  const gamma=nd1/(S*sigma*sq);
+  const thetaCall=(-(S*nd1*sigma)/(2*sq)-r*K*eRT*Nd2)/365;
+  const thetaPut=(-(S*nd1*sigma)/(2*sq)+r*K*eRT*Nnd2)/365;
+  const theta=type==='call'?thetaCall:thetaPut;
+  const vega=S*nd1*sq/100;
+  const rhoCall=K*T*eRT*Nd2/100;
+  const rhoPut=-K*T*eRT*Nnd2/100;
+  const rho=type==='call'?rhoCall:rhoPut;
+  return{call,put,price,delta,gamma,theta,vega,rho,d1,d2,Nd1,Nd2,Nnd2,nd1,eRT,sigma,S,K,T,r};
+}
+
+function impliedVol(S,K,T,r,mktPrice,type='call'){
+  if(T<=0.0001)return 0;
+  let sigma=0.20;
+  for(let i=0;i<200;i++){
+    const res=bs(S,K,T,r,sigma,type);
+    const diff=res.price-mktPrice;
+    if(Math.abs(diff)<0.001)break;
+    const v=res.vega*100;
+    if(Math.abs(v)<0.0001)break;
+    sigma-=diff/v;
+    if(sigma<0.001)sigma=0.001;
+    if(sigma>5)sigma=5;
+  }
+  return sigma;
+}
+
+function calcVanna(res){
+  if(res.T<=0.0001)return 0;
+  return -res.nd1*(res.d2/res.sigma)/100;
+}
+function calcCharm(res,type){
+  if(res.T<=0.0001)return 0;
+  const sq=Math.sqrt(res.T);
+  const base=-res.nd1*(2*res.r*res.T-res.d2*res.sigma*sq)/(2*res.T*res.sigma*sq)/365;
+  return type==='call'?base:base;
+}
+function calcSpeed(res){
+  if(res.T<=0.0001)return 0;
+  const sq=Math.sqrt(res.T);
+  return -res.gamma*(res.d1/(res.sigma*sq)+1)/res.S;
+}
+
+/* ═══ STATE ═══ */
+let ST={S:23643,K:23700,DTE:2,rate:0.065,mPrem:191,iv:0.15,type:'call',res:null};
+
+function quickUpdate(){
+  ST.type=document.getElementById('q_type').value;
+  ST.S=+document.getElementById('q_spot').value||23643;
+  ST.mPrem=+document.getElementById('q_prem').value||191;
+  ST.K=+document.getElementById('q_strike').value||23700;
+  ST.DTE=+document.getElementById('q_dte').value||2;
+  ST.rate=(+document.getElementById('q_rate').value||6.5)/100;
+  const T=ST.DTE/365;
+  ST.iv=impliedVol(ST.S,ST.K,T,ST.rate,ST.mPrem,ST.type);
+  ST.res=bs(ST.S,ST.K,T,ST.rate,ST.iv,ST.type);
+
+  set('live_iv',(ST.iv*100).toFixed(2)+'%');
+  const diff=ST.S-ST.K;
+  const callMoney=diff>100?'DEEP ITM':diff>0?'ITM':diff>-50?'NEAR OTM':diff>-200?'OTM':'DEEP OTM';
+  const putMoney=diff<-100?'DEEP ITM':diff<0?'ITM':diff<50?'NEAR OTM':diff<200?'OTM':'DEEP OTM';
+  const money=ST.type==='call'?callMoney:putMoney;
+  const mCol=money.includes('ITM')?'var(--green)':money.includes('NEAR')?'var(--gold2)':'var(--red)';
+  const mEl=document.getElementById('live_money');
+  mEl.textContent=money+' ('+(diff>0?'+':'')+diff.toFixed(0)+'pts)';
+  mEl.style.color=mCol;
+  renderAll();
+}
+
+function renderAll(){
+  const res=ST.res,S=ST.S,K=ST.K,DTE=ST.DTE,iv=ST.iv,mPrem=ST.mPrem,type=ST.type,T=DTE/365;
+  const intrinsic=type==='call'?Math.max(S-K,0):Math.max(K-S,0);
+  const extrinsic=Math.max(res.price-intrinsic,0);
+  const vanna=calcVanna(res);
+  const charm=calcCharm(res,type);
+  const speed=calcSpeed(res);
+  const tDay=Math.abs(res.theta);
+
+  // STATUS
+  set('s_call','₹'+res.price.toFixed(1));
+  set('s_call_sub','Mkt: ₹'+mPrem.toFixed(1)+' | Diff: '+(res.price-mPrem>0?'+':'')+(res.price-mPrem).toFixed(1));
+  set('s_intr','₹'+intrinsic.toFixed(1));
+  set('s_extr','₹'+extrinsic.toFixed(1));
+  set('s_extr_pct',(res.price>0?(extrinsic/res.price*100).toFixed(0):100)+'% of premium');
+  const diff=S-K;
+  const money=type==='call'?(diff>100?'DEEP ITM':diff>0?'ITM':diff>-50?'NEAR OTM':diff>-200?'OTM':'DEEP OTM'):(diff<-100?'DEEP ITM':diff<0?'ITM':diff<50?'NEAR OTM':diff<200?'OTM':'DEEP OTM');
+  const mEl2=document.getElementById('s_money');
+  mEl2.textContent=money;
+  mEl2.style.color=money.includes('ITM')?'var(--green)':money.includes('NEAR')?'var(--gold2)':'var(--red)';
+  set('s_money_pts',(diff>0?'+':'')+diff.toFixed(0)+' pts from strike');
+  const bemove=type==='call'?Math.max(K+mPrem-S,0):Math.max(S-(K-mPrem),0);
+  set('s_bemove','+'+(bemove>0?bemove.toFixed(0):'0')+' pts');
+  const prob=type==='call'?res.Nd2:res.Nnd2;
+  set('s_prob',(prob*100).toFixed(1)+'%');
+
+  // GREEKS
+  set('g_delta',res.delta.toFixed(4));
+  set('g_d50','₹'+(Math.abs(res.delta)*50).toFixed(1));
+  set('g_d100','₹'+(Math.abs(res.delta)*100).toFixed(1));
+  set('g_dhedge',Math.round(1/Math.abs(res.delta))+' sh');
+  set('g_putd',(res.delta-1).toFixed(4));
+  set('g_gamma',res.gamma.toFixed(6));
+  set('g_gup',(res.delta+res.gamma*100).toFixed(4));
+  set('g_gdn',(res.delta-res.gamma*100).toFixed(4));
+  set('g_gpnl','₹'+(0.5*res.gamma*10000).toFixed(1));
+  set('g_dgamma','₹'+(res.gamma*S*S*0.01).toFixed(1));
+  set('g_theta','₹'+res.theta.toFixed(2)+'/day');
+  set('g_thr','₹'+(tDay/6.25).toFixed(2));
+  set('g_tmin','₹'+(tDay/375).toFixed(3));
+  set('g_twknd','₹'+(tDay*3).toFixed(1));
+  set('g_ttotal','₹'+(tDay*DTE).toFixed(1));
+  set('g_vega','₹'+res.vega.toFixed(2)+'/1%');
+  set('g_vp1','+₹'+res.vega.toFixed(2));
+  set('g_vm1','−₹'+res.vega.toFixed(2));
+  set('g_vp3','+₹'+(res.vega*3).toFixed(2));
+  set('g_vm3','−₹'+(res.vega*3).toFixed(2));
+  set('g_rho','₹'+res.rho.toFixed(3)+'/1%');
+  set('g_rup','+₹'+(res.rho*0.25).toFixed(3));
+  set('g_rdn','−₹'+(res.rho*0.25).toFixed(3));
+  const putRho=-(K*T*res.eRT*res.Nnd2)/100;
+  set('g_putrho','₹'+putRho.toFixed(3));
+  set('g_vanna',vanna.toFixed(5));
+  set('g_van3','Δ'+(vanna*3>=0?'+':'')+( vanna*3).toFixed(4));
+  set('g_vanm3','Δ'+((-vanna*3)>=0?'+':'')+((-vanna*3)).toFixed(4));
+  set('g_charm',charm.toFixed(6));
+  set('g_ctmr',(res.delta+charm).toFixed(4));
+  set('g_c2d',(res.delta+charm*2).toFixed(4));
+  set('g_speed',speed.toFixed(8));
+  set('g_sup',(res.gamma+speed*50).toFixed(6));
+  set('g_sdn',(res.gamma-speed*50).toFixed(6));
+
+  // DECOMP
+  const tot=res.price||1;
+  const ip=Math.min(intrinsic/tot*100,100),ep=Math.min(extrinsic/tot*100,100);
+  setS('df_i','width',ip.toFixed(1)+'%'); document.getElementById('df_i').textContent=ip.toFixed(0)+'%';
+  setS('df_e','width',ep.toFixed(1)+'%'); document.getElementById('df_e').textContent=ep.toFixed(0)+'%';
+  set('da_i','₹'+intrinsic.toFixed(1));
+  set('da_e','₹'+extrinsic.toFixed(1));
+  const beD=res.gamma>1e-6?Math.sqrt(2*tDay/res.gamma):0;
+  set('be_daily','±'+beD.toFixed(1)+' pts');
+  const beSpot=type==='call'?K+mPrem:K-mPrem;
+  set('be_spot',beSpot.toFixed(0));
+  set('lot_val','₹'+(mPrem*65).toFixed(0));
+
+  // THETA BLEED
+  set('t_min','₹'+(tDay/375).toFixed(3));
+  set('t_hr','₹'+(tDay/6.25).toFixed(2));
+  set('t_day','₹'+tDay.toFixed(2));
+  const gPct=Math.min((DTE/60)*100,100);
+  setS('g_dte_f','width',gPct+'%');
+  setS('g_dte_f','background',DTE<=3?'var(--red)':DTE<=7?'var(--orange)':DTE<=14?'var(--gold)':'var(--green)');
+  set('g_dte_l',DTE+'d left');
+
+  const sessions=[['9:15',0],['10:15',60],['11:15',120],['12:15',180],['1:15',240],['2:15',300],['3:15',360],['3:29',374]];
+  let projHtml='';
+  sessions.forEach(([t,m])=>{
+    const lost=(tDay/375)*m;
+    const rem=Math.max(mPrem-lost,intrinsic);
+    projHtml+=`<div class="tp-row"><span class="tp-time">${t} AM/PM</span><span class="tp-prem">₹${rem.toFixed(1)}</span><span class="tp-loss">−₹${lost.toFixed(1)}</span></div>`;
+  });
+  document.getElementById('theta_proj').innerHTML=projHtml;
+
+  // IV SENS
+  const ivChanges=[-5,-3,-1,0,1,3,5];
+  let ivHtml='';
+  ivChanges.forEach(c=>{
+    const nIV=Math.max(iv+(c/100),0.01);
+    const nR=bs(S,K,T,ST.rate,nIV,type);
+    const pnl=nR.price-res.price;
+    const col=pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--gold2)';
+    const sgn=pnl>0?'+':'';
+    ivHtml+=`<div class="ivs-item"><div class="ivs-lbl">IV ${c>0?'+':''}${c}%</div><div class="ivs-val" style="color:${col}">₹${nR.price.toFixed(1)}</div><div class="ivs-pnl" style="color:${col}">${sgn}₹${pnl.toFixed(1)}</div></div>`;
+  });
+  document.getElementById('ivSensGrid').innerHTML=ivHtml;
+
+  // SCENARIO
+  const moves=[-300,-200,-150,-100,-50,0,50,100,150,200,300];
+  let tBody='';
+  moves.forEach(mv=>{
+    const nS=S+mv;
+    const nR=bs(nS,K,T,ST.rate,iv,type);
+    const pnl=(nR.price-mPrem)*65;
+    const intr2=type==='call'?Math.max(nS-K,0):Math.max(K-nS,0);
+    const stat=intr2>0?'ITM':'OTM';
+    const sc=intr2>0?'var(--green)':'var(--red)';
+    const pc=pnl>0?'pos':pnl<0?'neg':'neu';
+    tBody+=`<tr class="${mv===0?'cur':''}">
+      <td style="color:${mv>0?'var(--green)':mv<0?'var(--red)':'var(--gold2)'}">${mv>0?'+':''}${mv}</td>
+      <td>${nS}</td><td class="hi">₹${nR.price.toFixed(1)}</td>
+      <td class="${pc}">${pnl>0?'+':''}₹${pnl.toFixed(0)}</td>
+      <td style="color:${sc}">${stat}</td></tr>`;
+  });
+  document.getElementById('scenario_body').innerHTML=tBody;
+
+  // P&L sync
+  document.getElementById('pnl_current').value=res.price.toFixed(1);
+  calcPnl();
+
+  // BREAKEVEN
+  const sellerProb=(100-prob*100).toFixed(1);
+  const expMove=(S*iv*Math.sqrt(DTE/252)).toFixed(0);
+  document.getElementById('beDash').innerHTML=`
+    <div class="be-item"><div class="be-lbl">Expiry Break-Even Spot</div><div class="be-val c-gold">${beSpot.toFixed(0)}</div><div class="be-sub">Nifty must close ${type==='call'?'above':'below'} this</div></div>
+    <div class="be-item"><div class="be-lbl">Points Needed</div><div class="be-val c-orange">${bemove>0?'+':''}${bemove.toFixed(0)} pts</div><div class="be-sub">From current spot</div></div>
+    <div class="be-item"><div class="be-lbl">Daily Break-Even Move</div><div class="be-val c-purple">±${beD.toFixed(1)} pts</div><div class="be-sub">√(2|Θ|/Γ)</div></div>
+    <div class="be-item"><div class="be-lbl">P(Expire ITM) N(d₂)</div><div class="be-val c-cyan">${(prob*100).toFixed(1)}%</div><div class="be-sub">True probability for buyer</div></div>
+    <div class="be-item"><div class="be-lbl">P(Seller Wins)</div><div class="be-val c-green">${sellerProb}%</div><div class="be-sub">Option expires worthless</div></div>
+    <div class="be-item"><div class="be-lbl">1σ Expected Move</div><div class="be-val c-gold">±${expMove} pts</div><div class="be-sub">Over ${DTE} remaining days</div></div>`;
+
+  drawPayoff();
+}
+
+function calcPnl(){
+  const entry=+document.getElementById('pnl_entry').value||0;
+  const curr=+document.getElementById('pnl_current').value||0;
+  const lots=+document.getElementById('pnl_lots').value||1;
+  const ps=curr-entry,pl=ps*65,pt=pl*lots;
+  const col=pt>0?'var(--green)':pt<0?'var(--red)':'var(--gold2)';
+  const s=pt>0?'+':'';
+  setC('pnl_share',(ps>0?'+':'')+'₹'+ps.toFixed(1),col);
+  setC('pnl_lot',(pl>0?'+':'')+'₹'+pl.toFixed(0),col);
+  setC('pnl_total',s+'₹'+pt.toFixed(0),col);
+}
+
+function drawPayoff(){
+  const canvas=document.getElementById('payoffChart');
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.clientWidth;
+  const H=200;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  const S=ST.S,K=ST.K,mPrem=ST.mPrem,type=ST.type;
+  const spots=[],pnls=[];
+  for(let s=S-600;s<=S+600;s+=25){
+    spots.push(s);
+    const intr=type==='call'?Math.max(s-K,0):Math.max(K-s,0);
+    pnls.push(intr-mPrem);
+  }
+  const pad={t:14,b:32,l:58,r:14};
+  const cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+  const minV=Math.min(...pnls)*1.15,maxV=Math.max(...pnls)*1.15;
+  const range=maxV-minV||1;
+  const xS=i=>pad.l+(i/(spots.length-1))*cW;
+  const yS=v=>pad.t+cH-((v-minV)/range)*cH;
+  ctx.clearRect(0,0,W,H);
+  // Grid
+  ctx.strokeStyle='rgba(26,34,54,0.8)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+(i/4)*cH;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    const v=((maxV-minV)*(4-i)/4+minV).toFixed(0);
+    ctx.fillStyle='#4a5a78';ctx.font='10px JetBrains Mono,monospace';ctx.textAlign='right';ctx.fillText(v,pad.l-4,y+4);
+  }
+  // Zero line
+  const zy=yS(0);
+  ctx.strokeStyle='rgba(200,168,75,0.35)';ctx.lineWidth=1;ctx.setLineDash([6,4]);
+  ctx.beginPath();ctx.moveTo(pad.l,zy);ctx.lineTo(W-pad.r,zy);ctx.stroke();ctx.setLineDash([]);
+  // Strike
+  const si=spots.findIndex(s=>s>=K),sx=xS(si);
+  ctx.strokeStyle='rgba(74,158,255,0.4)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(sx,pad.t);ctx.lineTo(sx,H-pad.b);ctx.stroke();ctx.setLineDash([]);
+  // Fill loss
+  ctx.beginPath();spots.forEach((_,i)=>{if(i===0)ctx.moveTo(xS(i),yS(Math.min(pnls[i],0)));else ctx.lineTo(xS(i),yS(Math.min(pnls[i],0)));});
+  ctx.lineTo(xS(spots.length-1),yS(0));ctx.lineTo(xS(0),yS(0));ctx.closePath();
+  ctx.fillStyle='rgba(232,68,90,0.1)';ctx.fill();
+  // Fill profit
+  ctx.beginPath();spots.forEach((_,i)=>{if(i===0)ctx.moveTo(xS(i),yS(Math.max(pnls[i],0)));else ctx.lineTo(xS(i),yS(Math.max(pnls[i],0)));});
+  ctx.lineTo(xS(spots.length-1),yS(0));ctx.lineTo(xS(0),yS(0));ctx.closePath();
+  ctx.fillStyle='rgba(0,200,150,0.1)';ctx.fill();
+  // Line
+  ctx.beginPath();spots.forEach((_,i)=>{if(i===0)ctx.moveTo(xS(i),yS(pnls[i]));else ctx.lineTo(xS(i),yS(pnls[i]));});
+  ctx.strokeStyle='var(--gold2)';ctx.lineWidth=2.5;ctx.stroke();
+  // Current spot
+  const ci=spots.findIndex(s=>s>=S),cx=xS(ci);
+  ctx.strokeStyle='rgba(0,212,255,0.5)';ctx.lineWidth=1.5;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(cx,pad.t);ctx.lineTo(cx,H-pad.b);ctx.stroke();ctx.setLineDash([]);
+  // Labels
+  ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center';
+  ctx.fillStyle='rgba(74,158,255,0.8)';ctx.fillText('STRIKE '+K,sx,pad.t+9);
+  ctx.fillStyle='rgba(0,212,255,0.8)';ctx.fillText('SPOT '+S,cx,pad.t+20);
+  ctx.fillStyle='rgba(200,168,75,0.6)';ctx.textAlign='left';ctx.fillText('ZERO P&L',pad.l+4,zy-4);
+  ctx.fillStyle='#4a5a78';ctx.textAlign='center';
+  [0,Math.floor(spots.length/4),Math.floor(spots.length/2),Math.floor(3*spots.length/4),spots.length-1].forEach(i=>{
+    ctx.fillText(spots[i],xS(i),H-5);
+  });
+}
+
+function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function setS(id,p,v){const e=document.getElementById(id);if(e)e.style[p]=v;}
+function setC(id,v,col){const e=document.getElementById(id);if(e){e.textContent=v;e.style.color=col;}}
+
+document.addEventListener('DOMContentLoaded',()=>{quickUpdate();});
+window.addEventListener('resize',()=>{if(ST.res)drawPayoff();});
+</script>
+</body>
+</html>
