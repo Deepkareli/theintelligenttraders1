@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prediction Engine — IntelligentTraders</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04060d;--s1:#080d18;--s2:#0d1322;--b1:#1c2840;--b2:#253352;
+  --gold:#c8981a;--gold2:#e8b830;--green:#00d484;--red:#f03858;
+  --blue:#2878f0;--blue2:#60a0ff;--purple:#8848f8;--purple2:#b080ff;
+  --cyan:#00c8f0;--orange:#f87820;--orange2:#ffaa50;
+  --text:#c8d8f0;--text2:#7888a8;--text3:#3a4860;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.6;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%,rgba(200,152,26,0.06) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%,rgba(40,120,240,0.04) 0%,transparent 60%),
+    repeating-linear-gradient(rgba(28,40,64,0.25) 0,rgba(28,40,64,0.25) 1px,transparent 1px,transparent 44px),
+    repeating-linear-gradient(90deg,rgba(28,40,64,0.25) 0,rgba(28,40,64,0.25) 1px,transparent 1px,transparent 44px);}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:200;background:rgba(4,6,13,0.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--b1);padding:0 20px;}
+.nav-inner{max-width:1100px;margin:0 auto;height:58px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--gold2);text-decoration:none;}
+.nav-links{display:flex;gap:2px;list-style:none;}
+.nav-links a{padding:6px 11px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);text-decoration:none;border-radius:4px;transition:all .15s;}
+.nav-links a:hover{color:var(--text);background:var(--s2);}
+.nav-links a.active{color:var(--gold2);background:rgba(200,152,26,0.1);border:1px solid rgba(200,152,26,0.2);}
+@media(max-width:768px){.nav-links{display:none;}}
+
+.wrap{max-width:960px;margin:0 auto;padding:0 16px;position:relative;z-index:1;}
+
+/* HERO */
+.hero{padding:40px 0 30px;border-bottom:1px solid var(--b1);margin-bottom:28px;}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(200,152,26,0.08);border:1px solid rgba(200,152,26,0.2);border-radius:4px;padding:5px 12px;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
+.dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:blink 1.4s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(26px,5vw,46px);font-weight:800;line-height:1.05;letter-spacing:-1px;color:var(--text);margin-bottom:8px;}
+.hero h1 em{color:var(--gold2);font-style:normal;}
+.hero-sub{font-size:12px;color:var(--text2);max-width:600px;line-height:1.8;}
+
+/* INPUT CARD */
+.input-card{background:var(--s1);border:1px solid var(--b1);border-top:2px solid var(--gold);border-radius:10px;padding:24px;margin-bottom:20px;}
+.card-label{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+.card-label::after{content:'';flex:1;height:1px;background:rgba(200,152,26,0.2);}
+.ig{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px;}
+.ig2{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:14px;}
+.ifield{display:flex;flex-direction:column;gap:4px;}
+.ifield label{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);}
+.ifield input,.ifield select{background:var(--s2);border:1px solid var(--b2);border-radius:5px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;padding:9px 11px;outline:none;transition:border-color .15s;width:100%;}
+.ifield input:focus,.ifield select:focus{border-color:var(--gold);}
+.ifield select option{background:var(--s2);}
+.ifield .hint{font-size:9px;color:var(--text3);margin-top:2px;}
+
+/* DTE ROW */
+.dte-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:11px 14px;margin-bottom:14px;}
+.dte-row label{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-right:4px;}
+.dte-check{display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;}
+.dte-check input{accent-color:var(--gold);width:13px;height:13px;cursor:pointer;}
+.dte-display{margin-left:auto;font-size:11px;color:var(--text2);}
+.dte-display strong{color:var(--gold2);font-size:15px;}
+
+/* PREDICT BUTTON */
+.predict-btn{width:100%;padding:15px;background:linear-gradient(135deg,var(--gold) 0%,var(--orange) 100%);border:none;border-radius:8px;color:#000;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2.5px;cursor:pointer;transition:opacity .2s;text-transform:uppercase;}
+.predict-btn:hover{opacity:.88;}
+
+/* OUTPUT AREA */
+#output{display:none;}
+
+/* SIGNAL BANNER */
+.signal-banner{border-radius:10px;padding:24px 28px;margin-bottom:16px;position:relative;overflow:hidden;}
+.signal-banner.seller{background:linear-gradient(135deg,rgba(240,56,88,0.09),rgba(248,120,32,0.05));border:1px solid rgba(240,56,88,0.3);}
+.signal-banner.buyer{background:linear-gradient(135deg,rgba(0,212,132,0.09),rgba(0,200,240,0.05));border:1px solid rgba(0,212,132,0.3);}
+.signal-banner.neutral{background:linear-gradient(135deg,rgba(200,152,26,0.09),rgba(40,120,240,0.05));border:1px solid rgba(200,152,26,0.3);}
+.sb-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:16px;}
+.sb-verdict{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;letter-spacing:-0.5px;line-height:1;}
+.sb-verdict.seller{color:#ff6080;}.sb-verdict.buyer{color:#00ff9d;}.sb-verdict.neutral{color:#ffd060;}
+.sb-meta{font-size:11px;color:var(--text2);margin-top:5px;}
+.sb-conf{text-align:right;}
+.sb-conf-num{font-size:42px;font-weight:700;line-height:1;}
+.sb-conf-num.seller{color:var(--red);}.sb-conf-num.buyer{color:var(--green);}.sb-conf-num.neutral{color:var(--gold2);}
+.sb-conf-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);}
+.sb-layers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.sb-layer{background:rgba(0,0,0,0.25);border:1px solid var(--b1);border-radius:6px;padding:11px;text-align:center;}
+.sbl-score{font-size:22px;font-weight:700;margin-bottom:2px;}
+.sbl-name{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);}
+.sbl-bar{height:3px;border-radius:2px;margin-top:6px;}
+.sb-summary{font-size:11px;color:var(--text2);line-height:1.9;padding:12px 14px;background:rgba(0,0,0,0.2);border-radius:6px;}
+
+/* PREDICTION STRIP */
+.pred-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--b1);border:1px solid var(--b1);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.ps-item{background:var(--s1);padding:13px 15px;}
+.ps-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:4px;}
+.ps-val{font-size:18px;font-weight:700;}
+.ps-sub{font-size:9px;color:var(--text2);margin-top:2px;}
+
+/* SCENARIO TABLE */
+.section-hdr{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin:16px 0 8px;display:flex;align-items:center;gap:8px;}
+.section-hdr::after{content:'';flex:1;height:1px;background:var(--b1);}
+.tbl-wrap{background:var(--s1);border:1px solid var(--b1);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+table{width:100%;border-collapse:collapse;}
+th{background:var(--s2);color:var(--text2);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:9px 12px;text-align:left;border-bottom:1px solid var(--b1);}
+td{padding:8px 12px;border-bottom:1px solid var(--b1);font-size:12px;}
+tr:last-child td{border-bottom:none;}
+tr.base-row td{background:rgba(200,152,26,0.05);font-weight:600;}
+tr.itm-row td{background:rgba(0,212,132,0.03);}
+.pos{color:var(--green);}.neg{color:var(--red);}.neu{color:var(--gold2);}.hi{color:var(--blue2);}
+
+/* THETA TABLE */
+.theta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px;margin-bottom:16px;}
+.tg-item{background:var(--s1);border:1px solid var(--b1);border-radius:6px;padding:10px 12px;text-align:center;}
+.tg-time{font-size:8px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.tg-prem{font-size:15px;font-weight:700;}
+.tg-loss{font-size:9px;color:var(--red);margin-top:2px;}
+
+/* GREEKS ROW */
+.greeks-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:16px;}
+.gr-card{background:var(--s1);border:1px solid var(--b1);border-radius:7px;padding:12px 14px;}
+.gr-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:5px;}
+.gr-val{font-size:17px;font-weight:700;}
+.gr-sub{font-size:9px;color:var(--text2);margin-top:3px;}
+
+/* OI SIGNALS */
+.oi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:16px;}
+.oi-card{background:var(--s1);border:1px solid var(--b1);border-radius:7px;padding:12px 14px;}
+.oi-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;}
+.oi-val{font-size:14px;font-weight:700;margin-bottom:3px;}
+.oi-sig{display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;margin-bottom:4px;}
+.oi-sig.bull{background:rgba(0,212,132,0.12);color:var(--green);}
+.oi-sig.bear{background:rgba(240,56,88,0.12);color:var(--red);}
+.oi-sig.neut{background:rgba(200,152,26,0.12);color:var(--gold2);}
+.oi-desc{font-size:10px;color:var(--text2);line-height:1.5;}
+
+/* KEY LEVELS */
+.levels-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:16px;}
+.lv-item{background:var(--s1);border:1px solid var(--b1);border-radius:7px;padding:12px 14px;}
+.lv-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:5px;}
+.lv-val{font-size:18px;font-weight:700;}
+.lv-sub{font-size:9px;color:var(--text2);margin-top:3px;}
+
+/* CHART */
+.chart-box{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:14px;margin-bottom:16px;}
+.chart-lbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:10px;}
+canvas{display:block;width:100% !important;}
+
+/* TRADE GUIDE */
+.trade-guide{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:20px;margin-bottom:20px;}
+.tg-header{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.tg-header::after{content:'';flex:1;height:1px;background:rgba(200,152,26,0.2);}
+.tg-rules{display:flex;flex-direction:column;gap:8px;}
+.tg-rule{display:flex;gap:10px;padding:10px 12px;border-radius:6px;font-size:12px;}
+.tg-rule.watch{background:rgba(200,152,26,0.06);border:1px solid rgba(200,152,26,0.15);}
+.tg-rule.act{background:rgba(0,212,132,0.06);border:1px solid rgba(0,212,132,0.15);}
+.tg-rule.risk{background:rgba(240,56,88,0.06);border:1px solid rgba(240,56,88,0.15);}
+.tg-icon{flex-shrink:0;font-size:14px;}
+.tg-text{color:var(--text2);line-height:1.6;}
+.tg-text strong{color:var(--text);}
+
+/* FOOTER */
+footer{background:var(--s1);border-top:1px solid var(--b1);padding:28px 0 18px;margin-top:36px;}
+.fi{max-width:1100px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:24px;}
+@media(max-width:768px){.fi{grid-template-columns:1fr 1fr;}}
+.fl{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--gold2);margin-bottom:7px;}
+.ft{font-size:11px;color:var(--text2);line-height:1.6;max-width:200px;}
+.fct{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:9px;}
+.fcl{display:flex;flex-direction:column;gap:7px;}
+.fcl a{font-size:11px;color:var(--text2);text-decoration:none;transition:color .15s;}
+.fcl a:hover{color:var(--gold2);}
+.fb{max-width:1100px;margin:20px auto 0;padding:14px 16px 0;border-top:1px solid var(--b1);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:10px;color:var(--text2);}
+.disc{text-align:center;font-size:10px;color:var(--text2);padding:12px;border-top:1px solid var(--b1);margin-top:8px;}
+
+.c-text{color:var(--text);}
+.c-gold{color:var(--gold2);}
+.c-green{color:var(--green);}
+.c-red{color:var(--red);}
+.c-blue{color:var(--blue2);}
+.c-cyan{color:var(--cyan);}
+.c-purple{color:var(--purple2);}
+.c-orange{color:var(--orange2);}
+
+/* TRADE CARD */
+.trade-card{border-radius:12px;padding:28px 30px;margin-bottom:14px;position:relative;overflow:hidden;}
+.trade-card.seller{background:linear-gradient(135deg,rgba(0,212,132,0.07),rgba(0,200,240,0.04));border:2px solid rgba(0,212,132,0.35);}
+.trade-card.buyer{background:linear-gradient(135deg,rgba(200,152,26,0.08),rgba(248,120,32,0.05));border:2px solid rgba(200,152,26,0.35);}
+.trade-card.notr{background:linear-gradient(135deg,rgba(240,56,88,0.07),rgba(100,50,50,0.04));border:2px solid rgba(240,56,88,0.3);}
+.tc-header{font-size:9px;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.tc-header.seller{color:var(--green);}
+.tc-header.buyer{color:var(--gold2);}
+.tc-header.notr{color:var(--red);}
+.tc-header::after{content:'';flex:1;height:1px;}
+.tc-header.seller::after{background:rgba(0,212,132,0.3);}
+.tc-header.buyer::after{background:rgba(200,152,26,0.3);}
+.tc-header.notr::after{background:rgba(240,56,88,0.3);}
+.tc-action{font-family:'Syne',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.1;margin-bottom:6px;letter-spacing:-1px;}
+.tc-action .verb{margin-right:12px;}
+.tc-action.seller .verb{color:var(--red2);}
+.tc-action.buyer .verb{color:var(--green2);}
+.tc-action.notr{color:var(--red2);}
+.tc-action .strike{color:var(--gold3);}
+.tc-action .type{color:var(--text);font-size:70%;}
+.tc-price{font-size:18px;color:var(--text2);margin-bottom:20px;font-family:'JetBrains Mono',monospace;}
+.tc-price strong{color:var(--gold2);font-size:22px;}
+.tc-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;}
+.tc-stat{background:rgba(0,0,0,0.25);border:1px solid var(--b1);border-radius:8px;padding:12px 14px;}
+.tc-stat-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:5px;}
+.tc-stat-val{font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.tc-stat-sub{font-size:9px;color:var(--text2);margin-top:2px;}
+.tc-why{background:rgba(0,0,0,0.2);border-radius:8px;padding:14px 16px;margin-bottom:16px;}
+.tc-why-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.tc-why-title.seller{color:var(--green);}
+.tc-why-title.buyer{color:var(--gold2);}
+.tc-why-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;font-size:12px;color:var(--text2);line-height:1.5;}
+.tc-why-row .icon{flex-shrink:0;font-size:13px;}
+.tc-rules{display:flex;flex-direction:column;gap:7px;}
+.tc-rule{display:flex;gap:8px;padding:9px 12px;border-radius:6px;font-size:12px;line-height:1.6;}
+.tc-rule.entry{background:rgba(0,212,132,0.07);border:1px solid rgba(0,212,132,0.2);}
+.tc-rule.exit{background:rgba(200,152,26,0.07);border:1px solid rgba(200,152,26,0.2);}
+.tc-rule.stop{background:rgba(240,56,88,0.07);border:1px solid rgba(240,56,88,0.2);}
+.tc-rule .ri{flex-shrink:0;font-size:14px;}
+.tc-rule .rt{color:var(--text2);} .tc-rule .rt strong{color:var(--text);}
+.tc-confidence{display:flex;align-items:center;gap:14px;padding:12px 14px;background:rgba(0,0,0,0.2);border-radius:8px;margin-top:14px;}
+.tc-conf-bar-wrap{flex:1;height:7px;background:var(--b1);border-radius:4px;overflow:hidden;}
+.tc-conf-bar{height:100%;border-radius:4px;transition:width .6s;}
+.tc-conf-label{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;flex-shrink:0;}
+.tc-notr-msg{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--red2);margin-bottom:10px;}
+.tc-notr-sub{font-size:13px;color:var(--text2);line-height:1.8;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">IntelligentTraders</a>
+    <ul class="nav-links">
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="/journal">Journal</a></li>
+      <li><a href="/algo">Algo</a></li>
+      <li><a href="/options-engine">Options Engine</a></li>
+      <li><a href="/prediction-engine" class="active">Prediction Engine</a></li>
+      <li><a href="/about">About</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag"><div class="dot"></div>3-Layer Prediction · Any Expiry · Any Strike</div>
+  <h1>Next Session <em>Prediction Engine</em></h1>
+  <p class="hero-sub">Enter last trading day's closing data. The engine runs Black-Scholes mathematics, indicator validation and open interest logic internally — then outputs a clear prediction for the next trading day's premium movement.</p>
+</div>
+
+<!-- INPUT CARD -->
+<div class="input-card">
+  <div class="card-label">Last Trading Day Data — Enter from Your Broker Screen</div>
+
+  <div class="ig">
+    <div class="ifield">
+      <label>Option Type</label>
+      <select id="q_type">
+        <option value="call">CALL (CE)</option>
+        <option value="put">PUT (PE)</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>Strike Price</label>
+      <input type="number" id="q_strike" value="23700">
+    </div>
+    <div class="ifield">
+      <label>Nifty Spot (Last Close)</label>
+      <input type="number" id="q_spot" value="23643">
+    </div>
+    <div class="ifield">
+      <label>CE/PE Premium (₹)</label>
+      <input type="number" id="q_prem" value="135" step="0.05">
+    </div>
+    <div class="ifield">
+      <label>Nifty Day High</label>
+      <input type="number" id="q_high" value="23777">
+      <span class="hint">Used for volatility calculation</span>
+    </div>
+    <div class="ifield">
+      <label>Nifty Day Low</label>
+      <input type="number" id="q_low" value="23426">
+      <span class="hint">Used for volatility calculation</span>
+    </div>
+    <div class="ifield">
+      <label>India VIX (Last Close)</label>
+      <input type="number" id="q_vix" value="16.4" step="0.1">
+    </div>
+    <div class="ifield">
+      <label>Risk-Free Rate %</label>
+      <input type="number" id="q_rate" value="6.5" step="0.25">
+    </div>
+  </div>
+
+  <!-- DTE -->
+  <div class="dte-row">
+    <label>Trading Days Remaining Until Expiry (include today + expiry day):</label>
+    <label class="dte-check"><input type="checkbox" id="d_fri" onchange="calcDTE()"> Day 1</label>
+    <label class="dte-check"><input type="checkbox" id="d_mon" checked onchange="calcDTE()"> Day 2 (Mon)</label>
+    <label class="dte-check"><input type="checkbox" id="d_tue" checked onchange="calcDTE()"> Day 3 (Expiry/Tue)</label>
+    <label class="dte-check"><input type="checkbox" id="d_wed" onchange="calcDTE()"> Day 4</label>
+    <label class="dte-check"><input type="checkbox" id="d_thu2" onchange="calcDTE()"> Day 5</label>
+    <div class="dte-display">DTE = <strong id="dte_val">3</strong></div>
+  </div>
+
+  <div class="card-label" style="margin-top:4px;">Indicator Readings (Last Trading Day EOD — from TradingView)</div>
+
+  <div class="ig2">
+    <div class="ifield">
+      <label>RSI (14)</label>
+      <input type="number" id="i_rsi" value="48" step="0.1" min="0" max="100">
+      <span class="hint">&lt;40 oversold · &gt;60 overbought</span>
+    </div>
+    <div class="ifield">
+      <label>EMA 20 vs Spot</label>
+      <select id="i_ema20">
+        <option value="above">Spot ABOVE EMA 20 (Bullish)</option>
+        <option value="below" selected>Spot BELOW EMA 20 (Bearish)</option>
+        <option value="at">At EMA 20 (Neutral)</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>EMA 200 vs Spot</label>
+      <select id="i_ema200">
+        <option value="above">Spot ABOVE EMA 200 (Bullish)</option>
+        <option value="below" selected>Spot BELOW EMA 200 (Bearish)</option>
+        <option value="at">At EMA 200 (Neutral)</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>MACD</label>
+      <select id="i_macd">
+        <option value="bull">Above Signal (Bullish)</option>
+        <option value="bear" selected>Below Signal (Bearish)</option>
+        <option value="cross_bull">Bullish Crossover (Strong)</option>
+        <option value="cross_bear">Bearish Crossover (Strong)</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>Bollinger Bands</label>
+      <select id="i_bb">
+        <option value="upper">Near Upper (Overbought)</option>
+        <option value="middle" selected>Near Middle (Neutral)</option>
+        <option value="lower">Near Lower (Oversold)</option>
+        <option value="squeeze">Squeeze (Breakout)</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>VWAP vs Close</label>
+      <select id="i_vwap">
+        <option value="above" selected>Closed ABOVE VWAP (Bullish)</option>
+        <option value="below">Closed BELOW VWAP (Bearish)</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>Supertrend</label>
+      <select id="i_st">
+        <option value="bull">GREEN — Buy Signal</option>
+        <option value="bear" selected>RED — Sell Signal</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>Daily Trend</label>
+      <select id="i_trend">
+        <option value="uptrend">Uptrend</option>
+        <option value="downtrend" selected>Downtrend</option>
+        <option value="sideways">Sideways</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card-label" style="margin-top:4px;">Open Interest Data (Last Trading Day EOD — from NSE Option Chain)</div>
+
+  <div class="ig2">
+    <div class="ifield">
+      <label>Call OI at Strike (Lakhs)</label>
+      <input type="number" id="o_coi" value="39.78" step="0.01">
+    </div>
+    <div class="ifield">
+      <label>Put OI at Strike (Lakhs)</label>
+      <input type="number" id="o_poi" value="28.5" step="0.01">
+    </div>
+    <div class="ifield">
+      <label>Call OI Change % (Today)</label>
+      <input type="number" id="o_chg" value="64.26" step="0.1">
+      <span class="hint">&gt;40% = strong institutional signal</span>
+    </div>
+    <div class="ifield">
+      <label>Max Pain Strike</label>
+      <input type="number" id="o_mp" value="23500">
+    </div>
+    <div class="ifield">
+      <label>PCR (Put-Call Ratio)</label>
+      <input type="number" id="o_pcr" value="0.72" step="0.01">
+      <span class="hint">&lt;0.7 bearish · &gt;1.2 bullish</span>
+    </div>
+    <div class="ifield">
+      <label>Call OI Direction</label>
+      <select id="o_dir">
+        <option value="add_bull">Long Buildup (CE added + price up)</option>
+        <option value="add_bear" selected>Short Buildup (CE added + flat/down)</option>
+        <option value="unwind_bull">Short Covering (CE shed + price up)</option>
+        <option value="unwind_bear">Long Unwinding (CE shed + price down)</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>FII Futures Position</label>
+      <select id="o_fii">
+        <option value="long">Net LONG (Bullish)</option>
+        <option value="short" selected>Net SHORT (Bearish)</option>
+        <option value="neutral">Neutral</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>IV Rank</label>
+      <select id="o_ivr">
+        <option value="high">HIGH &gt;60% (Sell premium)</option>
+        <option value="mid" selected>MEDIUM 30–60%</option>
+        <option value="low">LOW &lt;30% (Buy premium)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card-label" style="margin-top:4px;">Your Trade Preference</div>
+  <div class="ig" style="margin-bottom:14px;">
+    <div class="ifield">
+      <label>Your Role</label>
+      <select id="t_role">
+        <option value="seller">SELL Premium (collect theta)</option>
+        <option value="buyer">BUY Premium (bet on big move)</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>Risk Appetite</label>
+      <select id="t_risk">
+        <option value="conservative">Conservative (safer, smaller profit)</option>
+        <option value="moderate" selected>Moderate (balanced risk-reward)</option>
+        <option value="aggressive">Aggressive (higher profit, higher risk)</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>Number of Lots</label>
+      <input type="number" id="t_lots" value="1" min="1" max="50">
+    </div>
+  </div>
+  <button class="predict-btn" onclick="predict()">→ &nbsp; GET MY TRADE RECOMMENDATION</button>
+</div>
+
+<!-- OUTPUT -->
+<div id="output" style="display:none;">
+
+  <!-- ENGINE SIGNAL (hidden, used by trade card) -->
+  <div id="sigBanner" style="display:none;"></div>
+
+  <!-- TRADE RECOMMENDATION CARD -->
+  <div id="tradeCard" style="margin-bottom:20px;"></div>
+
+  <!-- ADVANCED DETAIL (collapsible) -->
+  <div id="advancedToggle" style="text-align:center;margin-bottom:12px;display:none;">
+    <button onclick="toggleAdvanced()" style="background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:8px 20px;color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;">
+      ▼ &nbsp; SEE FULL MATHEMATICS
+    </button>
+  </div>
+
+  <div id="advancedDetail" style="display:none;">
+    <div class="section-hdr">Scenario Analysis — All Spot Levels</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Nifty Move</th><th>Next Session Spot</th><th>BS Premium</th><th>Adj Premium</th><th>Intrinsic</th><th>P&L / Lot</th><th>Status</th><th>P(ITM) This Spot</th></tr></thead>
+        <tbody id="scen_body"></tbody>
+      </table>
+    </div>
+    <div class="section-hdr">Greeks at Last Trading Day Close</div>
+    <div class="greeks-row" id="greeks_row"></div>
+    <div class="section-hdr">Next Session Theta Bleed — If Nifty Flat All Day</div>
+    <div class="theta-grid" id="theta_grid"></div>
+    <div class="section-hdr">Next Session Payoff Chart</div>
+    <div class="chart-box"><div class="chart-lbl">Premium P&L at Every Nifty Level</div><canvas id="payoffChart" height="190"></canvas></div>
+  </div>
+
+  <div class="disc">⚠ Educational only · Not SEBI registered investment advice · Paper trade first always</div>
+</div>
+
+<footer>
+  <div class="fi">
+    <div><div class="fl">IntelligentTraders</div><div class="ft">Trade institutions, not against them. India's first institutional stress intelligence platform.</div></div>
+    <div><div class="fct">Tools</div><div class="fcl"><a href="/dashboard">Signal Dashboard</a><a href="/journal">Paper Journal</a><a href="/algo">Algo Framework</a><a href="/options-engine">Options Engine</a><a href="/prediction-engine">Prediction Engine</a></div></div>
+    <div><div class="fct">Learn</div><div class="fcl"><a href="/#triggers">6 Triggers</a><a href="/#how">How It Works</a><a href="/#framework">Three-Layer System</a><a href="/#faq">FAQ</a></div></div>
+    <div><div class="fct">Contact</div><div class="fcl"><a href="/about">About Deepanshu</a><a href="/#waitlist">Early Access</a><a href="mailto:hello@theintelligenttraders.in">hello@theintelligenttraders.in</a></div></div>
+  </div>
+  <div class="fb"><span>© 2025 IntelligentTraders</span><span>Educational only · Not SEBI registered</span></div>
+</footer>
+
+<script>
+function predict(){
+  const type=document.getElementById('q_type').value;
+  const S=+document.getElementById('q_spot').value;
+  const mkt=+document.getElementById('q_prem').value;
+  const K=+document.getElementById('q_strike').value;
+  const high=+document.getElementById('q_high').value;
+  const low=+document.getElementById('q_low').value;
+  const vix=+document.getElementById('q_vix').value;
+  const rate=(+document.getElementById('q_rate').value)/100;
+  const DTE=getDTE();
+  const role=document.getElementById('t_role').value;
+  const risk=document.getElementById('t_risk').value;
+  const lots=+document.getElementById('t_lots').value||1;
+  if(!S||!mkt||!K){alert('Please fill all required fields.');return;}
+
+  const L1=runBS(S,K,DTE,rate,mkt,high,low,type);
+  const L2=runInd(type);
+  const L3=runOI(S,K,type);
+
+  // Combined score
+  const l3w=L3.chg>40?0.30:0.30;
+  const l1w=0.25;const l2w=0.45;
+  const l1dir=type==='call'?(10-L1.score):L1.score;
+  const combined=l1dir*l1w + L2.score*l2w + L3.score*l3w;
+  const l2l3avg=(L2.score+L3.score)/2;
+  const l2l3agree=Math.abs(L2.score-L3.score)<=2.5;
+  const strongBear=l2l3avg<=3.5&&l2l3agree;
+  const strongBull=l2l3avg>=6.5&&l2l3agree;
+  let finalScore=combined;
+  if(strongBear)finalScore=Math.min(combined,3.5);
+  if(strongBull)finalScore=Math.max(combined,6.5);
+  const conf=Math.round(Math.min(finalScore,10)*10);
+
+  let verdict,sigClass;
+  if(finalScore>=7){verdict='BUYER EDGE';sigClass='buyer';}
+  else if(finalScore<=3){verdict='SELLER EDGE';sigClass='seller';}
+  else if(finalScore>=5.5){verdict='CAUTIOUS BUY';sigClass='buyer';}
+  else if(finalScore<=4.5){verdict='CAUTIOUS SELL';sigClass='seller';}
+  else{verdict='NEUTRAL';sigClass='notr';}
+
+  // ── STRIKE OPTIMIZER ──
+  const optStrike=optimizeStrike(S,K,DTE,rate,L1,role,risk,type);
+
+  // Render
+  renderTradeCard(optStrike,role,risk,lots,verdict,sigClass,conf,L1,L2,L3,S,type,mkt,strongBear,strongBull);
+  renderOutput(verdict,sigClass,conf,L1,L2,L3,S,K,DTE,rate,mkt,type,finalScore,vix,strongBear,strongBull);
+  document.getElementById('output').style.display='block';
+  document.getElementById('advancedToggle').style.display='block';
+  document.getElementById('output').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ═══ STRIKE OPTIMIZER ═══ */
+function optimizeStrike(S,K,DTE,r,L1,role,risk,type){
+  const friT=Math.max(DTE-1,0.25)/365;
+  const iv=L1.predictedNextIV;
+  const lotSize=65;
+  const minPremiumPerLot=3000; // minimum ₹3000 per lot
+
+  // Risk appetite maps to P(ITM) target range for seller
+  const sellerTargets={
+    conservative:{min:0.15,max:0.28},  // low risk: 72-85% seller wins
+    moderate:    {min:0.25,max:0.40},  // balanced: 60-75% seller wins
+    aggressive:  {min:0.35,max:0.52}   // high risk: 48-65% seller wins
+  };
+  // For buyer: break-even as fraction of 1σ
+  const buyerTargets={
+    conservative:0.40,  // break-even < 40% of 1σ
+    moderate:    0.60,  // break-even < 60% of 1σ
+    aggressive:  0.80   // break-even < 80% of 1σ
+  };
+
+  const exp1sig=S*iv*Math.sqrt(1/252);
+  const strikes=[];
+
+  // Scan strikes from S-600 to S+600 in steps of 50
+  for(let stk=S-600;stk<=S+600;stk+=50){
+    const res=bs(stk,K,friT,r,iv,type); // Note: using stk as K for this strike
+    const res2=bs(S,stk,friT,r,iv,type);
+    const prem=res2.p;
+    const pITM=type==='call'?res2.Nd2:res2.Nnd2;
+    const premLot=prem*lotSize;
+    const beMove=type==='call'?Math.max(stk+prem-S,0):Math.max(S-(stk-prem),0);
+    const theta=Math.abs(res2.theta);
+    const thetaPct=theta/prem;
+    strikes.push({stk,prem,pITM,premLot,beMove,theta,thetaPct,res2});
+  }
+
+  if(role==='seller'){
+    const target=sellerTargets[risk];
+    // Filter: P(ITM) in target range AND premium viable
+    const candidates=strikes.filter(s=>
+      s.pITM>=target.min && s.pITM<=target.max &&
+      s.premLot>=minPremiumPerLot &&
+      s.thetaPct>=0.15
+    );
+    if(!candidates.length){
+      // Relax: nearest to midpoint of target range
+      const mid=(target.min+target.max)/2;
+      const closest=strikes.filter(s=>s.premLot>=1500)
+        .sort((a,b)=>Math.abs(a.pITM-mid)-Math.abs(b.pITM-mid));
+      return closest[0]||strikes[Math.floor(strikes.length/2)];
+    }
+    // Among candidates, pick highest theta % (most efficient for seller)
+    candidates.sort((a,b)=>b.thetaPct-a.thetaPct);
+    return candidates[0];
+  } else {
+    // Buyer: find strike where break-even < target fraction of 1σ
+    const targetFrac=buyerTargets[risk];
+    const candidates=strikes.filter(s=>
+      s.beMove < exp1sig*targetFrac &&
+      s.premLot >= 1500 &&
+      s.pITM >= 0.20
+    );
+    if(!candidates.length){
+      // Relax: ATM strike
+      const atm=strikes.sort((a,b)=>Math.abs(a.stk-S)-Math.abs(b.stk-S));
+      return atm[0];
+    }
+    // Among valid, pick highest pITM (most likely to profit)
+    candidates.sort((a,b)=>b.pITM-a.pITM);
+    return candidates[0];
+  }
+}
+
+/* ═══ RENDER TRADE CARD ═══ */
+function renderTradeCard(opt,role,risk,lots,verdict,sigClass,conf,L1,L2,L3,S,type,mkt,strongBear,strongBull){
+  const card=document.getElementById('tradeCard');
+  const lotSize=65;
+
+  // No trade scenario
+  if(verdict==='NEUTRAL'||(role==='seller'&&(verdict==='BUYER EDGE'||verdict==='CAUTIOUS BUY')&&conf>60)||(role==='buyer'&&(verdict==='SELLER EDGE'||verdict==='CAUTIOUS SELL')&&conf>60)){
+    const engineSays=verdict==='NEUTRAL'?'No strong signal':'Engine and your role conflict';
+    card.innerHTML=`
+      <div class="trade-card notr">
+        <div class="tc-header notr">⚠ RECOMMENDATION</div>
+        <div class="tc-notr-msg">DO NOT TRADE TODAY</div>
+        <div class="tc-notr-sub">
+          <strong>${engineSays}.</strong><br><br>
+          ${verdict==='NEUTRAL'?'All three layers (BS mathematics, indicators, open interest) are giving conflicting signals. There is no mathematical edge right now. The best trade is no trade.':'Your chosen role ('+role.toUpperCase()+') is against the engine signal ('+verdict+'). Trading against the signal means fighting the mathematical edge. Wait for alignment.'}
+          <br><br>
+          <strong style="color:var(--gold2);">What to watch:</strong> Check Gift Nifty Monday morning. If a clear gap up or gap down confirms, re-run the engine with updated data.
+        </div>
+      </div>`;
+    return;
+  }
+
+  if(!opt)return;
+
+  const optStrike=opt.stk;
+  const optPrem=opt.prem;
+  const pITM=opt.pITM;
+  const premLot=optPrem*lotSize;
+  const totalPremium=premLot*lots;
+  const beMove=opt.beMove;
+  const theta=opt.theta;
+  const thetaDay=theta*lotSize*lots;
+  const sellerWins=(1-pITM)*100;
+  const exp1sig=S*L1.iv*Math.sqrt(1/252);
+
+  // Action text
+  const action=role==='seller'?'SELL':'BUY';
+  const optType=type==='call'?'CE':'PE';
+  const cardClass=role==='seller'?'seller':'buyer';
+
+  // Max profit/loss
+  const maxProfit=role==='seller'?totalPremium:null;
+  const maxLoss=role==='seller'?null:totalPremium;
+
+  // Stop loss for seller: premium doubles
+  const sellerSL=optPrem*2;
+  // Target for buyer: premium 1.5x-2x
+  const buyerTarget=optPrem*(risk==='conservative'?1.5:risk==='moderate'?2.0:2.5);
+
+  // Why this strike
+  const whyReasons=[];
+  if(role==='seller'){
+    whyReasons.push({icon:'🎯',text:`P(ITM) = <strong>${(pITM*100).toFixed(0)}%</strong> — you win <strong>${sellerWins.toFixed(0)}%</strong> of the time with this strike`});
+    whyReasons.push({icon:'⏱',text:`Theta collects <strong>₹${thetaDay.toFixed(0)}/day</strong> (${(opt.thetaPct*100).toFixed(0)}% of premium per day working for you)`});
+    whyReasons.push({icon:'📉',text:`Predicted IV drop from ${(L1.iv*100).toFixed(1)}% → ${(L1.predictedNextIV*100).toFixed(1)}% gives extra vega gain`});
+    if(strongBear)whyReasons.push({icon:'⚡',text:`<strong>L2+L3 Confluence Override:</strong> Both indicators AND open interest are strongly bearish — high conviction signal`});
+    whyReasons.push({icon:'💰',text:`Strike is <strong>${Math.abs(optStrike-S).toFixed(0)} pts ${optStrike>S?'above':'below'}</strong> current Nifty — gives buffer before it becomes your problem`});
+  } else {
+    whyReasons.push({icon:'🎯',text:`Break-even needs only <strong>+${beMove.toFixed(0)} pts</strong> vs 1σ expected <strong>±${exp1sig.toFixed(0)} pts</strong> — achievable move`});
+    whyReasons.push({icon:'📊',text:`P(ITM) = <strong>${(pITM*100).toFixed(0)}%</strong> — reasonable probability of expiring in the money`});
+    if(strongBull)whyReasons.push({icon:'⚡',text:`<strong>L2+L3 Confluence Override:</strong> Both indicators AND open interest are strongly bullish`});
+    whyReasons.push({icon:'⚠',text:`<strong>IV is ${L1.iv>L1.predictedNextIV/1.05?'compressing':'expanding'}</strong> — factor this into your exit timing`});
+  }
+
+  // Confidence bar color
+  const confColor=conf>=70?'var(--green)':conf>=50?'var(--gold2)':'var(--orange2)';
+  const confLabel=conf>=70?'HIGH CONFIDENCE':conf>=50?'MODERATE':'LOW — CAUTION';
+
+  card.innerHTML=`
+    <div class="trade-card ${cardClass}">
+      <div class="tc-header ${cardClass}">${role==='seller'?'✦ RECOMMENDED SELLER TRADE':'✦ RECOMMENDED BUYER TRADE'} · ${risk.toUpperCase()} RISK</div>
+
+      <div class="tc-action ${cardClass}">
+        <span class="verb">${action}</span>
+        <span class="strike">${optStrike}</span>
+        <span class="type">&nbsp;${optType}</span>
+      </div>
+      <div class="tc-price">Entry price: <strong>₹${optPrem.toFixed(1)}</strong> per share &nbsp;·&nbsp; ${lots} lot${lots>1?'s':''} &nbsp;·&nbsp; ${lotSize} shares/lot</div>
+
+      <div class="tc-stats">
+        <div class="tc-stat">
+          <div class="tc-stat-lbl">${role==='seller'?'Max Profit':'Premium Paid'}</div>
+          <div class="tc-stat-val" style="color:${role==='seller'?'var(--green)':'var(--red)'}">${role==='seller'?'+':'−'}₹${totalPremium.toFixed(0)}</div>
+          <div class="tc-stat-sub">${role==='seller'?'If expires worthless':'Total cost ('+lots+' lot'+( lots>1?'s':'')+')'}</div>
+        </div>
+        <div class="tc-stat">
+          <div class="tc-stat-lbl">${role==='seller'?'Probability Win':'Break-even Move'}</div>
+          <div class="tc-stat-val" style="color:${role==='seller'?'var(--green)':'var(--gold2)'}">${role==='seller'?sellerWins.toFixed(0)+'%':'+'+beMove.toFixed(0)+' pts'}</div>
+          <div class="tc-stat-sub">${role==='seller'?'Nifty stays '+( type==='call'?'below':'above')+' '+optStrike:'Nifty must reach '+(optStrike+(type==='call'?optPrem:-optPrem)).toFixed(0)}</div>
+        </div>
+        <div class="tc-stat">
+          <div class="tc-stat-lbl">${role==='seller'?'Theta/Day (all lots)':'Expiry by'}</div>
+          <div class="tc-stat-val" style="color:${role==='seller'?'var(--green)':'var(--text)'}">₹${role==='seller'?thetaDay.toFixed(0):optPrem.toFixed(1)}</div>
+          <div class="tc-stat-sub">${role==='seller'?'Earning every day doing nothing':'Expires worthless if not ITM'}</div>
+        </div>
+        <div class="tc-stat">
+          <div class="tc-stat-lbl">${role==='seller'?'Stop Loss':'Target Exit'}</div>
+          <div class="tc-stat-val" style="color:${role==='seller'?'var(--red)':'var(--green)'}">₹${role==='seller'?(sellerSL*lotSize*lots).toFixed(0):(buyerTarget*lotSize*lots).toFixed(0)}</div>
+          <div class="tc-stat-sub">${role==='seller'?'Exit if CE reaches ₹'+sellerSL.toFixed(0):'Target ₹'+buyerTarget.toFixed(1)+'/share'}</div>
+        </div>
+        <div class="tc-stat">
+          <div class="tc-stat-lbl">Engine Signal</div>
+          <div class="tc-stat-val" style="color:${sigClass==='seller'?'var(--red2)':sigClass==='buyer'?'var(--green2)':'var(--gold2)'};font-size:13px">${verdict}</div>
+          <div class="tc-stat-sub">L1:${L1.score}/10 · L2:${L2.score}/10 · L3:${L3.score}/10</div>
+        </div>
+        <div class="tc-stat">
+          <div class="tc-stat-lbl">Predicted Next IV</div>
+          <div class="tc-stat-val" style="color:var(--cyan)">${(L1.predictedNextIV*100).toFixed(1)}%</div>
+          <div class="tc-stat-sub">From ${(L1.iv*100).toFixed(1)}% today</div>
+        </div>
+      </div>
+
+      <div class="tc-why">
+        <div class="tc-why-title ${cardClass}">WHY THIS STRIKE</div>
+        ${whyReasons.map(r=>`<div class="tc-why-row"><span class="icon">${r.icon}</span><span>${r.text}</span></div>`).join('')}
+      </div>
+
+      <div class="tc-rules">
+        <div class="tc-rule entry">
+          <span class="ri">✅</span>
+          <span class="rt"><strong>ENTRY:</strong> ${role==='seller'?'Sell '+optStrike+' '+optType+' at market price around ₹'+optPrem.toFixed(0)+'. Check that premium received is at least ₹'+Math.max((optPrem*0.85).toFixed(0),10)+' (slippage buffer).':'Buy '+optStrike+' '+optType+' at market price around ₹'+optPrem.toFixed(0)+'. Do not chase — if price is more than ₹'+(optPrem*1.1).toFixed(0)+' skip the trade.'}</span>
+        </div>
+        <div class="tc-rule exit">
+          <span class="ri">🎯</span>
+          <span class="rt"><strong>TARGET EXIT:</strong> ${role==='seller'?'Buy back when CE falls to ₹'+(optPrem*0.25).toFixed(0)+' (75% profit locked) OR let expire worthless tomorrow at expiry.':'Sell when premium reaches ₹'+buyerTarget.toFixed(0)+' (+'+((buyerTarget/optPrem-1)*100).toFixed(0)+'% profit) OR exit by 2:30 PM on expiry day.'}</span>
+        </div>
+        <div class="tc-rule stop">
+          <span class="ri">🛑</span>
+          <span class="rt"><strong>STOP LOSS:</strong> ${role==='seller'?'Exit immediately if CE premium doubles to ₹'+sellerSL.toFixed(0)+'. No arguing with stop loss. Loss = ₹'+(sellerSL*lotSize*lots-totalPremium).toFixed(0)+'.':'Exit if premium falls to ₹'+(optPrem*0.4).toFixed(0)+' (loss = ₹'+(totalPremium*0.6).toFixed(0)+'). Do not hold hoping for recovery.'}</span>
+        </div>
+      </div>
+
+      <div class="tc-confidence">
+        <span style="font-size:10px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;flex-shrink:0;">Engine Confidence</span>
+        <div class="tc-conf-bar-wrap"><div class="tc-conf-bar" style="width:${conf}%;background:${confColor};"></div></div>
+        <span class="tc-conf-label" style="color:${confColor}">${conf}%</span>
+        <span style="font-size:9px;color:var(--text2);flex-shrink:0;">${confLabel}</span>
+      </div>
+    </div>`;
+}
+
+function toggleAdvanced(){
+  const d=document.getElementById('advancedDetail');
+  const b=document.querySelector('#advancedToggle button');
+  if(d.style.display==='none'){d.style.display='block';b.textContent='▲  HIDE MATHEMATICS';}
+  else{d.style.display='none';b.textContent='▼  SEE FULL MATHEMATICS';}
+  if(d.style.display==='block')setTimeout(()=>{if(window.PRED&&PRED.res)drawPayoff(PRED.S,PRED.K,PRED.friDTE,PRED.rate,PRED.iv,PRED.mkt,PRED.type,PRED.vbuf?.buffer||0);},100);
+}
+
+
+/* ═══ MATH ═══ */
+function normCDF(x){const t=1/(1+0.2316419*Math.abs(x));const d=0.3989422820*Math.exp(-0.5*x*x);const p=d*t*(0.3193815+t*(-0.3565638+t*(1.7814779+t*(-1.8212560+t*1.3302744))));return x>=0?1-p:p;}
+function normPDF(x){return Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI);}
+function bs(S,K,T,r,sig,type){
+  if(T<=0.00001||sig<=0.001){const ci=Math.max(S-K,0),pi=Math.max(K-S,0);const p=type==='call'?ci:pi;return{p,delta:type==='call'?(ci>0?1:0):(pi>0?-1:0),gamma:0,theta:0,vega:0,Nd2:ci>0?1:0,Nnd2:pi>0?1:0,nd1:0,eRT:1};}
+  const sq=Math.sqrt(T);
+  const d1=(Math.log(S/K)+(r+sig*sig/2)*T)/(sig*sq);
+  const d2=d1-sig*sq;
+  const Nd1=normCDF(d1),Nd2=normCDF(d2),Nnd1=normCDF(-d1),Nnd2=normCDF(-d2);
+  const nd1=normPDF(d1),eRT=Math.exp(-r*T);
+  const call=S*Nd1-K*eRT*Nd2;
+  const put=K*eRT*Nnd2-S*Nnd1;
+  const p=type==='call'?call:put;
+  const delta=type==='call'?Nd1:(Nd1-1);
+  const gamma=nd1/(S*sig*sq);
+  const tC=(-(S*nd1*sig)/(2*sq)-r*K*eRT*Nd2)/365;
+  const tP=(-(S*nd1*sig)/(2*sq)+r*K*eRT*Nnd2)/365;
+  const theta=type==='call'?tC:tP;
+  const vega=S*nd1*sq/100;
+  return{p,delta,gamma,theta,vega,Nd2,Nnd2,nd1,eRT,sig,S,K,T,r};
+}
+function impliedVol(S,K,T,r,mkt,type){
+  let sig=0.18;
+  for(let i=0;i<200;i++){
+    const res=bs(S,K,T,r,sig,type);
+    const diff=res.p-mkt;if(Math.abs(diff)<0.005)break;
+    const v=res.vega*100;if(Math.abs(v)<0.0001)break;
+    sig-=diff/v;sig=Math.max(0.01,Math.min(5,sig));
+  }
+  return sig;
+}
+
+/* ═══ DTE ═══ */
+function calcDTE(){
+  const ids=['fri','mon','tue','wed','thu2'];
+  const dte=ids.filter(d=>document.getElementById('d_'+d)?.checked).length;
+  document.getElementById('dte_val').textContent=dte||1;
+}
+function getDTE(){return parseInt(document.getElementById('dte_val').textContent)||3;}
+
+/* ═══ VOLATILITY BUFFER (internal) ═══ */
+function volBuffer(S,high,low,vega){
+  const range=Math.max(high-low,0);
+  const expMove=S*0.14*Math.sqrt(1/252); // approx daily expected move
+  if(range>350)return Math.min(vega*(range/S*100*0.35),50);
+  if(range>250)return Math.min(vega*(range/S*100*0.25),35);
+  if(range>150)return Math.min(vega*(range/S*100*0.15),20);
+  return 0;
+}
+
+/* ═══ LAYER 1: BS ═══ */
+function runBS(S,K,DTE,r,mkt,high,low,type){
+  const T=DTE/365;
+  const iv=impliedVol(S,K,T,r,mkt,type);
+  const res=bs(S,K,T,r,iv,type);
+  const tDay=Math.abs(res.theta);
+  const buf=Math.round(volBuffer(S,high,low,res.vega)*2)/2;
+  const intrinsic=type==='call'?Math.max(S-K,0):Math.max(K-S,0);
+  const extrinsic=Math.max(mkt-intrinsic,0);
+  const pITM=type==='call'?res.Nd2:res.Nnd2;
+  const friDTE=Math.max(DTE-1,0.25/365);
+  const beMove=type==='call'?Math.max(K+mkt-S,0):Math.max(S-(K-mkt),0);
+  const exp1sig=S*iv*Math.sqrt(1/252);
+  // BS score — measures SELLER PRESSURE (not direction)
+  // High score = seller has mathematical edge (high IV, large break-even, heavy theta)
+  // Low score = buyer has mathematical edge (low IV, break-even achievable, ITM)
+  let score=5;
+  // Break-even vs expected move — core BS signal
+  if(beMove<exp1sig*0.3)score-=3;       // Break-even very easy → buyer edge
+  else if(beMove<exp1sig*0.5)score-=2;  // Break-even achievable → buyer edge
+  else if(beMove<exp1sig*0.8)score-=1;  // Break-even moderate
+  else if(beMove>exp1sig*1.2)score+=2;  // Break-even very hard → seller edge
+  else if(beMove>exp1sig)score+=1;       // Break-even hard → seller edge
+  // ITM/OTM status
+  if(intrinsic>0)score-=1;  // ITM = buyer already has value → less seller edge
+  // Theta aggressiveness (high theta = seller favored)
+  const thetaRatio=tDay/mkt;
+  if(thetaRatio>0.3)score+=2;       // Theta >30% of premium per day → very seller favored
+  else if(thetaRatio>0.2)score+=1;  // Theta 20-30% of premium
+  else if(thetaRatio<0.05)score-=1; // Very low theta → buyer not penalised much
+  // P(ITM) — higher = buyer has more probability support
+  if(pITM>0.55)score-=2;       // High P(ITM) → buyer more likely to profit
+  else if(pITM>0.45)score-=1;
+  else if(pITM<0.25)score+=2;  // Low P(ITM) → seller wins most scenarios
+  else if(pITM<0.35)score+=1;
+  score=Math.max(0,Math.min(10,score));
+  // IV CONVERGENCE FORMULA
+  // Near expiry: option IV converges toward VIX as term premium collapses
+  // predicted_next_iv = VIX + (current_iv - VIX) x convergence_factor(next_DTE)
+  const vixDecimal=(parseFloat(document.getElementById('q_vix').value)||18)/100;
+  const convFactors={0:0.15,1:0.40,2:0.55,3:0.70,4:0.85};
+  const nextDTE=Math.max(Math.round(DTE)-1,0);
+  const convFactor=convFactors[nextDTE]!==undefined?convFactors[nextDTE]:1.0;
+  const termPremium=Math.max(iv-vixDecimal,0);
+  const predictedNextIV=vixDecimal+termPremium*convFactor;
+  return{iv,predictedNextIV,convFactor,termPremium,res,tDay,buf,intrinsic,extrinsic,pITM,friDTE,beMove,exp1sig,score,T};
+}
+
+/* ═══ LAYER 2: INDICATORS ═══ */
+function runInd(type){
+  const rsi=+document.getElementById('i_rsi').value;
+  const ema20=document.getElementById('i_ema20').value;
+  const ema200=document.getElementById('i_ema200').value;
+  const macd=document.getElementById('i_macd').value;
+  const bb=document.getElementById('i_bb').value;
+  const vwap=document.getElementById('i_vwap').value;
+  const st=document.getElementById('i_st').value;
+  const trend=document.getElementById('i_trend').value;
+  let raw=0;
+  // RSI
+  if(rsi<35)raw+=1;else if(rsi>65)raw-=1;else if(rsi<45)raw-=0.5;else if(rsi>55)raw+=0.5;
+  // EMA20
+  raw+=(ema20==='above'?1:ema20==='below'?-1:0);
+  // EMA200
+  raw+=(ema200==='above'?1:ema200==='below'?-1:0);
+  // MACD
+  raw+=(macd==='bull'?0.5:macd==='bear'?-0.5:macd==='cross_bull'?1:-1);
+  // BB
+  raw+=(bb==='lower'?1:bb==='upper'?-1:0);
+  // VWAP
+  raw+=(vwap==='above'?1:-1);
+  // Supertrend
+  raw+=(st==='bull'?1:-1);
+  // Trend
+  raw+=(trend==='uptrend'?1:trend==='downtrend'?-1:0);
+  const dirRaw=type==='call'?raw:-raw;
+  const score=Math.max(0,Math.min(10,Math.round(((dirRaw+8)/16)*10)));
+  return{score,raw,bull:Math.max(dirRaw,0),bear:Math.max(-dirRaw,0)};
+}
+
+/* ═══ LAYER 3: OI ═══ */
+function runOI(S,K,type){
+  const coi=+document.getElementById('o_coi').value;
+  const poi=+document.getElementById('o_poi').value;
+  const chg=+document.getElementById('o_chg').value;
+  const mp=+document.getElementById('o_mp').value;
+  const pcr=+document.getElementById('o_pcr').value;
+  const dir=document.getElementById('o_dir').value;
+  const fii=document.getElementById('o_fii').value;
+  const ivr=document.getElementById('o_ivr').value;
+  // Amplification factor when OI change is extreme
+  const amp=chg>40?1.6:chg>20?1.2:1.0;
+  let score=5;
+  // PCR
+  score+=(pcr<0.7?-1.5:pcr>1.2?1.5:0);
+  // Max Pain
+  const mpDiff=S-mp;
+  score+=(Math.abs(mpDiff)>100?(mpDiff>0?-2:2):0)*amp;
+  // OI ratio
+  const ratio=coi/(poi||1);
+  score+=(ratio>1.5?-1.5:ratio<0.7?1.5:0);
+  // OI direction
+  const dSig=(dir==='add_bull'?1:dir==='add_bear'?-1:dir==='unwind_bull'?0.5:-0.5);
+  score+=dSig*2*amp;
+  // FII
+  score+=(fii==='long'?2:fii==='short'?-2:0);
+  // IV Rank
+  score+=(ivr==='low'?1.5:ivr==='high'?-1.5:0);
+  score=Math.max(0,Math.min(10,Math.round(score)));
+  const finalScore=type==='call'?score:(10-score);
+  return{score:finalScore,mp,pcr,coi,poi,chg,dir,fii,ivr,mpDiff,amp};
+}
+
+/* ═══ MAIN PREDICT ═══ */
+function predict(){
+  const type=document.getElementById('q_type').value;
+  const S=+document.getElementById('q_spot').value;
+  const mkt=+document.getElementById('q_prem').value;
+  const K=+document.getElementById('q_strike').value;
+  const high=+document.getElementById('q_high').value;
+  const low=+document.getElementById('q_low').value;
+  const vix=+document.getElementById('q_vix').value;
+  const rate=(+document.getElementById('q_rate').value)/100;
+  const DTE=getDTE();
+  if(!S||!mkt||!K){alert('Please fill all required fields.');return;}
+
+  const L1=runBS(S,K,DTE,rate,mkt,high,low,type);
+  const L2=runInd(type);
+  const L3=runOI(S,K,type);
+
+  // ── CORRECTED SCORING ARCHITECTURE ──
+  // L1 BS = SELLER PRESSURE score (mathematical edge — IV, theta, break-even)
+  // L2 Indicators = DIRECTION score (which way is Nifty going)
+  // L3 OI = INSTITUTIONAL POSITIONING (smart money bets)
+  // Direction comes from L2 + L3. BS only validates magnitude/cost of option.
+
+  const l1w = 0.25;  // BS: magnitude/cost only
+  const l2w = 0.45;  // Indicators: primary direction signal
+  const l3w = L3.chg > 40 ? 0.30 : 0.30;  // OI: always 30% — institutional positioning
+
+  // L1 is seller-pressure score → convert to directional: high seller pressure = bearish for buyer
+  // For CE buyer: high BS seller score = bad. For PE buyer: high BS seller score = good.
+  const l1dir = type === 'call' ? (10 - L1.score) : L1.score; // invert for call buyer
+  const combined = l1dir * l1w + L2.score * l2w + L3.score * l3w;
+
+  // ── CONFLUENCE OVERRIDE ──
+  // When L2 and L3 both strongly agree, they override BS mathematical neutrality
+  const l2l3avg = (L2.score + L3.score) / 2;
+  const l2l3agree = Math.abs(L2.score - L3.score) <= 2.5; // both pointing same way
+  const strongBear = l2l3avg <= 3.5 && l2l3agree;
+  const strongBull = l2l3avg >= 6.5 && l2l3agree;
+
+  let finalScore = combined;
+  let confluenceNote = '';
+
+  if(strongBear){
+    // L2+L3 both strongly bearish → pull final score down regardless of BS
+    finalScore = Math.min(combined, 3.5);
+    confluenceNote = ' L2+L3 confluence override — strong bearish institutional + technical signal.';
+  } else if(strongBull){
+    finalScore = Math.max(combined, 6.5);
+    confluenceNote = ' L2+L3 confluence override — strong bullish institutional + technical signal.';
+  }
+
+  const conf = Math.round(Math.min(finalScore, 10) * 10);
+
+  let verdict, cls, meta;
+  if(finalScore >= 7){verdict='BUYER EDGE';cls='buyer';meta='Indicators and OI both bullish. Premium likely to rise.'+confluenceNote;}
+  else if(finalScore <= 3){verdict='SELLER EDGE';cls='seller';meta='Indicators and OI both bearish. Premium likely to fall. Theta + positioning favor seller.'+confluenceNote;}
+  else if(finalScore >= 5.5){verdict='CAUTIOUS BUY';cls='buyer';meta='Moderate bullish signal. Confirm direction at open before entry.'+confluenceNote;}
+  else if(finalScore <= 4.5){verdict='CAUTIOUS SELL';cls='seller';meta='Mild seller edge. Theta decay working against buyer. Wait for open confirmation.'+confluenceNote;}
+  else{verdict='NEUTRAL — WAIT';cls='neutral';meta='Conflicting signals across layers. No high-conviction trade. Wait for open clarity.';}
+
+  renderOutput(verdict,cls,conf,L1,L2,L3,S,K,DTE,rate,mkt,type,finalScore,vix,strongBear,strongBull);
+  document.getElementById('output').style.display='block';
+  document.getElementById('output').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ═══ RENDER OUTPUT ═══ */
+function renderOutput(verdict,cls,conf,L1,L2,L3,S,K,DTE,r,mkt,type,finalScore,vix,strongBear,strongBull){
+  const {iv,res,tDay,buf,intrinsic,extrinsic,pITM,friDTE,beMove,exp1sig} = L1;
+  const basePred=Math.max(mkt-tDay,intrinsic);
+  const adjPred=basePred+buf;
+  const beSpot=type==='call'?K+mkt:K-mkt;
+  const adjPredRes=bs(S,K,friDTE,r,L1.predictedNextIV,type);
+  const adjBasePred=adjPredRes.p+L1.buf;
+  // Next session probability — calculated at NEXT session DTE (friDTE) with same spot
+  const nextSessionRes=bs(S,K,friDTE,r,L1.predictedNextIV,type);
+  const nextPITM=type==='call'?nextSessionRes.Nd2:nextSessionRes.Nnd2;
+  const friT=Math.max(DTE-1,0.25)/365;
+
+  // Signal banner
+  const banner=document.getElementById('sigBanner');
+  banner.className='signal-banner '+cls;
+  set('sig_v',verdict);document.getElementById('sig_v').className='sb-verdict '+cls;
+  set('sig_meta',`BS Seller Pressure ${L1.score.toFixed(1)}/10 (higher=seller favored) · Direction ${L2.score.toFixed(1)}/10 · OI ${L3.score.toFixed(1)}/10${strongBear?' ⚡ L2+L3 Override':strongBull?' ⚡ L2+L3 Override':''}`);
+  set('sig_c',conf+'%');document.getElementById('sig_c').className='sig-conf-num '+cls;
+
+  const sc=s=>s>=7?'var(--green)':s<=3?'var(--red)':'var(--gold2)';
+  set('l1s',L1.score.toFixed(1)+'/10');stc('l1s',sc(L1.score));
+  set('l2s',L2.score.toFixed(1)+'/10');stc('l2s',sc(L2.score));
+  set('l3s',L3.score.toFixed(1)+'/10');stc('l3s',sc(L3.score));
+  // Update layer name labels to reflect roles
+  const l1nameEl=document.querySelector('.sbl-name:nth-child(1)');
+  document.querySelectorAll('.sbl-name').forEach((el,i)=>{
+    if(i===0)el.textContent='BS Magnitude';
+    if(i===1)el.textContent='Direction (L2)';
+    if(i===2)el.textContent='Positioning (L3)';
+  });
+  const barEl=(id,score)=>{const el=document.getElementById(id);const c=sc(score);el.style.background=`linear-gradient(90deg,${c} ${score*10}%,var(--b1) ${score*10}%)`;};
+  barEl('l1b',L1.score);barEl('l2b',L2.score);barEl('l3b',L3.score);
+
+  const oiNote=L3.chg>40?` OI +${L3.chg}% (extreme institutional signal — L3 weight boosted to 30%).`:'';
+  const bufNote=buf>0?` Vanna buffer +₹${buf} applied (intraday range ${(document.getElementById('q_high').value-document.getElementById('q_low').value)} pts).`:'';
+  set('sig_sum',`[BS Magnitude] IV=${(iv*100).toFixed(1)}% | Seller pressure score ${L1.score}/10 | Break-even needs +${beMove.toFixed(0)} pts vs 1σ ±${exp1sig.toFixed(0)} pts | Theta ${(tDay/mkt*100).toFixed(0)}% of premium/day → ${L1.score>=6?'Seller edge mathematically':'Buyer cost manageable'} [Direction — L2+L3] Indicators ${L2.score}/10 · OI ${L3.score}/10 · ${strongBear?'⚡ CONFLUENCE OVERRIDE: Both bearish — BS overridden':strongBull?'⚡ CONFLUENCE OVERRIDE: Both bullish — BS overridden':'Weighted combination used'} [OI] PCR ${L3.pcr} | Max Pain ₹${L3.mp} | FII ${L3.fii.toUpperCase()}${oiNote}${bufNote}`);
+
+  // Prediction strip
+  document.getElementById('predStrip').innerHTML=`
+    <div class="ps-item"><div class="ps-lbl">Session IV</div><div class="ps-val" style="color:var(--cyan)">${(iv*100).toFixed(1)}%</div><div class="ss-sub">Entry</div></div><div class="ps-item"><div class="ps-lbl">Predicted Next IV</div><div class="ps-val" style="color:var(--orange2)">${(L1.predictedNextIV*100).toFixed(1)}%</div><div class="ss-sub">VIX+term×${L1.convFactor}</div></div>
+    <div class="ps-item"><div class="ps-lbl">Base Prediction</div><div class="ps-val" style="color:var(--text)">₹${basePred.toFixed(1)}</div><div class="ps-sub">Pure theta decay</div></div>
+    <div class="ps-item"><div class="ps-lbl">Vol Buffer</div><div class="ps-val" style="color:var(--orange2)">+₹${buf.toFixed(1)}</div><div class="ps-sub">Vanna adjustment</div></div>
+    <div class="ps-item"><div class="ps-lbl">Adj Prediction</div><div class="ps-val" style="color:var(--gold2)">₹${adjBasePred.toFixed(1)}</div><div class="ps-sub">IV convergence+buffer</div></div>
+    <div class="ps-item"><div class="ps-lbl">P(ITM) At Entry</div><div class="ps-val" style="color:var(--purple2)">${(pITM*100).toFixed(0)}%</div><div style="font-size:9px;color:var(--text2);margin-top:2px;">Spot ${S} · DTE ${getDTE()}</div></div>
+    <div class="ps-item"><div class="ps-lbl">P(ITM) If Nifty Flat</div><div class="ps-val" style="color:${nextPITM<0.3?'var(--red)':nextPITM>0.5?'var(--green)':'var(--gold2)'}">${(nextPITM*100).toFixed(0)}%</div><div style="font-size:9px;color:var(--text2);margin-top:2px;">Same spot · 1 DTE less</div></div>
+    <div class="ps-item"><div class="ps-lbl">P(Seller Wins) Flat</div><div class="ps-val" style="color:var(--green)">${((1-nextPITM)*100).toFixed(0)}%</div><div style="font-size:9px;color:var(--text2);margin-top:2px;">If Nifty unchanged</div></div>
+    <div class="ps-item"><div class="ps-lbl">Break-even Spot</div><div class="ps-val" style="color:var(--gold2)">₹${beSpot.toFixed(0)}</div></div>
+    <div class="ps-item"><div class="ps-lbl">1σ Daily Move</div><div class="ps-val" style="color:var(--blue2)">±${exp1sig.toFixed(0)}</div></div>
+    <div class="ps-item"><div class="ps-lbl">Theta / Day</div><div class="ps-val" style="color:var(--red)">₹${tDay.toFixed(1)}</div></div>
+  `;
+
+  // Scenario table
+  const moves=[-300,-200,-100,-50,0,50,100,200,300];
+  let tbody='';
+  moves.forEach(mv=>{
+    const nS=S+mv;
+    const nR=bs(nS,K,friT,r,L1.predictedNextIV,type);
+    const rawP=nR.p;const adjP=rawP+buf;
+    const pnl=(adjP-mkt)*65;
+    const intr=type==='call'?Math.max(nS-K,0):Math.max(K-nS,0);
+    const pItm=type==='call'?nR.Nd2:nR.Nnd2;
+    const stat=intr>0?'ITM':'OTM';
+    const sc2=intr>0?'var(--green)':'var(--red)';
+    const mc=mv>0?'pos':mv<0?'neg':'neu';
+    const pc=pnl>0?'pos':pnl<0?'neg':'neu';
+    tbody+=`<tr class="${mv===0?'base-row':intr>0?'itm-row':''}">
+      <td class="${mc}">${mv>0?'+':''}${mv} pts</td>
+      <td>${nS.toFixed(0)}</td>
+      <td class="hi">₹${rawP.toFixed(1)}</td>
+      <td style="color:var(--gold2)">₹${adjP.toFixed(1)}</td>
+      <td class="${intr>0?'pos':'c-text'}">₹${intr.toFixed(1)}</td>
+      <td class="${pc}">${pnl>0?'+':''}₹${pnl.toFixed(0)}</td>
+      <td style="color:${sc2}">${stat}</td>
+      <td style="color:var(--purple2)">${(pItm*100).toFixed(0)}%</td>
+    </tr>`;
+  });
+  document.getElementById('scen_body').innerHTML=tbody;
+
+  // Greeks
+  const beD=res.gamma>1e-6?Math.sqrt(2*tDay/res.gamma):0;
+  document.getElementById('greeks_row').innerHTML=`
+    <div class="gr-card"><div class="gr-lbl">Delta</div><div class="gr-val" style="color:var(--blue2)">${res.delta.toFixed(4)}</div><div class="gr-sub">₹${Math.abs(res.delta).toFixed(2)} per Nifty pt</div></div>
+    <div class="gr-card"><div class="gr-lbl">Gamma</div><div class="gr-val" style="color:var(--green)">${res.gamma.toFixed(6)}</div><div class="gr-sub">Delta change per pt</div></div>
+    <div class="gr-card"><div class="gr-lbl">Theta / day</div><div class="gr-val" style="color:var(--red)">₹${res.theta.toFixed(2)}</div><div class="gr-sub">₹${(tDay/375).toFixed(3)} per minute</div></div>
+    <div class="gr-card"><div class="gr-lbl">Vega / 1% IV</div><div class="gr-val" style="color:var(--purple2)">₹${res.vega.toFixed(2)}</div><div class="gr-sub">IV sensitivity</div></div>
+    <div class="gr-card"><div class="gr-lbl">Break-even/day</div><div class="gr-val" style="color:var(--orange2)">±${beD.toFixed(0)} pts</div><div class="gr-sub">Minimum daily move</div></div>
+    <div class="gr-card"><div class="gr-lbl">Intrinsic</div><div class="gr-val" style="color:var(--blue2)">₹${intrinsic.toFixed(1)}</div><div class="gr-sub">${(intrinsic/mkt*100).toFixed(0)}% of premium</div></div>
+    <div class="gr-card"><div class="gr-lbl">Extrinsic</div><div class="gr-val" style="color:var(--green)">₹${extrinsic.toFixed(1)}</div><div class="gr-sub">${(extrinsic/mkt*100).toFixed(0)}% of premium</div></div>
+    <div class="gr-card"><div class="gr-lbl">Vanna Buffer</div><div class="gr-val" style="color:var(--orange2)">+₹${buf.toFixed(1)}</div><div class="gr-sub">Intraday vol adj</div></div>
+  `;
+
+  // Theta schedule
+  const sessions=[['9:15 AM',0],['10:15 AM',60],['11:15 AM',120],['12:15 PM',180],['1:15 PM',240],['2:15 PM',300],['3:15 PM',360],['3:29 PM',374]];
+  let tsHtml='';
+  sessions.forEach(([t,m])=>{
+    const lost=(tDay/375)*m;
+    const rem=Math.max(mkt-lost,intrinsic)+buf*(1-m/450);
+    const col=rem>mkt*0.7?'var(--text)':rem>mkt*0.4?'var(--orange2)':'var(--red)';
+    tsHtml+=`<div class="tg-item"><div class="tg-time">${t}</div><div class="tg-prem" style="color:${col}">₹${rem.toFixed(1)}</div><div class="tg-loss">−₹${lost.toFixed(1)}</div></div>`;
+  });
+  document.getElementById('theta_grid').innerHTML=tsHtml;
+
+  // OI signals
+  const mpSig=L3.mpDiff>100?'bear':L3.mpDiff<-100?'bull':'neut';
+  const mpLbl=L3.mpDiff>100?'Gravity Pull DOWN':L3.mpDiff<-100?'Gravity Pull UP':'Near Max Pain — Pin Risk';
+  const pcrSig=L3.pcr<0.7?'bear':L3.pcr>1.2?'bull':'neut';
+  const dirSig=L3.dir==='add_bear'||L3.dir==='unwind_bear'?'bear':'bull';
+  const fiiSig=L3.fii==='long'?'bull':L3.fii==='short'?'bear':'neut';
+  const chgAmp=L3.chg>40?` ⚡ Extreme (+${L3.chg}% — Strong institutional signal)`:'';
+  document.getElementById('oi_row').innerHTML=`
+    <div class="oi-card"><div class="oi-lbl">Max Pain</div><div class="oi-val">₹${L3.mp}</div><div class="oi-sig ${mpSig}">${mpLbl}</div><div class="oi-desc">Spot is ${Math.abs(L3.mpDiff).toFixed(0)} pts ${L3.mpDiff>0?'above':'below'} Max Pain. ${L3.mpDiff>0?'Market maker gravity pulls toward '+L3.mp+' by expiry.':'Support from max pain pull upward.'}</div></div>
+    <div class="oi-card"><div class="oi-lbl">PCR</div><div class="oi-val">${L3.pcr}</div><div class="oi-sig ${pcrSig}">${L3.pcr<0.7?'Bearish':L3.pcr>1.2?'Bullish':'Neutral'} PCR</div><div class="oi-desc">${L3.pcr<0.7?'More calls than puts — market positioned for flat/down.':L3.pcr>1.2?'Heavy put writing = institutional bull conviction.':'Balanced PCR. No strong directional bias.'}</div></div>
+    <div class="oi-card"><div class="oi-lbl">Call OI Change</div><div class="oi-val">${L3.chg>0?'+':''}${L3.chg}%</div><div class="oi-sig ${dirSig}">${L3.dir.replace(/_/g,' ').toUpperCase()}</div><div class="oi-desc">${L3.dir==='add_bear'?`Institutions added ${L3.chg}% calls at ${document.getElementById('q_strike').value}. Betting Nifty stays below strike.${chgAmp}`:L3.dir==='add_bull'?'Fresh call buying — bulls entering momentum.':'OI direction suggests '+L3.dir.replace(/_/g,' ')+'.'}</div></div>
+    <div class="oi-card"><div class="oi-lbl">FII Futures</div><div class="oi-val">${L3.fii.toUpperCase()}</div><div class="oi-sig ${fiiSig}">${L3.fii==='long'?'FII Net Long':L3.fii==='short'?'FII Net Short':'FII Neutral'}</div><div class="oi-desc">${L3.fii==='long'?'FII buying futures = institutional tailwind.':L3.fii==='short'?'FII net short = institutional headwind. Smart money against CE buyers.':'FII neutral — no directional institutional commitment.'}</div></div>
+    <div class="oi-card"><div class="oi-lbl">Strike OI Ratio</div><div class="oi-val">C:${L3.coi}L / P:${L3.poi}L</div><div class="oi-sig ${(L3.coi/L3.poi)>1.5?'bear':(L3.coi/L3.poi)<0.7?'bull':'neut'}">${(L3.coi/L3.poi)>1.5?'Heavy Call Wall':(L3.coi/L3.poi)<0.7?'Heavy Put Support':'Balanced OI'}</div><div class="oi-desc">Ratio ${(L3.coi/(L3.poi||1)).toFixed(2)}. ${(L3.coi/L3.poi)>1.5?'Institutions selling calls = resistance ceiling at strike.':'Balanced or put-heavy OI at strike.'}</div></div>
+    <div class="oi-card"><div class="oi-lbl">IV Rank</div><div class="oi-val">${L3.ivr.toUpperCase()}</div><div class="oi-sig ${L3.ivr==='high'?'bear':L3.ivr==='low'?'bull':'neut'}">${L3.ivr==='high'?'Sell Premium':L3.ivr==='low'?'Buy Premium':'Neutral IV'}</div><div class="oi-desc">${L3.ivr==='high'?'High IV Rank — options are expensive. Premium compression likely.':L3.ivr==='low'?'Low IV Rank — options cheap. Buyers favored. IV expansion possible.':'Medium IV. Direction drives premium. No strong IV bias.'}</div></div>
+  `;
+
+  // Key levels
+  const bullBE=type==='call'?K+mkt:K-mkt;
+  const sellerBE=type==='call'?K:K;
+  const support=L3.mp;
+  const resistance=Math.max(K,S+100);
+  document.getElementById('levels_row').innerHTML=`
+    <div class="lv-item"><div class="lv-lbl">Buyer Break-even</div><div class="lv-val" style="color:var(--gold2)">₹${bullBE.toFixed(0)}</div><div class="lv-sub">Nifty must close ${type==='call'?'above':'below'} this</div></div>
+    <div class="lv-item"><div class="lv-lbl">Strike Level</div><div class="lv-val" style="color:var(--blue2)">₹${K.toFixed(0)}</div><div class="lv-sub">${S>K?'Currently ITM by '+(S-K).toFixed(0)+' pts':'Currently OTM by '+(K-S).toFixed(0)+' pts'}</div></div>
+    <div class="lv-item"><div class="lv-lbl">Max Pain Level</div><div class="lv-val" style="color:var(--purple2)">₹${support.toFixed(0)}</div><div class="lv-sub">Expiry gravity target</div></div>
+    <div class="lv-item"><div class="lv-lbl">1σ Range (Next Session)</div><div class="lv-val" style="color:var(--green)">±${exp1sig.toFixed(0)} pts</div><div class="lv-sub">${(S-exp1sig).toFixed(0)} — ${(S+exp1sig).toFixed(0)}</div></div>
+    <div class="lv-item"><div class="lv-lbl">Key Resistance</div><div class="lv-val" style="color:var(--red)">₹${resistance.toFixed(0)}</div><div class="lv-sub">Supply zone for bulls</div></div>
+    <div class="lv-item"><div class="lv-lbl">Theta Break-even/day</div><div class="lv-val" style="color:var(--orange2)">±${(res.gamma>1e-6?Math.sqrt(2*tDay/res.gamma):0).toFixed(0)} pts</div><div class="lv-sub">Min daily move for buyer</div></div>
+  `;
+
+  // Trade guide
+  const isSeller=verdict.includes('SELL')||verdict==='SELLER EDGE';
+  const isBuyer=verdict.includes('BUY')||verdict==='BUYER EDGE';
+  const rules=[];
+  rules.push({cls:'watch',icon:'👁',text:`<strong>Watch at 9:15 AM open:</strong> Check Gift Nifty and India VIX before entry. If VIX is rising sharply (>5%), premium will open higher regardless of direction.`});
+  if(isSeller){
+    rules.push({cls:'act',icon:'📉',text:`<strong>Seller Strategy:</strong> If Nifty opens flat or gap-down, premium decay is locked in. Adjusted prediction: ₹${adjPred.toFixed(1)} for flat Nifty. Target: capture ₹${(mkt-adjPred).toFixed(1)} decay.`});
+    rules.push({cls:'risk',icon:'⚠',text:`<strong>Seller Risk:</strong> If Nifty gaps up >150 pts from ${S}, exit the short position immediately. Break-even for buyer is at ₹${bullBE.toFixed(0)}. Above this, seller faces losses.`});
+    rules.push({cls:'watch',icon:'🎯',text:`<strong>Max Pain Target:</strong> ${L3.mp} is the expiry gravity level. If Nifty is trading near ${L3.mp} by 1:30 PM, the pin is working in your favor as a seller.`});
+  }
+  if(isBuyer){
+    rules.push({cls:'act',icon:'📈',text:`<strong>Buyer Strategy:</strong> Wait for Nifty to confirm above ${(S+50).toFixed(0)} before entering. You need +${beMove.toFixed(0)} pts just to break even at expiry. Minimum daily move required: ±${(res.gamma>1e-6?Math.sqrt(2*tDay/res.gamma):0).toFixed(0)} pts.`});
+    rules.push({cls:'risk',icon:'⚠',text:`<strong>Buyer Risk:</strong> Theta bleeds ₹${tDay.toFixed(1)}/day. If Nifty is flat or oscillating, you lose even if you are right about direction. Set a stop loss at ₹${(mkt*0.4).toFixed(0)} (40% of premium).`});
+  }
+  if(verdict.includes('NEUTRAL')){
+    rules.push({cls:'watch',icon:'⏸',text:`<strong>No Trade Signal:</strong> Conflicting signals across all three layers. Highest probability edge is doing nothing. Wait for 10:00 AM to see if a clear direction emerges.`});
+  }
+  rules.push({cls:'watch',icon:'📊',text:`<strong>Gamma Risk at 1:30 PM:</strong> With ${DTE-1} DTE remaining, gamma will be at its peak after 1:30 PM. Large Nifty moves in final 2 hours will cause exponential premium moves. Be ready to exit quickly.`});
+  document.getElementById('tg_rules').innerHTML=rules.map(r=>`<div class="tg-rule ${r.cls}"><span class="tg-icon">${r.icon}</span><span class="tg-text">${r.text}</span></div>`).join('');
+
+  drawPayoff(S,K,friT,r,L1.predictedNextIV,mkt,type,buf);
+}
+
+/* ═══ PAYOFF CHART ═══ */
+function drawPayoff(S,K,T,r,iv,mkt,type,buf){
+  const c=document.getElementById('payoffChart');if(!c)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=c.parentElement.clientWidth,H=190;
+  c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';
+  const ctx=c.getContext('2d');ctx.scale(dpr,dpr);
+  const spots=[],pnls=[],adjPnls=[];
+  for(let s=S-600;s<=S+600;s+=20){
+    spots.push(s);
+    const intr=type==='call'?Math.max(s-K,0):Math.max(K-s,0);
+    pnls.push(intr-mkt);
+    const bsP=bs(s,K,T,r,iv,type).p;
+    adjPnls.push(bsP+buf-mkt);
+  }
+  const pad={t:14,b:30,l:58,r:12};
+  const cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+  const allV=[...pnls,...adjPnls];
+  const minV=Math.min(...allV)*1.15,maxV=Math.max(...allV)*1.15;
+  const range=maxV-minV||1;
+  const xS=i=>pad.l+(i/(spots.length-1))*cW;
+  const yS=v=>pad.t+cH-((v-minV)/range)*cH;
+  ctx.clearRect(0,0,W,H);
+  // Grid
+  ctx.strokeStyle='rgba(28,40,64,0.7)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=pad.t+(i/4)*cH;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();ctx.fillStyle='#7888a8';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='right';ctx.fillText(((maxV-minV)*(4-i)/4+minV).toFixed(0),pad.l-4,y+4);}
+  // Zero
+  const zy=yS(0);ctx.strokeStyle='rgba(200,152,26,0.3)';ctx.lineWidth=1;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(pad.l,zy);ctx.lineTo(W-pad.r,zy);ctx.stroke();ctx.setLineDash([]);
+  // Strike
+  const si=spots.findIndex(s=>s>=K);ctx.strokeStyle='rgba(96,160,255,0.4)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(xS(si),pad.t);ctx.lineTo(xS(si),H-pad.b);ctx.stroke();ctx.setLineDash([]);
+  // Current spot
+  const ci=spots.findIndex(s=>s>=S);ctx.strokeStyle='rgba(0,200,240,0.4)';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(xS(ci),pad.t);ctx.lineTo(xS(ci),H-pad.b);ctx.stroke();ctx.setLineDash([]);
+  // Fills
+  ctx.beginPath();spots.forEach((_,i)=>{if(i===0)ctx.moveTo(xS(i),yS(Math.max(pnls[i],0)));else ctx.lineTo(xS(i),yS(Math.max(pnls[i],0)));});ctx.lineTo(xS(spots.length-1),yS(0));ctx.lineTo(xS(0),yS(0));ctx.closePath();ctx.fillStyle='rgba(0,212,132,0.09)';ctx.fill();
+  ctx.beginPath();spots.forEach((_,i)=>{if(i===0)ctx.moveTo(xS(i),yS(Math.min(pnls[i],0)));else ctx.lineTo(xS(i),yS(Math.min(pnls[i],0)));});ctx.lineTo(xS(spots.length-1),yS(0));ctx.lineTo(xS(0),yS(0));ctx.closePath();ctx.fillStyle='rgba(240,56,88,0.09)';ctx.fill();
+  // Adj BS curve
+  ctx.beginPath();spots.forEach((_,i)=>{if(i===0)ctx.moveTo(xS(i),yS(adjPnls[i]));else ctx.lineTo(xS(i),yS(adjPnls[i]));});
+  ctx.strokeStyle='rgba(0,212,132,0.55)';ctx.lineWidth=1.5;ctx.setLineDash([5,3]);ctx.stroke();ctx.setLineDash([]);
+  // Expiry payoff
+  ctx.beginPath();spots.forEach((_,i)=>{if(i===0)ctx.moveTo(xS(i),yS(pnls[i]));else ctx.lineTo(xS(i),yS(pnls[i]));});
+  ctx.strokeStyle='var(--gold2)';ctx.lineWidth=2.5;ctx.stroke();
+  // Labels
+  ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center';
+  ctx.fillStyle='rgba(96,160,255,0.8)';ctx.fillText('K='+K,xS(si),pad.t+9);
+  ctx.fillStyle='rgba(0,212,132,0.8)';ctx.fillText('SPOT='+S,xS(ci),pad.t+20);
+  ctx.fillStyle='rgba(200,152,26,0.65)';ctx.textAlign='left';ctx.fillText('Expiry P&L',pad.l+4,zy-5);
+  ctx.fillStyle='rgba(0,212,132,0.65)';ctx.fillText('Adj BS (Next Session)',pad.l+4,zy+13);
+  ctx.fillStyle='#7888a8';ctx.textAlign='center';
+  [0,Math.floor(spots.length/4),Math.floor(spots.length/2),Math.floor(3*spots.length/4),spots.length-1].forEach(i=>{ctx.fillText(spots[i],xS(i),H-5);});
+}
+
+/* ═══ HELPERS ═══ */
+function set(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function stc(id,c){const e=document.getElementById(id);if(e)e.style.color=c;}
+document.addEventListener('DOMContentLoaded',function(){calcDTE();});
+</script>
+</body>
+</html>
