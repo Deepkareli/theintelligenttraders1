@@ -28,8 +28,8 @@
   status = 200
 
 [[redirects]]
-  from = "/prediction-engine-sebi"
-  to = "/prediction-engine-sebi.html"
+  from = "/prediction-engine"
+  to = "/prediction-engine.html"
   status = 200
 
 [[redirects]]
