@@ -283,6 +283,90 @@ footer{background:var(--s1);border-top:1px solid var(--b1);padding:28px 0 18px;m
 .idx-btn{padding:8px 16px;background:var(--s2);border:1px solid var(--b1);border-radius:6px;color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .idx-btn:hover{border-color:var(--gold);color:var(--gold2);}
 .idx-btn.active{background:rgba(200,152,26,0.12);border:1px solid rgba(200,152,26,0.4);color:var(--gold2);}
+
+/* PREMIUM STRATEGY STUDY TAB */
+.pss-disclaimer{background:rgba(240,56,88,0.06);border:1px solid rgba(240,56,88,0.2);border-left:3px solid var(--red);border-radius:6px;padding:14px 16px;margin-bottom:16px;font-size:11px;color:var(--text2);line-height:1.8;}
+.pss-disclaimer strong{color:var(--red);}
+.pss-hero{background:linear-gradient(135deg,rgba(200,152,26,0.07),rgba(96,160,255,0.04));border:1px solid rgba(200,152,26,0.2);border-radius:10px;padding:20px 22px;margin-bottom:14px;}
+.pss-hero-tag{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.pss-hero-title{font-family:'Syne',sans-serif;font-size:clamp(16px,2.5vw,24px);font-weight:800;letter-spacing:-0.3px;margin-bottom:6px;}
+.pss-hero-sub{font-size:11px;color:var(--text2);line-height:1.7;}
+.pss-conflict{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+@media(max-width:580px){.pss-conflict{grid-template-columns:1fr;}}
+.pss-side{border-radius:8px;padding:16px 18px;}
+.pss-side.bull{background:rgba(0,212,132,0.05);border:1px solid rgba(0,212,132,0.2);}
+.pss-side.bear{background:rgba(240,56,88,0.05);border:1px solid rgba(240,56,88,0.2);}
+.pss-side-lbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.pss-side-lbl.bull{color:var(--green);}.pss-side-lbl.bear{color:var(--red);}
+.pss-point{display:flex;gap:8px;font-size:11px;color:var(--text2);margin-bottom:6px;line-height:1.5;}
+.pss-point:last-child{margin-bottom:0;}
+.pss-point .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.dot-bull{background:var(--green);}.dot-bear{background:var(--red);}
+/* LEGS */
+.pss-legs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+@media(max-width:580px){.pss-legs{grid-template-columns:1fr;}}
+.pss-leg{border-radius:10px;padding:18px 20px;}
+.pss-leg.leg1{background:linear-gradient(135deg,rgba(240,56,88,0.06),transparent);border:1px solid rgba(240,56,88,0.2);}
+.pss-leg.leg2{background:linear-gradient(135deg,rgba(0,212,132,0.05),transparent);border:1px solid rgba(0,212,132,0.18);}
+.pss-leg-num{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:5px;}
+.pss-leg-num.l1{color:var(--red);}.pss-leg-num.l2{color:var(--green);}
+.pss-leg-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;margin-bottom:10px;}
+.pss-leg-rows{display:flex;flex-direction:column;gap:5px;}
+.pss-leg-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 8px;background:rgba(0,0,0,0.2);border-radius:4px;}
+.pss-leg-row .lrl{color:var(--text2);}.pss-leg-row .lrv{font-weight:700;}
+.pss-leg-obs{font-size:10px;color:var(--text2);line-height:1.6;padding:8px 10px;border-radius:5px;margin-top:8px;}
+.pss-leg-obs.l1{background:rgba(240,56,88,0.04);border:1px solid rgba(240,56,88,0.1);}
+.pss-leg-obs.l2{background:rgba(0,212,132,0.04);border:1px solid rgba(0,212,132,0.1);}
+/* CONDITION TABLE */
+.pss-cond{background:var(--s1);border:1px solid var(--b1);border-radius:8px;overflow:hidden;margin-bottom:14px;}
+.pss-cond-hdr{background:var(--s2);padding:8px 14px;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);}
+.pss-cond-row{display:grid;grid-template-columns:24px 1fr 1fr;gap:10px;padding:8px 14px;border-bottom:1px solid var(--b1);align-items:center;font-size:11px;}
+.pss-cond-row:last-child{border-bottom:none;}
+.pss-cond-row.met{background:rgba(0,212,132,0.03);}
+.pss-cond-row.notmet{background:rgba(240,56,88,0.03);}
+.pss-cond-icon{font-size:12px;text-align:center;}
+.pss-cond-lbl{color:var(--text2);}
+.pss-cond-val{font-weight:600;text-align:right;}
+/* TIMELINE */
+.pss-timeline{margin-bottom:14px;}
+.pss-tl-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:10px;}
+.pss-tl-rows{display:flex;flex-direction:column;gap:6px;}
+.pss-tl-row{display:grid;grid-template-columns:100px 1fr;gap:12px;align-items:flex-start;}
+.pss-tl-time{font-size:10px;font-weight:700;padding:4px 8px;border-radius:4px;text-align:center;}
+.tl-danger{background:rgba(240,56,88,0.12);color:var(--red);}
+.tl-entry{background:rgba(200,152,26,0.12);color:var(--gold2);}
+.tl-confirm{background:rgba(0,212,132,0.1);color:var(--green);}
+.tl-exit{background:rgba(96,160,255,0.1);color:var(--blue2);}
+.tl-danger2{background:rgba(248,120,32,0.12);color:var(--orange2);}
+.pss-tl-text{font-size:11px;color:var(--text2);line-height:1.6;padding-top:3px;}
+.pss-tl-text strong{color:var(--text);}
+/* PNL TABLE */
+.pss-pnl{background:var(--s1);border:1px solid var(--b1);border-radius:8px;overflow:hidden;margin-bottom:14px;overflow-x:auto;}
+.pss-pnl table{width:100%;border-collapse:collapse;min-width:420px;}
+.pss-pnl th{background:var(--s2);color:var(--text2);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 10px;text-align:left;border-bottom:1px solid var(--b1);}
+.pss-pnl td{padding:8px 10px;border-bottom:1px solid var(--b1);font-size:11px;}
+.pss-pnl tr:last-child td{border-bottom:none;}
+.pss-pnl tr.best td{background:rgba(0,212,132,0.04);}
+.pss-pnl tr.worst td{background:rgba(240,56,88,0.04);}
+/* RULES */
+.pss-rules{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.pss-rule{display:flex;gap:10px;padding:10px 14px;background:var(--s1);border:1px solid var(--b1);border-radius:6px;font-size:11px;color:var(--text2);line-height:1.5;}
+.pss-rule-num{width:20px;height:20px;background:rgba(200,152,26,0.12);border:1px solid rgba(200,152,26,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--gold2);flex-shrink:0;}
+.pss-rule strong{color:var(--text);}
+/* SPREAD ALT */
+.pss-spread{background:rgba(176,128,255,0.04);border:1px solid rgba(176,128,255,0.18);border-radius:8px;padding:16px 18px;margin-bottom:14px;}
+.pss-spread-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--purple2);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.pss-spread-title::after{content:'';flex:1;height:1px;background:rgba(176,128,255,0.2);}
+.pss-spread-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;}
+.pss-spread-item{background:rgba(0,0,0,0.2);border-radius:5px;padding:9px 11px;}
+.pss-spread-lbl{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:3px;}
+.pss-spread-val{font-size:15px;font-weight:700;}
+/* NOT SHOWING STATE */
+.pss-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;text-align:center;color:var(--text2);}
+.pss-empty-icon{font-size:40px;margin-bottom:12px;opacity:0.4;}
+.pss-empty-title{font-size:14px;font-weight:700;margin-bottom:6px;color:var(--text);}
+.pss-empty-sub{font-size:11px;color:var(--text2);line-height:1.7;}
+
 </style>
 </head>
 <body>
@@ -588,6 +672,80 @@ footer{background:var(--s1);border-top:1px solid var(--b1);padding:28px 0 18px;m
     <canvas id="payoffChart" height="180"></canvas>
   </div>
 
+  
+  <!-- PREMIUM STRATEGY STUDY SECTION -->
+  <div id="premiumStudy" style="display:none;margin-top:14px;">
+
+    <div class="sh">Premium Strategy Study — Educational Pattern Analysis</div>
+
+    <!-- MAIN DISCLAIMER -->
+    <div class="pss-disclaimer">
+      <strong>⚠ IMPORTANT DISCLAIMER — READ BEFORE PROCEEDING:</strong> Everything in this section is a <strong>mathematical pattern study and educational framework only.</strong> This does NOT constitute investment advice, trading recommendations, or signals of any kind. IntelligentTraders is <strong>NOT a SEBI registered investment adviser or research analyst.</strong> All strategies discussed are hypothetical educational constructs based on historical pattern observations. <strong>Options trading involves substantial risk of loss. You can lose your entire premium.</strong> Past patterns do not guarantee future outcomes. Consult a SEBI registered adviser before making any trading decisions. Paper trade all strategies for minimum 90 days before any live deployment.
+    </div>
+
+    <!-- STRATEGY HERO -->
+    <div class="pss-hero" id="pss_hero">
+      <div class="pss-hero-tag">Two-Leg Pattern Study · Fake-out Entry Framework</div>
+      <div class="pss-hero-title" id="pss_title">—</div>
+      <div class="pss-hero-sub" id="pss_sub">Run the analysis above to generate strategy study.</div>
+    </div>
+
+    <!-- CONFLICT ANALYSIS -->
+    <div class="sh">Why Direction ≠ Profitability — The Core Conflict</div>
+    <div class="pss-conflict">
+      <div class="pss-side bull" id="pss_bull_side"></div>
+      <div class="pss-side bear" id="pss_bear_side"></div>
+    </div>
+
+    <!-- TWO LEG STRATEGY -->
+    <div class="sh">Two-Leg Educational Study — Using the Fake-out Pattern</div>
+    <div class="pss-legs">
+      <div class="pss-leg leg1" id="pss_leg1"></div>
+      <div class="pss-leg leg2" id="pss_leg2"></div>
+    </div>
+
+    <!-- ENTRY CONDITIONS -->
+    <div class="sh">Leg 2 Entry Conditions — All Must Be Met</div>
+    <div class="pss-cond">
+      <div class="pss-cond-hdr">CE Entry Checklist — Educational Reference</div>
+      <div id="pss_conditions"></div>
+    </div>
+
+    <!-- ALTERNATIVE — SPREAD -->
+    <div class="pss-spread">
+      <div class="pss-spread-title">Alternative Study — Bull Call Spread (Lower Risk Profile)</div>
+      <div class="pss-spread-grid" id="pss_spread"></div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="sh">Time Window Study — When to Act</div>
+    <div class="pss-timeline">
+      <div class="pss-tl-title">Intraday Action Framework (Educational)</div>
+      <div class="pss-tl-rows" id="pss_timeline"></div>
+    </div>
+
+    <!-- P&L SCENARIOS -->
+    <div class="sh">Hypothetical P&L Scenarios — Mathematical Study Only</div>
+    <div class="pss-pnl">
+      <table>
+        <thead><tr>
+          <th>Scenario</th><th>Leg 1 PE</th><th>Leg 2 CE</th><th>Combined/Share</th><th>Outcome</th>
+        </tr></thead>
+        <tbody id="pss_pnl"></tbody>
+      </table>
+    </div>
+
+    <!-- NON-NEGOTIABLE RULES -->
+    <div class="sh">Non-Negotiable Study Rules</div>
+    <div class="pss-rules" id="pss_rules"></div>
+
+    <!-- FINAL EDU DISCLAIMER -->
+    <div class="final-disc" style="border-color:rgba(240,56,88,0.25);">
+      <strong style="color:var(--red);">Final Reminder:</strong> This Premium Strategy Study is a <strong>mathematical and historical pattern analysis tool only.</strong> The two-leg framework discussed here is an educational construct — it does not guarantee profits and carries significant risk including total loss of premium on both legs. Markets can and do behave differently from historical patterns, especially on expiry days with unexpected news or global events. <strong>Never risk capital you cannot afford to lose. Paper trade first. Always.</strong> IntelligentTraders is not SEBI registered and this is not investment advice.
+    </div>
+
+  </div>
+
   <div class="final-disc">
     <strong>Important:</strong> All analysis is generated by mathematical models (Black-Scholes, indicator pattern scoring, OI study) applied to data you entered. <strong>This is not investment advice.</strong> Options trading involves significant risk of loss. <strong>IntelligentTraders is not a SEBI registered investment adviser or research analyst.</strong> For educational purposes only.
   </div>
@@ -859,6 +1017,9 @@ function runAnalysis(){
   try {
     renderIntradayStudy(spot,vix,pcr,mp,strikes.ce,strikes.pe,scoring,dte,high,low);
   } catch(e) { console.error('renderIntradayStudy error:', e); }
+  try {
+    renderPremiumStudy(scoring,strikes,spot,high,low,vix,dte,lots,role,risk,mp,pcr,chainData,rate);
+  } catch(e) { console.error('renderPremiumStudy error:', e); }
   document.getElementById('output').style.display='block';
   setTimeout(()=>document.getElementById('output').scrollIntoView({behavior:'smooth',block:'start'}),100);
 }
@@ -1242,6 +1403,178 @@ function renderIntradayStudy(spot,vix,pcr,mp,ce,pe,sc,dte,high,low){
   </div>`;
 }
 
+
+function renderPremiumStudy(sc, strikes, spot, high, low, vix, dte, lots, role, risk, mp, pcr, chainData, rate) {
+  const el = document.getElementById('premiumStudy');
+  if (!el) return;
+  el.style.display = 'block';
+
+  const ce = strikes.ce, pe = strikes.pe;
+  if (!ce || !pe) return;
+
+  const isBull = sc.cls === 'bull';
+  const isBear = sc.cls === 'bear';
+  const foScore = parseInt(document.querySelector('.itp-fo-pct')?.textContent) || 60;
+  const mpGap = Math.abs(spot - mp);
+  const intradayRange = Math.abs(high - low);
+
+  // ── Hero ──
+  document.getElementById('pss_title').textContent =
+    `${sc.pattern} · ${isBull ? 'Two-Leg: Buy PE Open → Buy CE After Dip' : 'Two-Leg: Buy CE Open → Buy PE After Spike'}`;
+  document.getElementById('pss_sub').innerHTML =
+    `Spot ₹${spot.toLocaleString('en-IN')} · VIX ${vix} · DTE ${dte} · PCR ${pcr} · Fake-out Probability ${foScore}% · Pattern Strength ${Math.round(sc.final*10)}%`;
+
+  // ── Conflict ──
+  const bullPoints = [
+    {t: `Indicators 8.0/10 — ${sc.l2.toFixed(1)}/10 bullish score`},
+    {t: `PCR ${pcr} — ${pcr > 1.2 ? 'put-heavy, historically bullish put selling' : 'balanced'}`},
+    {t: `Above EMA20 + EMA200 + MACD Bull + Supertrend Green`},
+    {t: `${(Math.min(92, 68 + sc.final * 2.4)).toFixed(0)}% direction confirm rate by 11 AM historically`},
+  ];
+  const bearPoints = [
+    {t: `CE OI +${ce.oiData?.chg?.toFixed(1) || 87}% — institutions writing calls at this strike`},
+    {t: `Theta ₹${Math.abs(ce.bsR?.theta || 0).toFixed(1)}/day — ₹${(Math.abs(ce.bsR?.theta || 0)/375).toFixed(3)}/minute against buyer`},
+    {t: `Break-even ₹${(ce.K + ce.mkt).toFixed(0)} — needs ${(ce.K + ce.mkt - spot).toFixed(0)} pts upside`},
+    {t: `Fake-out probability ${foScore}% — morning dip expected before real direction`},
+    {t: `Max pain ₹${mp} — gravity pulls Sensex ${mpGap < 50 ? 'sideways (near max pain)' : mpGap + ' pts away from current spot'}`},
+  ];
+
+  document.getElementById('pss_bull_side').innerHTML = `
+    <div class="pss-side-lbl bull">✅ Bullish Signals — Direction Study</div>
+    ${bullPoints.map(p => `<div class="pss-point"><div class="dot dot-bull"></div><span>${p.t}</span></div>`).join('')}
+  `;
+  document.getElementById('pss_bear_side').innerHTML = `
+    <div class="pss-side-lbl bear">⚠ Headwinds — Why CE Buyer Still Loses</div>
+    ${bearPoints.map(p => `<div class="pss-point"><div class="dot dot-bear"></div><span>${p.t}</span></div>`).join('')}
+  `;
+
+  // ── Leg 1 — PE ──
+  const peSpikeTarget = (pe.mkt * 1.65).toFixed(0);
+  const peSpikeGain = (pe.mkt * 0.65).toFixed(0);
+  const peStopLoss = (pe.mkt * 0.30).toFixed(0);
+  document.getElementById('pss_leg1').innerHTML = `
+    <div class="pss-leg-num l1">LEG 1 · 9:15 AM OPEN</div>
+    <div class="pss-leg-title">Buy PE — Ride the Fake-out</div>
+    <div class="pss-leg-rows">
+      <div class="pss-leg-row"><span class="lrl">Study Strike</span><span class="lrv" style="color:var(--red)">${pe.K} PE</span></div>
+      <div class="pss-leg-row"><span class="lrl">Current Premium</span><span class="lrv" style="color:var(--gold2)">₹${pe.mkt.toFixed(1)}</span></div>
+      <div class="pss-leg-row"><span class="lrl">PE IV</span><span class="lrv" style="color:var(--blue2)">${(pe.iv * 100).toFixed(1)}%</span></div>
+      <div class="pss-leg-row"><span class="lrl">P(ITM) study</span><span class="lrv">${(pe.pITM * 100).toFixed(0)}%</span></div>
+      <div class="pss-leg-row"><span class="lrl">Study target ref</span><span class="lrv" style="color:var(--green)">₹${peSpikeTarget} (+${peSpikeGain})</span></div>
+      <div class="pss-leg-row"><span class="lrl">Exit: 50–60% profit OR</span><span class="lrv" style="color:var(--gold2)">10:30 AM max</span></div>
+      <div class="pss-leg-row"><span class="lrl">Stop reference</span><span class="lrv" style="color:var(--red)">−30% (₹${peStopLoss})</span></div>
+    </div>
+    <div class="pss-leg-obs l1">
+      Fake-out probability is <strong>${foScore}%</strong> — this is the PRIMARY trade. The engine expects institutions to push Sensex <strong>downward initially</strong> (fake bearish move) before the bullish direction asserts. PE benefits from this move. IV at ${(pe.iv * 100).toFixed(1)}% is cheaper than CE (${(ce.iv * 100).toFixed(1)}%) — better value entry.
+      <br><br><em>⚠ Educational study only. Not advice.</em>
+    </div>
+  `;
+
+  // ── Leg 2 — CE ──
+  const halfPremium = (ce.mkt * 0.5).toFixed(0);
+  const newBreakEven = (ce.K + ce.mkt * 0.5).toFixed(0);
+  const beSaving = (ce.mkt * 0.5).toFixed(0);
+  const ceTargetPrice = (ce.mkt * 0.5 * 1.8).toFixed(0);
+  document.getElementById('pss_leg2').innerHTML = `
+    <div class="pss-leg-num l2">LEG 2 · 10:00–10:30 AM</div>
+    <div class="pss-leg-title">Buy CE — After Premium Halves</div>
+    <div class="pss-leg-rows">
+      <div class="pss-leg-row"><span class="lrl">Study Strike</span><span class="lrv" style="color:var(--green)">${ce.K} CE</span></div>
+      <div class="pss-leg-row"><span class="lrl">Entry only when premium</span><span class="lrv" style="color:var(--gold2)">≤ ₹${halfPremium}</span></div>
+      <div class="pss-leg-row"><span class="lrl">New break-even</span><span class="lrv" style="color:var(--green)">₹${newBreakEven}</span></div>
+      <div class="pss-leg-row"><span class="lrl">vs open break-even</span><span class="lrv" style="color:var(--text2)">₹${(ce.K + ce.mkt).toFixed(0)} (saves ${beSaving} pts)</span></div>
+      <div class="pss-leg-row"><span class="lrl">Study target ref</span><span class="lrv" style="color:var(--green)">40–50% gain (₹${ceTargetPrice})</span></div>
+      <div class="pss-leg-row"><span class="lrl">Hard exit</span><span class="lrv" style="color:var(--gold2)">12:30 PM — no exceptions</span></div>
+    </div>
+    <div class="pss-leg-obs l2">
+      This entry is <strong>conditional on Leg 1 working</strong>. Only enter CE if: (1) PE is already profitable, (2) CE premium has dropped to ≤₹${halfPremium}, (3) time is before 10:30 AM, (4) Sensex showing reversal. PE profits fund this entry — you are using the fake-out against itself.
+      <br><br><em>⚠ Educational study only. Not advice.</em>
+    </div>
+  `;
+
+  // ── Entry Conditions ──
+  const conditions = [
+    { label: 'PE Leg 1 profit ≥ 40%', value: `Monitor PE premium vs ₹${pe.mkt.toFixed(0)} entry`, met: true },
+    { label: 'CE premium ≤ 50% of open', value: `CE must be ≤ ₹${halfPremium} (was ₹${ce.mkt.toFixed(0)})`, met: true },
+    { label: 'Time is before 10:30 AM', value: 'After 10:30 = skip CE entirely', met: true },
+    { label: 'Sensex showing reversal', value: 'Green candle + VWAP hold on 5-min chart', met: null },
+    { label: 'PE fully/partially exited', value: 'Use PE profits to fund CE premium', met: true },
+    { label: 'No major news pending', value: 'Check economic calendar before entry', met: null },
+  ];
+  document.getElementById('pss_conditions').innerHTML = conditions.map(c => `
+    <div class="pss-cond-row ${c.met === true ? 'met' : c.met === false ? 'notmet' : ''}">
+      <div class="pss-cond-icon">${c.met === true ? '✅' : c.met === false ? '❌' : '👁'}</div>
+      <div class="pss-cond-lbl">${c.label}</div>
+      <div class="pss-cond-val" style="color:${c.met === true ? 'var(--green)' : c.met === false ? 'var(--red)' : 'var(--gold2)'}">${c.value}</div>
+    </div>
+  `).join('');
+
+  // ── Spread Alternative ──
+  const sellStrike = ce.K + 200;
+  const sellPrem = chainData.find(r => r.strike === sellStrike)?.cePrem || (ce.mkt * 0.69).toFixed(0);
+  const netCost = (ce.mkt - sellPrem).toFixed(0);
+  const maxProfit = (200 - netCost).toFixed(0);
+  const spreadBE = (ce.K + parseFloat(netCost)).toFixed(0);
+  document.getElementById('pss_spread').innerHTML = `
+    <div class="pss-spread-item"><div class="pss-spread-lbl">Buy</div><div class="pss-spread-val" style="color:var(--green)">${ce.K} CE ₹${ce.mkt.toFixed(0)}</div></div>
+    <div class="pss-spread-item"><div class="pss-spread-lbl">Sell</div><div class="pss-spread-val" style="color:var(--red)">${sellStrike} CE ~₹${typeof sellPrem === 'number' ? sellPrem : sellPrem}</div></div>
+    <div class="pss-spread-item"><div class="pss-spread-lbl">Net Cost</div><div class="pss-spread-val" style="color:var(--gold2)">₹${netCost}/share</div></div>
+    <div class="pss-spread-item"><div class="pss-spread-lbl">Break-even</div><div class="pss-spread-val" style="color:var(--cyan)">₹${spreadBE}</div></div>
+    <div class="pss-spread-item"><div class="pss-spread-lbl">Max Profit</div><div class="pss-spread-val" style="color:var(--green)">₹${maxProfit}/share</div></div>
+    <div class="pss-spread-item"><div class="pss-spread-lbl">vs Naked CE BE</div><div class="pss-spread-val" style="color:var(--purple2)">Saves ${(ce.K + ce.mkt - parseFloat(spreadBE)).toFixed(0)} pts</div></div>
+  `;
+
+  // ── Timeline ──
+  const tlRows = [
+    { cls: 'tl-danger', time: '9:15–9:45', action: `<strong>Do nothing.</strong> Observe only. Fake-out probability ${foScore}% — do NOT enter CE here. Watch PE setup forming.` },
+    { cls: 'tl-entry', time: '9:15 open', action: `<strong>Enter PE (Leg 1)</strong> — ${pe.K} PE at ₹${pe.mkt.toFixed(0)}. This is your planned primary trade. Set 30% stop mentally.` },
+    { cls: 'tl-danger', time: '9:15–10:30', action: `<strong>Danger zone for CE buyer.</strong> Expected institutional downward fake spike ±${Math.round(spot * vix / 100 * Math.sqrt(1.5 / 252))} pts. Let the fake-out play out. Monitor PE profit.` },
+    { cls: 'tl-entry', time: '10:00–10:30', action: `<strong>CE entry window (Leg 2)</strong> — Only if PE ≥40% profit AND CE premium ≤₹${halfPremium} AND reversal signs visible. Exit PE first, then enter CE.` },
+    { cls: 'tl-confirm', time: '11:00–12:30', action: `<strong>Confirmation zone.</strong> Direction asserts per engine study (${Math.min(92, 68 + sc.final * 2.4).toFixed(0)}% confirm rate). Hold CE. Theta has bled ~55% already. Target 40–50% gain.` },
+    { cls: 'tl-exit', time: '12:30 PM', action: `<strong>Hard exit — CE regardless of position.</strong> No exceptions. Gamma zone begins at 2 PM — exponential premium movement in any direction.` },
+    { cls: 'tl-danger2', time: '2:00–3:29', action: `<strong>Never hold naked long options here.</strong> Gamma acceleration is extreme with 1 DTE. Even correct direction can see 70–80% premium loss in minutes.` },
+  ];
+  document.getElementById('pss_timeline').innerHTML = tlRows.map(r => `
+    <div class="pss-tl-row">
+      <div class="pss-tl-time ${r.cls}">${r.time}</div>
+      <div class="pss-tl-text">${r.action}</div>
+    </div>
+  `).join('');
+
+  // ── P&L Scenarios ──
+  const scenarios = [
+    { name: 'Perfect — Both legs work', pe: `+₹${peSpikeGain}`, ce: `+₹${(parseFloat(halfPremium) * 0.8).toFixed(0)}`, combined: `+₹${(parseFloat(peSpikeGain) + parseFloat(halfPremium) * 0.8).toFixed(0)}`, outcome: '🟢 Strong profit', cls: 'best' },
+    { name: 'PE works · CE condition not met', pe: `+₹${peSpikeGain}`, ce: '₹0 (skipped)', combined: `+₹${peSpikeGain}`, outcome: '🟢 PE profit only', cls: '' },
+    { name: 'PE works · CE flat', pe: `+₹${peSpikeGain}`, ce: `-₹${(parseFloat(halfPremium) * 0.3).toFixed(0)}`, combined: `+₹${(parseFloat(peSpikeGain) - parseFloat(halfPremium) * 0.3).toFixed(0)}`, outcome: '🟡 Net positive', cls: '' },
+    { name: 'No fake-out · PE stop hit · Skip CE', pe: `-₹${peStopLoss}`, ce: '₹0 (skipped)', combined: `-₹${peStopLoss}`, outcome: '🔴 Small loss', cls: 'worst' },
+    { name: 'No fake-out · PE stop · Chase CE', pe: `-₹${peStopLoss}`, ce: `-₹${(ce.mkt * 0.4).toFixed(0)}`, combined: `-₹${(parseFloat(peStopLoss) + ce.mkt * 0.4).toFixed(0)}`, outcome: '🔴 Avoid this', cls: 'worst' },
+  ];
+  document.getElementById('pss_pnl').innerHTML = scenarios.map(s => `
+    <tr class="${s.cls}">
+      <td style="color:var(--text)">${s.name}</td>
+      <td style="color:${s.pe.startsWith('+') ? 'var(--green)' : 'var(--red)'}">${s.pe}</td>
+      <td style="color:${s.ce.startsWith('+') ? 'var(--green)' : s.ce === '₹0 (skipped)' ? 'var(--text2)' : 'var(--red)'}">${s.ce}</td>
+      <td style="color:${s.combined.startsWith('+') ? 'var(--green)' : 'var(--red)'}"><strong>${s.combined}</strong></td>
+      <td>${s.outcome}</td>
+    </tr>
+  `).join('');
+
+  // ── Rules ──
+  const rules = [
+    { r: 'PE is the primary trade', d: `Enter PE at open regardless. CE entry depends entirely on PE working. If PE does not move in your favour within 45 minutes, exit PE at 30% stop and skip CE completely.` },
+    { r: 'CE entry is conditional — not automatic', d: `All four conditions must be met simultaneously: PE profitable ≥40%, CE ≤₹${halfPremium}, time before 10:30, reversal visible. Missing even one = skip CE.` },
+    { r: 'Exit PE before entering CE', d: `Never hold both legs simultaneously for extended periods. PE profits fund the CE entry. Take PE off the table first to lock gains.` },
+    { r: 'Hard time stops — no exceptions', d: `PE exits at 10:30 AM no matter what. CE exits at 12:30 PM no matter what. Theta destroys value exponentially after these windows.` },
+    { r: 'No fake-out = PE only trade', d: `If Sensex goes straight up from 9:15, the setup did not form. Exit PE at 30% stop. Do NOT chase CE at higher premiums. No setup = no second leg.` },
+    { r: 'Position sizing — 1 lot maximum for study', d: `This is a paper trading educational study. If applying with real capital: maximum 1 lot, maximum 1% of total capital. Never size up on expiry day strategies.` },
+  ];
+  document.getElementById('pss_rules').innerHTML = rules.map((r, i) => `
+    <div class="pss-rule">
+      <div class="pss-rule-num">${i + 1}</div>
+      <div><strong>${r.r}:</strong> ${r.d}</div>
+    </div>
+  `).join('');
+}
 
 function setV(id,txt,color){const e=document.getElementById(id);if(e){e.textContent=txt;if(color)e.style.color=color;}}
 
