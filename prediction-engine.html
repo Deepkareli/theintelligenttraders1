@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prediction Engine — IntelligentTraders</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04060d;--s1:#080d18;--s2:#0d1322;--b1:#1c2840;--b2:#253352;
+  --gold:#c8981a;--gold2:#e8b830;--green:#00d484;--red:#f03858;
+  --blue2:#60a0ff;--purple2:#b080ff;--cyan:#00c8f0;
+  --orange:#f87820;--orange2:#ffaa50;
+  --text:#c8d8f0;--text2:#7888a8;--text3:#3a4860;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.6;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 50% at 20% 0%,rgba(200,152,26,0.05) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%,rgba(40,120,240,0.03) 0%,transparent 60%),
+    repeating-linear-gradient(rgba(28,40,64,0.2) 0,rgba(28,40,64,0.2) 1px,transparent 1px,transparent 44px),
+    repeating-linear-gradient(90deg,rgba(28,40,64,0.2) 0,rgba(28,40,64,0.2) 1px,transparent 1px,transparent 44px);}
+
+nav{position:sticky;top:0;z-index:200;background:rgba(4,6,13,0.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--b1);padding:0 20px;}
+.nav-inner{max-width:1100px;margin:0 auto;height:58px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--gold2);text-decoration:none;}
+.nav-links{display:flex;gap:2px;list-style:none;}
+.nav-links a{padding:6px 11px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);text-decoration:none;border-radius:4px;transition:all .15s;}
+.nav-links a:hover{color:var(--text);background:var(--s2);}
+.nav-links a.active{color:var(--gold2);background:rgba(200,152,26,0.1);border:1px solid rgba(200,152,26,0.2);}
+@media(max-width:768px){.nav-links{display:none;}}
+
+.wrap{max-width:960px;margin:0 auto;padding:0 16px;position:relative;z-index:1;}
+
+/* SEBI NOTICE */
+.sebi-bar{background:rgba(200,152,26,0.05);border:1px solid rgba(200,152,26,0.2);border-left:3px solid var(--gold);border-radius:6px;padding:11px 16px;margin:18px 0 0;font-size:11px;color:var(--text2);line-height:1.7;}
+.sebi-bar strong{color:var(--gold2);}
+
+/* HERO */
+.hero{padding:30px 0 22px;border-bottom:1px solid var(--b1);margin-bottom:22px;}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(200,152,26,0.08);border:1px solid rgba(200,152,26,0.2);border-radius:4px;padding:4px 12px;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:blink 1.4s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+h1{font-family:'Syne',sans-serif;font-size:clamp(22px,5vw,40px);font-weight:800;line-height:1.05;letter-spacing:-1px;margin-bottom:6px;}
+h1 em{color:var(--gold2);font-style:normal;}
+.hero-sub{font-size:11px;color:var(--text2);line-height:1.8;max-width:640px;}
+
+/* HOW TO FILL */
+.how-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.how-step{display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--b1);border-radius:6px;padding:8px 12px;font-size:10px;color:var(--text2);}
+.how-step .num{width:18px;height:18px;background:rgba(200,152,26,0.15);border:1px solid rgba(200,152,26,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--gold2);font-weight:700;flex-shrink:0;}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--b1);border-top:2px solid var(--gold);border-radius:10px;padding:20px 22px;margin-bottom:16px;}
+.card-lbl{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.card-lbl::after{content:'';flex:1;height:1px;background:rgba(200,152,26,0.2);}
+.card-lbl .src{font-size:9px;color:var(--text2);font-weight:400;letter-spacing:0;text-transform:none;}
+
+/* GRIDS */
+.ig4{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px;}
+.ig3{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px;}
+.ifield{display:flex;flex-direction:column;gap:3px;}
+.ifield label{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);}
+.ifield input,.ifield select{background:var(--s2);border:1px solid var(--b2);border-radius:5px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;padding:8px 10px;outline:none;transition:border-color .15s;width:100%;}
+.ifield input:focus,.ifield select:focus{border-color:var(--gold);background:rgba(13,19,34,0.8);}
+.ifield select option{background:var(--s2);}
+.ifield .hint{font-size:9px;color:var(--text3);margin-top:2px;}
+
+/* OPTION CHAIN TABLE INPUT */
+.oc-table-wrap{overflow-x:auto;margin-bottom:12px;}
+.oc-table{width:100%;border-collapse:collapse;min-width:580px;}
+.oc-table th{background:var(--s2);color:var(--text2);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 10px;text-align:center;border-bottom:1px solid var(--b1);border-right:1px solid var(--b1);}
+.oc-table th.ce-h{color:var(--green);}
+.oc-table th.pe-h{color:var(--red);}
+.oc-table th.strike-h{color:var(--gold2);}
+.oc-table td{padding:5px 6px;border-bottom:1px solid rgba(28,40,64,0.5);border-right:1px solid rgba(28,40,64,0.3);}
+.oc-table tr.atm-row td{background:rgba(200,152,26,0.04);}
+.oc-table input{background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;padding:5px 7px;outline:none;width:100%;text-align:center;transition:all .15s;}
+.oc-table input:focus{background:var(--s2);border-color:var(--gold);}
+.oc-table .strike-cell{background:rgba(200,152,26,0.06);font-weight:700;color:var(--gold2);text-align:center;font-size:13px;padding:6px 8px;}
+.add-row-btn{background:var(--s2);border:1px dashed var(--b2);border-radius:5px;color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:10px;padding:7px;cursor:pointer;width:100%;transition:all .15s;margin-top:6px;}
+.add-row-btn:hover{border-color:var(--gold);color:var(--gold2);}
+
+/* ANALYSE BUTTON */
+.analyse-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold) 0%,var(--orange) 100%);border:none;border-radius:8px;color:#000;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2.5px;cursor:pointer;transition:opacity .2s;text-transform:uppercase;margin-top:4px;}
+.analyse-btn:hover{opacity:.88;}
+
+/* OUTPUT */
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+#output{display:none;animation:fadeUp .3s ease;}
+
+/* PATTERN BANNER */
+.pat-banner{border-radius:10px;padding:20px 24px;margin-bottom:14px;}
+.pat-banner.bull{background:linear-gradient(135deg,rgba(0,212,132,0.07),rgba(0,200,240,0.03));border:1px solid rgba(0,212,132,0.25);}
+.pat-banner.bear{background:linear-gradient(135deg,rgba(240,56,88,0.07),rgba(248,120,32,0.04));border:1px solid rgba(240,56,88,0.25);}
+.pat-banner.neutral{background:linear-gradient(135deg,rgba(200,152,26,0.07),rgba(40,120,240,0.04));border:1px solid rgba(200,152,26,0.25);}
+.pb-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:12px;}
+.pb-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:5px;}
+.pb-title{font-family:'Syne',sans-serif;font-size:clamp(18px,3.5vw,30px);font-weight:800;letter-spacing:-0.5px;}
+.pb-title.bull{color:#00ff9d;}.pb-title.bear{color:#ff6080;}.pb-title.neutral{color:#ffd060;}
+.pb-meta{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.7;}
+.pb-score{text-align:right;}
+.pb-snum{font-size:38px;font-weight:700;line-height:1;}
+.pb-snum.bull{color:var(--green);}.pb-snum.bear{color:var(--red);}.pb-snum.neutral{color:var(--gold2);}
+.pb-slbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);}
+.pb-scores{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.pbs{background:rgba(0,0,0,0.25);border:1px solid var(--b1);border-radius:6px;padding:9px 11px;text-align:center;}
+.pbs-val{font-size:18px;font-weight:700;margin-bottom:2px;}
+.pbs-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);}
+
+/* EDU BOX */
+.edu-box{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:18px 20px;margin-bottom:14px;}
+.edu-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.edu-title::after{content:'';flex:1;height:1px;background:rgba(200,152,26,0.2);}
+.edu-obs{font-size:12px;color:var(--text2);line-height:1.9;padding:9px 13px;background:rgba(200,152,26,0.03);border-left:2px solid rgba(200,152,26,0.25);border-radius:0 5px 5px 0;margin-bottom:7px;}
+.edu-obs:last-child{margin-bottom:0;}
+.edu-obs strong{color:var(--text);}
+.tag{display:inline-block;padding:1px 7px;border-radius:3px;font-size:9px;font-weight:700;margin-right:6px;vertical-align:middle;}
+.tag-ce{background:rgba(0,212,132,0.12);color:var(--green);}
+.tag-pe{background:rgba(240,56,88,0.12);color:var(--red);}
+.tag-data{background:rgba(96,160,255,0.12);color:var(--blue2);}
+.tag-n{background:rgba(200,152,26,0.12);color:var(--gold2);}
+
+/* DUAL PANELS */
+.dual-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+@media(max-width:580px){.dual-grid{grid-template-columns:1fr;}}
+.ap{border-radius:10px;padding:18px 20px;}
+.ap.ce{background:linear-gradient(135deg,rgba(0,212,132,0.05),rgba(0,200,240,0.02));border:1px solid rgba(0,212,132,0.2);}
+.ap.pe{background:linear-gradient(135deg,rgba(240,56,88,0.05),rgba(248,120,32,0.02));border:1px solid rgba(240,56,88,0.2);}
+.ap-head{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:6px;}
+.ap-head.ce{color:var(--green);}.ap-head.pe{color:var(--red);}
+.ap-strike{font-family:'Syne',sans-serif;font-size:clamp(20px,3vw,28px);font-weight:800;letter-spacing:-0.5px;margin-bottom:3px;}
+.ap-strike .snum{color:var(--gold2);}
+.ap-strike .stype{color:var(--text);font-size:55%;}
+.ap-prem{font-size:12px;color:var(--text2);margin-bottom:12px;}
+.ap-prem strong{color:var(--gold2);font-size:15px;}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px;}
+.dc{background:rgba(0,0,0,0.3);border:1px solid var(--b1);border-radius:5px;padding:7px 9px;}
+.dc-lbl{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:2px;}
+.dc-val{font-size:14px;font-weight:700;}
+.dc-sub{font-size:9px;color:var(--text3);margin-top:1px;}
+.sc-obs{display:flex;gap:8px;padding:7px 10px;border-radius:5px;font-size:11px;line-height:1.5;color:var(--text2);margin-bottom:5px;}
+.sc-obs:last-child{margin-bottom:0;}
+.sc-obs.bull-sc{background:rgba(0,212,132,0.05);border:1px solid rgba(0,212,132,0.12);}
+.sc-obs.flat-sc{background:rgba(200,152,26,0.05);border:1px solid rgba(200,152,26,0.12);}
+.sc-obs.bear-sc{background:rgba(240,56,88,0.05);border:1px solid rgba(240,56,88,0.12);}
+.sc-obs strong{color:var(--text);}
+
+/* SECTION HDR */
+.sh{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin:14px 0 8px;display:flex;align-items:center;gap:8px;}
+.sh::after{content:'';flex:1;height:1px;background:var(--b1);}
+.sh-note{font-size:9px;color:var(--text3);padding:6px 10px;background:rgba(0,0,0,0.2);border-radius:4px;margin-bottom:8px;line-height:1.6;}
+
+/* STATS STRIP */
+.ss{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:1px;background:var(--b1);border:1px solid var(--b1);border-radius:8px;overflow:hidden;margin-bottom:14px;}
+.ss-item{background:var(--s1);padding:11px 13px;}
+.ss-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:3px;}
+.ss-val{font-size:15px;font-weight:700;}
+.ss-sub{font-size:9px;color:var(--text3);margin-top:2px;}
+
+/* SCENARIO TABLE */
+.tbl-wrap{background:var(--s1);border:1px solid var(--b1);border-radius:8px;overflow:hidden;margin-bottom:14px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:500px;}
+th{background:var(--s2);color:var(--text2);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 10px;text-align:left;border-bottom:1px solid var(--b1);}
+td{padding:7px 10px;border-bottom:1px solid var(--b1);font-size:12px;}
+tr:last-child td{border-bottom:none;}
+tr.base-row td{background:rgba(200,152,26,0.04);font-weight:600;}
+.pos{color:var(--green);}.neg{color:var(--red);}.neu{color:var(--gold2);}.hi{color:var(--blue2);}
+
+/* OI TABLE */
+.oi-chain{background:var(--s1);border:1px solid var(--b1);border-radius:8px;overflow:hidden;margin-bottom:14px;overflow-x:auto;}
+.oic-hdr{background:var(--s2);display:grid;grid-template-columns:1fr 1fr 1fr 80px 1fr 1fr 1fr;gap:6px;padding:8px 12px;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;min-width:480px;}
+.oic-row{display:grid;grid-template-columns:1fr 1fr 1fr 80px 1fr 1fr 1fr;gap:6px;padding:7px 12px;border-bottom:1px solid var(--b1);font-size:12px;min-width:480px;}
+.oic-row:last-child{border-bottom:none;}
+.oic-row.atm{background:rgba(200,152,26,0.04);}
+.oic-strike{text-align:center;font-weight:700;color:var(--gold2);}
+
+/* GREEKS */
+.gr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:7px;margin-bottom:14px;}
+.gr-card{background:var(--s1);border:1px solid var(--b1);border-radius:6px;padding:10px 12px;}
+.gr-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:3px;}
+.gr-val{font-size:16px;font-weight:700;}
+.gr-sub{font-size:9px;color:var(--text2);margin-top:2px;}
+
+/* THETA */
+.theta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px;margin-bottom:14px;}
+.tg-item{background:var(--s1);border:1px solid var(--b1);border-radius:6px;padding:9px 11px;text-align:center;}
+.tg-time{font-size:8px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.tg-prem{font-size:14px;font-weight:700;}
+.tg-loss{font-size:9px;color:var(--text3);margin-top:2px;}
+
+/* KEY LEVELS */
+.lv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:7px;margin-bottom:14px;}
+.lv{background:var(--s1);border:1px solid var(--b1);border-radius:6px;padding:10px 12px;}
+.lv-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:3px;}
+.lv-val{font-size:16px;font-weight:700;}
+.lv-sub{font-size:9px;color:var(--text2);margin-top:2px;}
+
+/* CHART */
+.chart-box{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:13px;margin-bottom:14px;}
+.chart-lbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:8px;}
+canvas{display:block;width:100%!important;}
+.itp-card{background:var(--s1);border:1px solid var(--b1);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+.itp-header{padding:16px 20px;border-bottom:1px solid var(--b1);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.itp-tag{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:5px;}
+.itp-title{font-family:'Syne',sans-serif;font-size:clamp(14px,2.5vw,20px);font-weight:800;color:var(--text);letter-spacing:-0.3px;}
+.itp-subtitle{font-size:11px;color:var(--text2);margin-top:3px;line-height:1.6;}
+.itp-fakeout-badge{text-align:right;}
+.itp-fo-pct{font-size:36px;font-weight:700;line-height:1;}
+.itp-fo-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-top:2px;}
+.itp-meter-wrap{padding:14px 20px;border-bottom:1px solid var(--b1);background:rgba(0,0,0,0.15);}
+.itp-meter-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:8px;display:flex;justify-content:space-between;}
+.itp-meter-track{height:10px;background:var(--b1);border-radius:5px;overflow:hidden;margin-bottom:6px;}
+.itp-meter-fill{height:100%;border-radius:5px;transition:width .8s ease;}
+.itp-meter-zones{display:flex;justify-content:space-between;font-size:8px;color:var(--text3);}
+.itp-factors{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;padding:14px 20px;border-bottom:1px solid var(--b1);}
+.itp-factor{background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:9px 11px;}
+.itp-f-lbl{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:4px;}
+.itp-f-val{font-size:14px;font-weight:700;margin-bottom:2px;}
+.itp-f-sig{font-size:9px;}
+.itp-f-sig.high{color:var(--red);}.itp-f-sig.mod{color:var(--orange2);}.itp-f-sig.low{color:var(--green);}
+.itp-windows{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--b1);}
+@media(max-width:580px){.itp-windows{grid-template-columns:1fr;}}
+.itp-window{padding:16px 18px;background:var(--s1);}
+.itp-window.morning{border-top:2px solid var(--red);}
+.itp-window.midday{border-top:2px solid var(--gold);}
+.itp-window.closing{border-top:2px solid var(--green);}
+.itp-win-time{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.itp-win-time.morning{color:var(--red);}.itp-win-time.midday{color:var(--gold2);}.itp-win-time.closing{color:var(--green);}
+.itp-win-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;margin-bottom:8px;}
+.itp-win-stats{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.itp-win-stat{display:flex;justify-content:space-between;align-items:center;font-size:11px;}
+.itp-win-stat .wsl{color:var(--text2);}.itp-win-stat .wsv{font-weight:700;}
+.itp-win-obs{font-size:10px;color:var(--text2);line-height:1.6;padding:8px 10px;border-radius:5px;margin-top:6px;}
+.itp-win-obs.morning{background:rgba(240,56,88,0.05);border:1px solid rgba(240,56,88,0.12);}
+.itp-win-obs.midday{background:rgba(200,152,26,0.05);border:1px solid rgba(200,152,26,0.12);}
+.itp-win-obs.closing{background:rgba(0,212,132,0.05);border:1px solid rgba(0,212,132,0.12);}
+.itp-cushion{padding:16px 20px;border-top:1px solid var(--b1);}
+.itp-cushion-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.itp-cushion-title::after{content:'';flex:1;height:1px;background:rgba(200,152,26,0.2);}
+.itp-cushion-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px;}
+.itp-c-item{background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:10px 12px;}
+.itp-c-lbl{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:4px;}
+.itp-c-val{font-size:16px;font-weight:700;}
+.itp-c-sub{font-size:9px;color:var(--text3);margin-top:2px;}
+.itp-absorb{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+@media(max-width:500px){.itp-absorb{grid-template-columns:1fr;}}
+.itp-ab-card{border-radius:7px;padding:12px 14px;}
+.itp-ab-card.ce{background:linear-gradient(135deg,rgba(0,212,132,0.05),transparent);border:1px solid rgba(0,212,132,0.18);}
+.itp-ab-card.pe{background:linear-gradient(135deg,rgba(240,56,88,0.05),transparent);border:1px solid rgba(240,56,88,0.18);}
+.itp-ab-head{font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.itp-ab-head.ce{color:var(--green);}.itp-ab-head.pe{color:var(--red);}
+.itp-ab-rows{display:flex;flex-direction:column;gap:5px;}
+.itp-ab-row{display:flex;justify-content:space-between;font-size:11px;padding:5px 8px;background:rgba(0,0,0,0.2);border-radius:4px;}
+.itp-ab-row .arl{color:var(--text2);}.itp-ab-row .arv{font-weight:700;}
+.itp-insight{padding:12px 16px;background:rgba(200,152,26,0.04);border:1px solid rgba(200,152,26,0.15);border-left:3px solid var(--gold);border-radius:0 6px 6px 0;font-size:11px;color:var(--text2);line-height:1.8;}
+.itp-insight strong{color:var(--text);}
+.itp-timeline{padding:16px 20px;border-top:1px solid var(--b1);}
+.itp-tl-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:12px;}
+.itp-tl-track{position:relative;height:60px;background:var(--s2);border-radius:6px;overflow:hidden;margin-bottom:8px;}
+.itp-tl-segment{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.itp-tl-seg-morning{left:0;width:28%;background:rgba(240,56,88,0.15);border-right:1px solid rgba(240,56,88,0.3);color:var(--red);}
+.itp-tl-seg-mid{left:28%;width:32%;background:rgba(200,152,26,0.08);border-right:1px solid rgba(200,152,26,0.2);color:var(--gold2);}
+.itp-tl-seg-close{left:60%;width:40%;background:rgba(0,212,132,0.08);color:var(--green);}
+.itp-tl-labels{display:flex;justify-content:space-between;font-size:8px;color:var(--text3);}
+
+
+/* FINAL DISC */
+.final-disc{background:rgba(200,152,26,0.04);border:1px solid rgba(200,152,26,0.18);border-radius:8px;padding:14px 16px;margin-bottom:20px;font-size:11px;color:var(--text2);line-height:1.9;}
+.final-disc strong{color:var(--text);}
+
+footer{background:var(--s1);border-top:1px solid var(--b1);padding:28px 0 18px;margin-top:32px;}
+.fi{max-width:1100px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:24px;}
+@media(max-width:768px){.fi{grid-template-columns:1fr 1fr;}}
+.fl{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--gold2);margin-bottom:6px;}
+.ft{font-size:11px;color:var(--text2);line-height:1.6;max-width:200px;}
+.fct{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.fcl{display:flex;flex-direction:column;gap:6px;}
+.fcl a{font-size:11px;color:var(--text2);text-decoration:none;}
+.fcl a:hover{color:var(--gold2);}
+.fb{max-width:1100px;margin:18px auto 0;padding:12px 16px 0;border-top:1px solid var(--b1);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:10px;color:var(--text2);}
+.idx-btn{padding:8px 16px;background:var(--s2);border:1px solid var(--b1);border-radius:6px;color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.idx-btn:hover{border-color:var(--gold);color:var(--gold2);}
+.idx-btn.active{background:rgba(200,152,26,0.12);border:1px solid rgba(200,152,26,0.4);color:var(--gold2);}
+
+/* PREMIUM STRATEGY STUDY TAB */
+.pss-disclaimer{background:rgba(240,56,88,0.06);border:1px solid rgba(240,56,88,0.2);border-left:3px solid var(--red);border-radius:6px;padding:14px 16px;margin-bottom:16px;font-size:11px;color:var(--text2);line-height:1.8;}
+.pss-disclaimer strong{color:var(--red);}
+.pss-hero{background:linear-gradient(135deg,rgba(200,152,26,0.07),rgba(96,160,255,0.04));border:1px solid rgba(200,152,26,0.2);border-radius:10px;padding:20px 22px;margin-bottom:14px;}
+.pss-hero-tag{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.pss-hero-title{font-family:'Syne',sans-serif;font-size:clamp(16px,2.5vw,24px);font-weight:800;letter-spacing:-0.3px;margin-bottom:6px;}
+.pss-hero-sub{font-size:11px;color:var(--text2);line-height:1.7;}
+.pss-conflict{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+@media(max-width:580px){.pss-conflict{grid-template-columns:1fr;}}
+.pss-side{border-radius:8px;padding:16px 18px;}
+.pss-side.bull{background:rgba(0,212,132,0.05);border:1px solid rgba(0,212,132,0.2);}
+.pss-side.bear{background:rgba(240,56,88,0.05);border:1px solid rgba(240,56,88,0.2);}
+.pss-side-lbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.pss-side-lbl.bull{color:var(--green);}.pss-side-lbl.bear{color:var(--red);}
+.pss-point{display:flex;gap:8px;font-size:11px;color:var(--text2);margin-bottom:6px;line-height:1.5;}
+.pss-point:last-child{margin-bottom:0;}
+.pss-point .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.dot-bull{background:var(--green);}.dot-bear{background:var(--red);}
+/* LEGS */
+.pss-legs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+@media(max-width:580px){.pss-legs{grid-template-columns:1fr;}}
+.pss-leg{border-radius:10px;padding:18px 20px;}
+.pss-leg.leg1{background:linear-gradient(135deg,rgba(240,56,88,0.06),transparent);border:1px solid rgba(240,56,88,0.2);}
+.pss-leg.leg2{background:linear-gradient(135deg,rgba(0,212,132,0.05),transparent);border:1px solid rgba(0,212,132,0.18);}
+.pss-leg-num{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:5px;}
+.pss-leg-num.l1{color:var(--red);}.pss-leg-num.l2{color:var(--green);}
+.pss-leg-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;margin-bottom:10px;}
+.pss-leg-rows{display:flex;flex-direction:column;gap:5px;}
+.pss-leg-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 8px;background:rgba(0,0,0,0.2);border-radius:4px;}
+.pss-leg-row .lrl{color:var(--text2);}.pss-leg-row .lrv{font-weight:700;}
+.pss-leg-obs{font-size:10px;color:var(--text2);line-height:1.6;padding:8px 10px;border-radius:5px;margin-top:8px;}
+.pss-leg-obs.l1{background:rgba(240,56,88,0.04);border:1px solid rgba(240,56,88,0.1);}
+.pss-leg-obs.l2{background:rgba(0,212,132,0.04);border:1px solid rgba(0,212,132,0.1);}
+/* CONDITION TABLE */
+.pss-cond{background:var(--s1);border:1px solid var(--b1);border-radius:8px;overflow:hidden;margin-bottom:14px;}
+.pss-cond-hdr{background:var(--s2);padding:8px 14px;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);}
+.pss-cond-row{display:grid;grid-template-columns:24px 1fr 1fr;gap:10px;padding:8px 14px;border-bottom:1px solid var(--b1);align-items:center;font-size:11px;}
+.pss-cond-row:last-child{border-bottom:none;}
+.pss-cond-row.met{background:rgba(0,212,132,0.03);}
+.pss-cond-row.notmet{background:rgba(240,56,88,0.03);}
+.pss-cond-icon{font-size:12px;text-align:center;}
+.pss-cond-lbl{color:var(--text2);}
+.pss-cond-val{font-weight:600;text-align:right;}
+/* TIMELINE */
+.pss-timeline{margin-bottom:14px;}
+.pss-tl-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:10px;}
+.pss-tl-rows{display:flex;flex-direction:column;gap:6px;}
+.pss-tl-row{display:grid;grid-template-columns:100px 1fr;gap:12px;align-items:flex-start;}
+.pss-tl-time{font-size:10px;font-weight:700;padding:4px 8px;border-radius:4px;text-align:center;}
+.tl-danger{background:rgba(240,56,88,0.12);color:var(--red);}
+.tl-entry{background:rgba(200,152,26,0.12);color:var(--gold2);}
+.tl-confirm{background:rgba(0,212,132,0.1);color:var(--green);}
+.tl-exit{background:rgba(96,160,255,0.1);color:var(--blue2);}
+.tl-danger2{background:rgba(248,120,32,0.12);color:var(--orange2);}
+.pss-tl-text{font-size:11px;color:var(--text2);line-height:1.6;padding-top:3px;}
+.pss-tl-text strong{color:var(--text);}
+/* PNL TABLE */
+.pss-pnl{background:var(--s1);border:1px solid var(--b1);border-radius:8px;overflow:hidden;margin-bottom:14px;overflow-x:auto;}
+.pss-pnl table{width:100%;border-collapse:collapse;min-width:420px;}
+.pss-pnl th{background:var(--s2);color:var(--text2);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 10px;text-align:left;border-bottom:1px solid var(--b1);}
+.pss-pnl td{padding:8px 10px;border-bottom:1px solid var(--b1);font-size:11px;}
+.pss-pnl tr:last-child td{border-bottom:none;}
+.pss-pnl tr.best td{background:rgba(0,212,132,0.04);}
+.pss-pnl tr.worst td{background:rgba(240,56,88,0.04);}
+/* RULES */
+.pss-rules{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.pss-rule{display:flex;gap:10px;padding:10px 14px;background:var(--s1);border:1px solid var(--b1);border-radius:6px;font-size:11px;color:var(--text2);line-height:1.5;}
+.pss-rule-num{width:20px;height:20px;background:rgba(200,152,26,0.12);border:1px solid rgba(200,152,26,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--gold2);flex-shrink:0;}
+.pss-rule strong{color:var(--text);}
+/* SPREAD ALT */
+.pss-spread{background:rgba(176,128,255,0.04);border:1px solid rgba(176,128,255,0.18);border-radius:8px;padding:16px 18px;margin-bottom:14px;}
+.pss-spread-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--purple2);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.pss-spread-title::after{content:'';flex:1;height:1px;background:rgba(176,128,255,0.2);}
+.pss-spread-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;}
+.pss-spread-item{background:rgba(0,0,0,0.2);border-radius:5px;padding:9px 11px;}
+.pss-spread-lbl{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:3px;}
+.pss-spread-val{font-size:15px;font-weight:700;}
+/* NOT SHOWING STATE */
+.pss-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;text-align:center;color:var(--text2);}
+.pss-empty-icon{font-size:40px;margin-bottom:12px;opacity:0.4;}
+.pss-empty-title{font-size:14px;font-weight:700;margin-bottom:6px;color:var(--text);}
+.pss-empty-sub{font-size:11px;color:var(--text2);line-height:1.7;}
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">IntelligentTraders</a>
+    <ul class="nav-links">
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="/journal">Journal</a></li>
+      <li><a href="/algo">Algo</a></li>
+      <li><a href="/options-engine">Options Engine</a></li>
+      <li><a href="/prediction-engine" class="active">Prediction Engine</a></li>
+      <li><a href="/about">About</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<div class="sebi-bar">
+  <strong>⚠ Educational Tool Only — Not Investment Advice.</strong> All outputs are Black-Scholes mathematical model observations based on data you enter. <strong>IntelligentTraders is not a SEBI registered investment adviser or research analyst.</strong> Nothing here constitutes a recommendation to buy, sell or hold any financial instrument. Consult a SEBI registered adviser before trading.
+</div>
+
+<div class="hero">
+  <div class="hero-tag"><div class="dot"></div>Manual Entry · BS Mathematical Study · CE + PE Analysis · SEBI Compliant</div>
+  <h1>Options <em>Prediction Engine</em> <span style="font-size:42%;color:var(--text2);font-family:'JetBrains Mono',monospace;font-weight:400;">v3.0</span></h1>
+  <p class="hero-sub">Enter data directly from your broker and NSE option chain page. No API — no delays — always works. Engine runs Black-Scholes mathematics, indicator pattern analysis and OI positioning study.</p>
+</div>
+
+<!-- HOW TO FILL -->
+<div class="how-bar">
+  <div class="how-step"><div class="num">1</div> Open NSE Option Chain or broker</div>
+  <div class="how-step"><div class="num">2</div> Enter spot price, high, low, VIX</div>
+  <div class="how-step"><div class="num">3</div> Enter 5 strikes around ATM with premiums + OI</div>
+  <div class="how-step"><div class="num">4</div> Enter indicators from TradingView</div>
+  <div class="how-step"><div class="num">5</div> Click Run Analysis</div>
+</div>
+
+<!-- MARKET DATA -->
+<div class="card">
+  <div class="card-lbl">Market Data <span class="src">From broker / NSE website</span></div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+    <button class="idx-btn active" onclick="setIndex('nifty',this)" data-lot="65">Nifty 50 <span style="font-size:9px;opacity:.65">65 shares</span></button>
+    <button class="idx-btn" onclick="setIndex('banknifty',this)" data-lot="30">Bank Nifty <span style="font-size:9px;opacity:.65">30 shares</span></button>
+    <button class="idx-btn" onclick="setIndex('sensex',this)" data-lot="20">Sensex <span style="font-size:9px;opacity:.65">20 shares</span></button>
+    <button class="idx-btn" onclick="setIndex('finnifty',this)" data-lot="60">Fin Nifty <span style="font-size:9px;opacity:.65">60 shares</span></button>
+  </div>
+  <div class="ig4">
+    <div class="ifield">
+      <label id="spotLabel">Nifty 50 Spot Price</label>
+      <input type="number" id="m_spot" value="24350" step="0.5">
+    </div>
+    <div class="ifield">
+      <label>Day High</label>
+      <input type="number" id="m_high" value="24480" step="0.5">
+    </div>
+    <div class="ifield">
+      <label>Day Low</label>
+      <input type="number" id="m_low" value="24210" step="0.5">
+    </div>
+    <div class="ifield">
+      <label>India VIX</label>
+      <input type="number" id="m_vix" value="14.2" step="0.1">
+    </div>
+    <div class="ifield">
+      <label>Max Pain Strike</label>
+      <input type="number" id="m_mp" value="24200" step="50">
+      <span class="hint">From NSE option chain page</span>
+    </div>
+    <div class="ifield">
+      <label>PCR (Put-Call Ratio)</label>
+      <input type="number" id="m_pcr" value="0.82" step="0.01">
+      <span class="hint">&lt;0.7 bearish · &gt;1.2 bullish</span>
+    </div>
+    <div class="ifield">
+      <label>DTE (Days to Expiry)</label>
+      <input type="number" id="m_dte" value="2" min="1" max="30">
+      <span class="hint">Include expiry day</span>
+    </div>
+    <div class="ifield">
+      <label>Risk-Free Rate %</label>
+      <input type="number" id="m_rate" value="6.5" step="0.25">
+    </div>
+  </div>
+</div>
+
+<!-- OPTION CHAIN INPUT -->
+<div class="card">
+  <div class="card-lbl">Option Chain Data <span class="src">From NSE option chain / broker · Enter 5 strikes around ATM</span></div>
+  <div class="oc-table-wrap">
+    <table class="oc-table" id="ocTable">
+      <thead>
+        <tr>
+          <th class="ce-h">CE OI (L)</th>
+          <th class="ce-h">CE OI Chg%</th>
+          <th class="ce-h">CE Premium ₹</th>
+          <th class="strike-h">STRIKE</th>
+          <th class="pe-h">PE Premium ₹</th>
+          <th class="pe-h">PE OI Chg%</th>
+          <th class="pe-h">PE OI (L)</th>
+        </tr>
+      </thead>
+      <tbody id="ocBody">
+        <!-- rows injected by JS -->
+      </tbody>
+    </table>
+  </div>
+  <button class="add-row-btn" onclick="addRow()">+ Add Strike Row</button>
+</div>
+
+<!-- INDICATORS -->
+<div class="card">
+  <div class="card-lbl">Technical Indicators <span class="src">From TradingView EOD chart</span></div>
+  <div class="ig3">
+    <div class="ifield">
+      <label>RSI (14)</label>
+      <input type="number" id="i_rsi" value="48" step="0.1" min="0" max="100">
+      <span class="hint">&lt;40 oversold · &gt;60 overbought</span>
+    </div>
+    <div class="ifield">
+      <label>EMA 20 vs Spot</label>
+      <select id="i_ema20">
+        <option value="above">Above EMA20 (Bullish)</option>
+        <option value="below" selected>Below EMA20 (Bearish)</option>
+        <option value="at">At EMA20 (Neutral)</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>EMA 200 vs Spot</label>
+      <select id="i_ema200">
+        <option value="above">Above EMA200 (Bullish)</option>
+        <option value="below" selected>Below EMA200 (Bearish)</option>
+        <option value="at">At EMA200</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>MACD</label>
+      <select id="i_macd">
+        <option value="bull">Above Signal (Bull)</option>
+        <option value="bear" selected>Below Signal (Bear)</option>
+        <option value="cross_bull">Bullish Crossover</option>
+        <option value="cross_bear">Bearish Crossover</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>VWAP vs Close</label>
+      <select id="i_vwap">
+        <option value="above" selected>Closed Above VWAP (Bull)</option>
+        <option value="below">Closed Below VWAP (Bear)</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>Supertrend</label>
+      <select id="i_st">
+        <option value="bull">GREEN (Uptrend)</option>
+        <option value="bear" selected>RED (Downtrend)</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>Daily Trend</label>
+      <select id="i_trend">
+        <option value="uptrend">Uptrend</option>
+        <option value="downtrend" selected>Downtrend</option>
+        <option value="sideways">Sideways / Ranging</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>Bollinger Bands</label>
+      <select id="i_bb">
+        <option value="upper">Near Upper Band</option>
+        <option value="middle" selected>Near Middle Band</option>
+        <option value="lower">Near Lower Band</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>FII Futures</label>
+      <select id="i_fii">
+        <option value="long">Net Long (Bullish)</option>
+        <option value="short" selected>Net Short (Bearish)</option>
+        <option value="neutral">Neutral</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- STUDY PARAMS -->
+<div class="card">
+  <div class="card-lbl">Study Parameters</div>
+  <div class="ig4">
+    <div class="ifield">
+      <label>Study Perspective</label>
+      <select id="t_role">
+        <option value="seller">Premium Seller Perspective</option>
+        <option value="buyer">Premium Buyer Perspective</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>Risk Profile</label>
+      <select id="t_risk">
+        <option value="conservative">Conservative</option>
+        <option value="moderate" selected>Moderate</option>
+        <option value="aggressive">Aggressive</option>
+      </select>
+    </div>
+    <div class="ifield">
+      <label>Lot Reference</label>
+      <input type="number" id="t_lots" value="1" min="1" max="50" oninput="this.value=Math.max(1,parseInt(this.value)||1)">
+      <span class="hint" id="lotHint">Nifty 50 lot = 65 shares</span>
+    </div>
+  </div>
+  <button class="analyse-btn" onclick="runAnalysis()">→ &nbsp; RUN MATHEMATICAL ANALYSIS</button>
+</div>
+
+<!-- OUTPUT -->
+<div id="output">
+
+  <!-- PATTERN BANNER -->
+  <div id="patBanner" class="pat-banner neutral">
+    <div class="pb-top">
+      <div>
+        <div class="pb-label">Market Structure Observation</div>
+        <div id="pb_title" class="pb-title neutral">—</div>
+        <div id="pb_meta" class="pb-meta"></div>
+      </div>
+      <div class="pb-score">
+        <div id="pb_score" class="pb-snum neutral">—</div>
+        <div class="pb-slbl">Pattern Strength</div>
+      </div>
+    </div>
+    <div class="pb-scores">
+      <div class="pbs"><div id="pbs_ind" class="pbs-val">—</div><div class="pbs-lbl">Indicators</div></div>
+      <div class="pbs"><div id="pbs_oi" class="pbs-val">—</div><div class="pbs-lbl">OI + PCR</div></div>
+      <div class="pbs"><div id="pbs_mp" class="pbs-val">—</div><div class="pbs-lbl">Max Pain Gap</div></div>
+    </div>
+  </div>
+
+  <!-- EDU OBSERVATIONS -->
+  <div class="edu-box">
+    <div class="edu-title">What The Data Shows — Educational Observations</div>
+    <div id="eduObs"></div>
+  </div>
+
+  <!-- DUAL PANELS -->
+  <div class="sh">Black-Scholes Strike Study — CE vs PE</div>
+  <div class="dual-grid">
+    <div id="cePanel" class="ap ce"></div>
+    <div id="pePanel" class="ap pe"></div>
+  </div>
+
+  <!-- STATS STRIP -->
+  <div class="sh">Next Session Mathematical Projections</div>
+  <div id="statsStrip" class="ss"></div>
+
+  <!-- SCENARIO TABLE -->
+  <div class="sh">Intraday Pattern Study — Institutional Time Window Analysis</div>
+  <div id="itpModule"></div>
+
+  <div class="sh">BS Model Scenario Analysis</div>
+  <div class="sh-note">📐 Black-Scholes theoretical pricing at each spot level. Model output — actual prices will vary based on supply/demand, liquidity and time.</div>
+  <div class="tbl-wrap"><table>
+    <thead><tr>
+      <th id="scenMoveHdr">Index Move</th><th>Spot</th>
+      <th id="ceTH">CE</th><th>CE BS Price</th><th>CE Intrinsic</th>
+      <th id="peTH">PE</th><th>PE BS Price</th><th>PE Intrinsic</th>
+    </tr></thead>
+    <tbody id="scenBody"></tbody>
+  </table></div>
+
+  <!-- OI CHAIN (entered data) -->
+  <div class="sh">Option Chain OI Study — Your Entered Data</div>
+  <div class="sh-note">📊 OI data you entered. High OI at a strike indicates positioning — not a guaranteed price magnet.</div>
+  <div class="oi-chain">
+    <div class="oic-hdr">
+      <span style="color:var(--green)">CE OI (L)</span>
+      <span style="color:var(--green)">CE OI Chg%</span>
+      <span style="color:var(--green)">CE LTP</span>
+      <span style="color:var(--gold2);text-align:center">STRIKE</span>
+      <span style="color:var(--red)">PE LTP</span>
+      <span style="color:var(--red)">PE OI Chg%</span>
+      <span style="color:var(--red)">PE OI (L)</span>
+    </div>
+    <div id="oiChainRows"></div>
+  </div>
+
+  <!-- GREEKS -->
+  <div class="sh">Greeks — CE Risk Sensitivity</div>
+  <div id="greeksGrid" class="gr-grid"></div>
+
+  <!-- THETA -->
+  <div class="sh">Theoretical CE Theta Decay Schedule (Flat Spot)</div>
+  <div class="sh-note">⏱ Estimated CE premium erosion through the session if spot remains flat. Actual decay depends on vol changes.</div>
+  <div id="thetaGrid" class="theta-grid"></div>
+
+  <!-- KEY LEVELS -->
+  <div class="sh">Key Mathematical Reference Levels</div>
+  <div id="levelsGrid" class="lv-grid"></div>
+
+  <!-- PAYOFF CHART -->
+  <div class="sh">CE Theoretical Payoff Study</div>
+  <div class="chart-box">
+    <div class="chart-lbl"><span id="chartLbl">CE P&amp;L at Different Spot Levels — Expiry vs Next Session BS Model</span></div>
+    <canvas id="payoffChart" height="180"></canvas>
+  </div>
+
+  
+  <!-- PREMIUM STRATEGY STUDY SECTION -->
+  <div id="premiumStudy" style="display:none;margin-top:14px;">
+
+    <div class="sh">Premium Strategy Study — Educational Pattern Analysis</div>
+
+    <!-- MAIN DISCLAIMER -->
+    <div class="pss-disclaimer">
+      <strong>⚠ IMPORTANT DISCLAIMER — READ BEFORE PROCEEDING:</strong> Everything in this section is a <strong>mathematical pattern study and educational framework only.</strong> This does NOT constitute investment advice, trading recommendations, or signals of any kind. IntelligentTraders is <strong>NOT a SEBI registered investment adviser or research analyst.</strong> All strategies discussed are hypothetical educational constructs based on historical pattern observations. <strong>Options trading involves substantial risk of loss. You can lose your entire premium.</strong> Past patterns do not guarantee future outcomes. Consult a SEBI registered adviser before making any trading decisions. Paper trade all strategies for minimum 90 days before any live deployment.
+    </div>
+
+    <!-- STRATEGY HERO -->
+    <div class="pss-hero" id="pss_hero">
+      <div class="pss-hero-tag">Two-Leg Pattern Study · Fake-out Entry Framework</div>
+      <div class="pss-hero-title" id="pss_title">—</div>
+      <div class="pss-hero-sub" id="pss_sub">Run the analysis above to generate strategy study.</div>
+    </div>
+
+    <!-- CONFLICT ANALYSIS -->
+    <div class="sh">Why Direction ≠ Profitability — The Core Conflict</div>
+    <div class="pss-conflict">
+      <div class="pss-side bull" id="pss_bull_side"></div>
+      <div class="pss-side bear" id="pss_bear_side"></div>
+    </div>
+
+    <!-- TWO LEG STRATEGY -->
+    <div class="sh">Two-Leg Educational Study — Using the Fake-out Pattern</div>
+    <div class="pss-legs">
+      <div class="pss-leg leg1" id="pss_leg1"></div>
+      <div class="pss-leg leg2" id="pss_leg2"></div>
+    </div>
+
+    <!-- ENTRY CONDITIONS -->
+    <div class="sh">Leg 2 Entry Conditions — All Must Be Met</div>
+    <div class="pss-cond">
+      <div class="pss-cond-hdr">CE Entry Checklist — Educational Reference</div>
+      <div id="pss_conditions"></div>
+    </div>
+
+    <!-- ALTERNATIVE — SPREAD -->
+    <div class="pss-spread">
+      <div class="pss-spread-title">Alternative Study — Bull Call Spread (Lower Risk Profile)</div>
+      <div class="pss-spread-grid" id="pss_spread"></div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="sh">Time Window Study — When to Act</div>
+    <div class="pss-timeline">
+      <div class="pss-tl-title">Intraday Action Framework (Educational)</div>
+      <div class="pss-tl-rows" id="pss_timeline"></div>
+    </div>
+
+    <!-- P&L SCENARIOS -->
+    <div class="sh">Hypothetical P&L Scenarios — Mathematical Study Only</div>
+    <div class="pss-pnl">
+      <table>
+        <thead><tr>
+          <th>Scenario</th><th>Leg 1 PE</th><th>Leg 2 CE</th><th>Combined/Share</th><th>Outcome</th>
+        </tr></thead>
+        <tbody id="pss_pnl"></tbody>
+      </table>
+    </div>
+
+    <!-- NON-NEGOTIABLE RULES -->
+    <div class="sh">Non-Negotiable Study Rules</div>
+    <div class="pss-rules" id="pss_rules"></div>
+
+    <!-- FINAL EDU DISCLAIMER -->
+    <div class="final-disc" style="border-color:rgba(240,56,88,0.25);">
+      <strong style="color:var(--red);">Final Reminder:</strong> This Premium Strategy Study is a <strong>mathematical and historical pattern analysis tool only.</strong> The two-leg framework discussed here is an educational construct — it does not guarantee profits and carries significant risk including total loss of premium on both legs. Markets can and do behave differently from historical patterns, especially on expiry days with unexpected news or global events. <strong>Never risk capital you cannot afford to lose. Paper trade first. Always.</strong> IntelligentTraders is not SEBI registered and this is not investment advice.
+    </div>
+
+  </div>
+
+  <div class="final-disc">
+    <strong>Important:</strong> All analysis is generated by mathematical models (Black-Scholes, indicator pattern scoring, OI study) applied to data you entered. <strong>This is not investment advice.</strong> Options trading involves significant risk of loss. <strong>IntelligentTraders is not a SEBI registered investment adviser or research analyst.</strong> For educational purposes only.
+  </div>
+
+</div><!-- /output -->
+</div><!-- /wrap -->
+
+<footer>
+  <div class="fi">
+    <div><div class="fl">IntelligentTraders</div><div class="ft">Educational tools for understanding institutional options positioning.</div></div>
+    <div><div class="fct">Tools</div><div class="fcl"><a href="/dashboard">Signal Dashboard</a><a href="/journal">Paper Journal</a><a href="/algo">Algo Framework</a><a href="/options-engine">Options Engine</a><a href="/prediction-engine">Prediction Engine</a></div></div>
+    <div><div class="fct">Learn</div><div class="fcl"><a href="/#triggers">6 Triggers</a><a href="/#how">How It Works</a><a href="/#framework">Framework</a><a href="/#faq">FAQ</a></div></div>
+    <div><div class="fct">Contact</div><div class="fcl"><a href="/about">About Deepanshu</a><a href="/#waitlist">Early Access</a><a href="mailto:hello@theintelligenttraders.in">hello@theintelligenttraders.in</a></div></div>
+  </div>
+  <div class="fb"><span>© 2026 IntelligentTraders · theintelligenttraders.in</span><span>⚠ Educational only · Not SEBI registered investment advice · Paper trade first, always</span></div>
+</footer>
+
+<script>
+/* ═══════════════════════════
+   GLOBALS — Index & Lot Size
+═══════════════════════════ */
+const LOT_SIZES = {nifty:65, banknifty:30, sensex:20, finnifty:60};
+let CURRENT_INDEX = 'nifty';
+let LOT = 65;
+let INDEX_NAME = 'Nifty 50';
+let STRIKE_STEP = 50;
+
+/* ═══════════════════════════
+   OPTION CHAIN TABLE ROWS
+═══════════════════════════ */
+const DEFAULT_ROWS = [
+  {ceOI:42,ceChg:12,cePrem:285,strike:24100,pePrem:18,peChg:-8,peOI:8},
+  {ceOI:38,ceChg:18,cePrem:198,strike:24200,pePrem:28,peChg:-5,peOI:12},
+  {ceOI:55,ceChg:32,cePrem:128,strike:24300,pePrem:52,peChg:9,peOI:28},
+  {ceOI:62,ceChg:44,cePrem:76, strike:24400,pePrem:98,peChg:7,peOI:18},
+  {ceOI:80,ceChg:52,cePrem:42, strike:24500,pePrem:158,peChg:2,peOI:8},
+];
+
+function buildTable(){
+  const spot=+document.getElementById('m_spot').value||24350;
+  const body=document.getElementById('ocBody');
+  body.innerHTML='';
+  DEFAULT_ROWS.forEach((r,i)=>{
+    const isATM=Math.abs(r.strike-spot)<=75;
+    addRowData(r,isATM);
+  });
+}
+
+function addRowData(r={},atm=false){
+  const body=document.getElementById('ocBody');
+  const tr=document.createElement('tr');
+  if(atm)tr.classList.add('atm-row');
+  tr.innerHTML=`
+    <td><input type="number" value="${r.ceOI||''}" placeholder="OI" step="0.01"></td>
+    <td><input type="number" value="${r.ceChg||''}" placeholder="Chg%" step="0.1"></td>
+    <td><input type="number" value="${r.cePrem||''}" placeholder="₹" step="0.5"></td>
+    <td class="strike-cell"><input type="number" value="${r.strike||''}" placeholder="Strike" step="50" style="color:var(--gold2);font-weight:700;font-size:13px;"></td>
+    <td><input type="number" value="${r.pePrem||''}" placeholder="₹" step="0.5"></td>
+    <td><input type="number" value="${r.peChg||''}" placeholder="Chg%" step="0.1"></td>
+    <td><input type="number" value="${r.peOI||''}" placeholder="OI" step="0.01"></td>
+  `;
+  body.appendChild(tr);
+}
+
+function addRow(){addRowData();}
+
+function getChainData(){
+  const rows=document.querySelectorAll('#ocBody tr');
+  const data=[];
+  rows.forEach(tr=>{
+    const inputs=tr.querySelectorAll('input');
+    const strike=+inputs[3].value;
+    if(!strike)return;
+    data.push({
+      ceOI:+inputs[0].value||0,
+      ceChg:+inputs[1].value||0,
+      cePrem:+inputs[2].value||0,
+      strike,
+      pePrem:+inputs[4].value||0,
+      peChg:+inputs[5].value||0,
+      peOI:+inputs[6].value||0,
+    });
+  });
+  return data.sort((a,b)=>a.strike-b.strike);
+}
+
+/* ═══════════════════════════
+   MATH
+═══════════════════════════ */
+function normCDF(x){const t=1/(1+0.2316419*Math.abs(x));const d=0.3989422820*Math.exp(-0.5*x*x);const p=d*t*(0.3193815+t*(-0.3565638+t*(1.7814779+t*(-1.8212560+t*1.3302744))));return x>=0?1-p:p;}
+function normPDF(x){return Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI);}
+function bs(S,K,T,r,sig,type){
+  if(T<=0.00001||sig<=0.001){const ci=Math.max(S-K,0),pi=Math.max(K-S,0);return{p:type==='call'?ci:pi,delta:0,gamma:0,theta:0,vega:0,Nd2:ci>0?1:0,Nnd2:pi>0?1:0};}
+  const sq=Math.sqrt(T);const d1=(Math.log(S/K)+(r+sig*sig/2)*T)/(sig*sq);const d2=d1-sig*sq;
+  const Nd1=normCDF(d1),Nd2=normCDF(d2),Nnd1=normCDF(-d1),Nnd2=normCDF(-d2);
+  const nd1=normPDF(d1),eRT=Math.exp(-r*T);
+  const p=type==='call'?S*Nd1-K*eRT*Nd2:K*eRT*Nnd2-S*Nnd1;
+  const delta=type==='call'?Nd1:Nd1-1;
+  const gamma=nd1/(S*sig*sq);
+  const tC=(-(S*nd1*sig)/(2*sq)-r*K*eRT*Nd2)/365;
+  const tP=(-(S*nd1*sig)/(2*sq)+r*K*eRT*Nnd2)/365;
+  const theta=type==='call'?tC:tP;
+  const vega=S*nd1*sq/100;
+  return{p,delta,gamma,theta,vega,Nd2,Nnd2};
+}
+function impliedVol(S,K,T,r,mkt,type){
+  let sig=0.18;
+  for(let i=0;i<200;i++){const res=bs(S,K,T,r,sig,type);const diff=res.p-mkt;if(Math.abs(diff)<0.005)break;const v=res.vega*100;if(Math.abs(v)<0.0001)break;sig-=diff/v;sig=Math.max(0.01,Math.min(5,sig));}
+  return sig;
+}
+
+/* ═══════════════════════════
+   SCORING
+═══════════════════════════ */
+function scoreMarket(spot,maxPain,pcr,chainData){
+  const rsi=+document.getElementById('i_rsi').value;
+  const ema20=document.getElementById('i_ema20').value;
+  const ema200=document.getElementById('i_ema200').value;
+  const macd=document.getElementById('i_macd').value;
+  const vwap=document.getElementById('i_vwap').value;
+  const st=document.getElementById('i_st').value;
+  const trend=document.getElementById('i_trend').value;
+  const bb=document.getElementById('i_bb').value;
+  const fii=document.getElementById('i_fii').value;
+  let raw=0;
+  if(rsi<35)raw+=1;else if(rsi>65)raw-=1;else if(rsi<45)raw-=0.5;else if(rsi>55)raw+=0.5;
+  raw+=(ema20==='above'?1:ema20==='below'?-1:0);
+  raw+=(ema200==='above'?1:ema200==='below'?-1:0);
+  raw+=(macd==='bull'?0.5:macd==='bear'?-0.5:macd==='cross_bull'?1:-1);
+  raw+=(vwap==='above'?1:-1);
+  raw+=(st==='bull'?1:-1);
+  raw+=(trend==='uptrend'?1:trend==='downtrend'?-1:0);
+  raw+=(bb==='lower'?0.5:bb==='upper'?-0.5:0);
+  raw+=(fii==='long'?1:fii==='short'?-1:0);
+  const l2=Math.max(0,Math.min(10,Math.round(((raw+9)/18)*10)));
+
+  const totalCOI=chainData.reduce((s,r)=>s+r.ceOI,0);
+  const totalPOI=chainData.reduce((s,r)=>s+r.peOI,0);
+  const oiPCR=totalCOI>0?totalPOI/totalCOI:1;
+  const mpDiff=spot-maxPain;
+  let l3=5;
+  l3+=(pcr<0.7?-1.5:pcr>1.2?1.5:0);
+  l3+=(Math.abs(mpDiff)>100?(mpDiff>0?-2:2):0);
+  l3+=(oiPCR<0.7?-1:oiPCR>1.2?1:0);
+  l3+=(fii==='long'?1:fii==='short'?-1:0);
+  l3=Math.max(0,Math.min(10,Math.round(l3)));
+
+  const final=l2*0.55+l3*0.45;
+  let pattern,cls;
+  if(final>=7){pattern='BULLISH PATTERN CLUSTER';cls='bull';}
+  else if(final>=5.5){pattern='MILDLY BULLISH PATTERN';cls='bull';}
+  else if(final<=3){pattern='BEARISH PATTERN CLUSTER';cls='bear';}
+  else if(final<=4.5){pattern='MILDLY BEARISH PATTERN';cls='bear';}
+  else{pattern='MIXED / INCONCLUSIVE PATTERN';cls='neutral';}
+  return{final,l2,l3,pattern,cls,mpDiff,oiPCR};
+}
+
+/* ═══════════════════════════
+   FIND STUDY STRIKES
+═══════════════════════════ */
+function findStudyStrikes(spot,chainData,dte,rate,vixD,role,risk,scoring){
+  const T=dte/365;const friT=Math.max(dte-1,0.25)/365;
+  const isBull=scoring.cls==='bull';
+  const res={ce:null,pe:null};
+
+  for(const typeKey of['call','put']){
+    const side=typeKey==='call'?'ce':'pe';
+    const candidates=[];
+    for(const row of chainData){
+      const K=row.strike;
+      const mkt=typeKey==='call'?row.cePrem:row.pePrem;
+      if(mkt<=0)continue;
+      const iv=impliedVol(spot,K,T,rate,mkt,typeKey);
+      const bsR=bs(spot,K,T,rate,iv,typeKey);
+      const nextIV=vixD+Math.max(iv-vixD,0)*0.55;
+      const nextR=bs(spot,K,friT,rate,nextIV,typeKey);
+      const pITM=typeKey==='call'?bsR.Nd2:bsR.Nnd2;
+      const theta=Math.abs(bsR.theta);
+      const thetaPct=mkt>0?theta/mkt:0;
+      const beMove=typeKey==='call'?Math.max(K+mkt-spot,0):Math.max(spot-(K-mkt),0);
+      const exp1sig=spot*iv*Math.sqrt(1/252);
+      const refTarget=mkt*(risk==='conservative'?1.5:risk==='moderate'?2.0:2.5);
+      const oiData=typeKey==='call'?{oi:row.ceOI,chg:row.ceChg}:{oi:row.peOI,chg:row.peChg};
+      candidates.push({K,mkt,iv,nextIV,pITM,theta,thetaPct,beMove,exp1sig,
+        pOTM:(1-pITM)*100,refTarget,nextPITM:typeKey==='call'?nextR.Nd2:nextR.Nnd2,
+        oiData,bsR});
+    }
+    if(!candidates.length)continue;
+    if(role==='seller'){
+      const pool=candidates.filter(c=>typeKey==='call'?c.K>spot:c.K<spot)
+        .filter(c=>c.pITM>=0.12&&c.pITM<=0.45&&c.thetaPct>=0.08);
+      pool.sort((a,b)=>b.thetaPct-a.thetaPct);
+      res[side]=pool[0]||candidates.sort((a,b)=>Math.abs(a.pITM-0.25)-Math.abs(b.pITM-0.25))[0];
+    } else {
+      const nearATM=typeKey==='call'
+        ?(isBull?candidates.filter(c=>c.K>=spot&&c.K<=spot+200):candidates.filter(c=>c.K>spot))
+        :(!isBull?candidates.filter(c=>c.K<=spot&&c.K>=spot-200):candidates.filter(c=>c.K<spot));
+      const pool=nearATM.filter(c=>c.pITM>=0.12);
+      pool.sort((a,b)=>b.pITM-a.pITM);
+      res[side]=pool[0]||candidates.sort((a,b)=>Math.abs(a.K-spot)-Math.abs(b.K-spot))[0];
+    }
+  }
+  return res;
+}
+
+/* ═══════════════════════════
+   MAIN
+═══════════════════════════ */
+function setIndex(idx,btn){
+  CURRENT_INDEX=idx;
+  LOT=LOT_SIZES[idx];
+  INDEX_NAME=btn.textContent.trim().split(' ').slice(0,btn.textContent.includes('Bank')?2:1).join(' ');
+  // clean name
+  const names={nifty:'Nifty 50',banknifty:'Bank Nifty',sensex:'Sensex',finnifty:'Fin Nifty'};
+  INDEX_NAME=names[idx];
+  document.querySelectorAll('.idx-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const sl=document.getElementById('spotLabel');
+  if(sl)sl.textContent=INDEX_NAME+' Spot Price';
+  const lh=document.getElementById('lotHint');
+  if(lh)lh.textContent=INDEX_NAME+' lot = '+LOT+' shares';
+  // update OC table default strikes based on index
+  if(idx==='banknifty'){
+    updateDefaultStrikes(51000,200);
+  } else if(idx==='sensex'){
+    updateDefaultStrikes(80000,200);
+  } else if(idx==='finnifty'){
+    updateDefaultStrikes(23500,50);
+  } else {
+    updateDefaultStrikes(24350,50);
+  }
+}
+
+function updateDefaultStrikes(baseSpot,step){
+  document.getElementById('m_spot').value=baseSpot;
+  const rows=document.querySelectorAll('#ocBody tr');
+  const offsets=[-2,-1,0,1,2];
+  rows.forEach((tr,i)=>{
+    if(i>=offsets.length)return;
+    const inputs=tr.querySelectorAll('input');
+    if(inputs[3])inputs[3].value=baseSpot+(offsets[i]*step);
+  });
+}
+
+function runAnalysis(){
+  const spot=+document.getElementById('m_spot').value;
+  const high=+document.getElementById('m_high').value;
+  const low=+document.getElementById('m_low').value;
+  const vix=+document.getElementById('m_vix').value;
+  const mp=+document.getElementById('m_mp').value;
+  const pcr=+document.getElementById('m_pcr').value;
+  const dte=Math.max(1,+document.getElementById('m_dte').value||2);
+  const rate=(+document.getElementById('m_rate').value||6.5)/100;
+  const role=document.getElementById('t_role').value;
+  const risk=document.getElementById('t_risk').value;
+  const lots=Math.max(1,parseInt(document.getElementById('t_lots').value)||1);
+  const chainData=getChainData();
+
+  if(!spot||!vix||chainData.length<2){
+    alert('Please fill spot price, VIX and at least 2 strike rows.');return;
+  }
+
+  const vixD=vix/100;
+  const scoring=scoreMarket(spot,mp,pcr,chainData);
+  const strikes=findStudyStrikes(spot,chainData,dte,rate,vixD,role,risk,scoring);
+  try {
+    renderOutput(scoring,strikes,spot,high,low,vix,dte,lots,role,risk,mp,pcr,chainData,rate);
+  } catch(e) { console.error('renderOutput error:', e); alert('Output error: ' + e.message); return; }
+  try {
+    renderIntradayStudy(spot,vix,pcr,mp,strikes.ce,strikes.pe,scoring,dte,high,low);
+  } catch(e) { console.error('renderIntradayStudy error:', e); }
+  try {
+    renderPremiumStudy(scoring,strikes,spot,high,low,vix,dte,lots,role,risk,mp,pcr,chainData,rate);
+  } catch(e) { console.error('renderPremiumStudy error:', e); }
+  document.getElementById('output').style.display='block';
+  setTimeout(()=>document.getElementById('output').scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+/* ═══════════════════════════
+   RENDER
+═══════════════════════════ */
+function renderOutput(sc,strikes,spot,high,low,vix,dte,lots,role,risk,mp,pcr,chainData,rate){
+  const cls=sc.cls;
+  const conf=Math.round(Math.min(sc.final,10)*10);
+  const clsC=cls==='bull'?'var(--green)':cls==='bear'?'var(--red)':'var(--gold2)';
+  const ce=strikes.ce,pe=strikes.pe;
+
+  // Pattern banner
+  const banner=document.getElementById('patBanner');
+  banner.className='pat-banner '+cls;
+  const pt=document.getElementById('pb_title');
+  pt.textContent=sc.pattern;pt.className='pb-title '+cls;
+  document.getElementById('pb_meta').innerHTML=
+    `${INDEX_NAME} ₹${spot.toLocaleString('en-IN')} · Range ${low}–${high} · VIX ${vix} · Max Pain ₹${mp} · PCR ${pcr} · DTE ${dte}`;
+  const ps=document.getElementById('pb_score');
+  ps.textContent=conf+'%';ps.className='pb-snum '+cls;
+  const sc2=s=>s>=6?'var(--green)':s<=4?'var(--red)':'var(--gold2)';
+  setV('pbs_ind',sc.l2.toFixed(1)+'/10',sc2(sc.l2));
+  setV('pbs_oi',sc.l3.toFixed(1)+'/10',sc2(sc.l3));
+  setV('pbs_mp',(sc.mpDiff>0?'+':'')+sc.mpDiff.toFixed(0)+' pts',Math.abs(sc.mpDiff)>100?'var(--red)':'var(--gold2)');
+
+  // Educational observations
+  const rsi=+document.getElementById('i_rsi').value;
+  const obs=[];
+  const totalCOI=chainData.reduce((s,r)=>s+r.ceOI,0);
+  const totalPOI=chainData.reduce((s,r)=>s+r.peOI,0);
+
+  if(cls==='bull'&&ce&&pe){
+    obs.push(`<span class="tag tag-ce">CE</span><strong>Call side:</strong> Technical indicators form a pattern historically associated with upward momentum. The ${ce.K} CE is priced at ₹${ce.mkt.toFixed(1)} with BS-derived P(ITM) of <strong>${(ce.pITM*100).toFixed(0)}%</strong> and implied volatility of <strong>${(ce.iv*100).toFixed(1)}%</strong>.`);
+    obs.push(`<span class="tag tag-pe">PE</span><strong>Put side:</strong> The ${pe.K} PE at ₹${pe.mkt.toFixed(1)} is <strong>${Math.abs(pe.K-spot).toFixed(0)} points ${pe.K<spot?'below':'above'} spot</strong>. BS model shows time value of ₹${Math.max(pe.mkt-Math.max(pe.K-spot,0),0).toFixed(1)} embedded in the premium.`);
+  } else if(cls==='bear'&&ce&&pe){
+    obs.push(`<span class="tag tag-pe">PE</span><strong>Put side:</strong> Technical indicators show a pattern associated with downward price pressure. The ${pe.K} PE has BS P(ITM) of <strong>${(pe.pITM*100).toFixed(0)}%</strong> with implied volatility <strong>${(pe.iv*100).toFixed(1)}%</strong>.`);
+    obs.push(`<span class="tag tag-ce">CE</span><strong>Call side:</strong> The ${ce.K} CE at ₹${ce.mkt.toFixed(1)} is <strong>${Math.abs(ce.K-spot).toFixed(0)} points above spot</strong>. CE OI change of <strong>${ce.oiData.chg>0?'+':''}${ce.oiData.chg.toFixed(1)}%</strong> ${ce.oiData.chg>30?'suggests significant institutional positioning at this level.':'shows moderate activity.'}`);
+  } else {
+    obs.push(`<span class="tag tag-n">MIXED</span><strong>Inconclusive pattern:</strong> Indicators and OI data are in conflict. Pattern strength below 50% — historical studies suggest premium compression or range-bound behaviour is more common than directional expansion when signals are mixed.`);
+  }
+
+  obs.push(`<span class="tag tag-data">RSI</span><strong>Momentum study:</strong> RSI at <strong>${rsi}</strong> — ${rsi<40?'in oversold zone (below 40). Historically a mean-reversion zone where downward momentum decelerates.':rsi>60?'in overbought zone (above 60). Historically where upward momentum may face exhaustion.':'in neutral zone (40–60). No strong momentum bias — range-bound behaviour more probable.'}`);
+
+  obs.push(`<span class="tag tag-data">THETA</span><strong>Time decay:</strong> With <strong>${dte} DTE</strong>, theta is ${dte<=2?'at maximum acceleration — options lose most value in the final 2 trading days':dte<=5?'elevated — non-linear decay building strongly':'moderate — building but not yet peak'}. ${ce?`BS model estimates CE time value erodes at approximately ₹${Math.abs(ce.bsR?.theta||0).toFixed(1)}/day if spot stays flat.`:''}`);
+
+  obs.push(`<span class="tag tag-data">OI</span><strong>Positioning study:</strong> Chain CE OI total ${totalCOI.toFixed(1)}L vs PE OI ${totalPOI.toFixed(1)}L. PCR ${pcr} — ${pcr<0.7?'call-heavy chain, historically associated with rangebound or bearish institutional tilt':pcr>1.2?'put-heavy chain, historically associated with bullish institutional put selling':'balanced positioning — no strong directional tilt'}. Max pain at ₹${mp} is <strong>${Math.abs(sc.mpDiff).toFixed(0)} pts ${sc.mpDiff>0?'below':'above'} spot</strong>.`);
+
+  obs.push(`<span class="tag tag-data">VIX</span><strong>Vol environment:</strong> India VIX at <strong>${vix}</strong> — ${vix>20?'high volatility regime. Premiums are expensive relative to historical norms.':vix<14?'low volatility regime. Premiums are compressed.':'normal volatility range. Options are fairly priced historically.'}. Session range of ${high-low} pts (${((high-low)/spot*100).toFixed(1)}% of spot) ${(high-low)>250?'shows elevated intraday vol — vanna buffer likely to expand premiums.':'shows normal intraday movement.'}`);
+
+  document.getElementById('eduObs').innerHTML=obs.map(o=>`<div class="edu-obs">${o}</div>`).join('');
+
+  // Dual panels
+  renderPanel('cePanel','ce','call',ce,role,risk,lots,spot,dte,rate,sc);
+  renderPanel('pePanel','pe','put',pe,role,risk,lots,spot,dte,rate,sc);
+
+  // Stats strip
+  const friT=Math.max(dte-1,0.25)/365;
+  if(ce){
+    const nextCE=bs(spot,ce.K,friT,rate,ce.nextIV,'call');
+    document.getElementById('statsStrip').innerHTML=`
+      <div class="ss-item"><div class="ss-lbl">CE Session IV</div><div class="ss-val" style="color:var(--cyan)">${(ce.iv*100).toFixed(1)}%</div><div class="ss-sub">Implied vol now</div></div>
+      <div class="ss-item"><div class="ss-lbl">CE Projected IV</div><div class="ss-val" style="color:var(--orange2)">${(ce.nextIV*100).toFixed(1)}%</div><div class="ss-sub">VIX convergence model</div></div>
+      <div class="ss-item"><div class="ss-lbl">CE BS Next Session</div><div class="ss-val" style="color:var(--gold2)">₹${nextCE.p.toFixed(1)}</div><div class="ss-sub">Flat spot estimate</div></div>
+      <div class="ss-item"><div class="ss-lbl">CE P(ITM) Now</div><div class="ss-val" style="color:var(--purple2)">${(ce.pITM*100).toFixed(0)}%</div><div class="ss-sub">BS probability</div></div>
+      <div class="ss-item"><div class="ss-lbl">CE P(ITM) Flat</div><div class="ss-val" style="color:${ce.nextPITM<0.3?'var(--red)':ce.nextPITM>0.5?'var(--green)':'var(--gold2)'}">${(ce.nextPITM*100).toFixed(0)}%</div><div class="ss-sub">Next session (no move)</div></div>
+      <div class="ss-item"><div class="ss-lbl">1σ Expected Range</div><div class="ss-val" style="color:var(--blue2)">±${ce.exp1sig.toFixed(0)}</div><div class="ss-sub">${(spot-ce.exp1sig).toFixed(0)}–${(spot+ce.exp1sig).toFixed(0)}</div></div>
+      <div class="ss-item"><div class="ss-lbl">CE Theta/Day</div><div class="ss-val" style="color:var(--red)">₹${Math.abs(ce.bsR?.theta||0).toFixed(1)}</div><div class="ss-sub">Time decay per day</div></div>
+      <div class="ss-item"><div class="ss-lbl">CE Break-even Ref</div><div class="ss-val" style="color:var(--gold2)">₹${(ce.K+ce.mkt).toFixed(0)}</div><div class="ss-sub">Strike + premium</div></div>
+    `;
+  }
+
+  // Scenario table
+  document.getElementById('ceTH').textContent=ce?`CE ${ce.K}`:'CE';
+  document.getElementById('peTH').textContent=pe?`PE ${pe.K}`:'PE';
+  const moves=[-300,-200,-100,-50,0,50,100,200,300];
+  let tbody='';
+  moves.forEach(mv=>{
+    const nS=spot+mv;
+    const ceR=ce?bs(nS,ce.K,friT,rate,ce.nextIV,'call'):{p:0};
+    const peR=pe?bs(nS,pe.K,friT,rate,pe.nextIV,'put'):{p:0};
+    const ceIntr=ce?Math.max(nS-ce.K,0):0;
+    const peIntr=pe?Math.max(pe.K-nS,0):0;
+    const mc=mv>0?'pos':mv<0?'neg':'neu';
+    tbody+=`<tr class="${mv===0?'base-row':''}">
+      <td class="${mc}">${mv>0?'+':''}${mv} pts</td>
+      <td>${nS.toFixed(0)}</td>
+      <td class="hi">${ce?ce.K:'—'}</td>
+      <td style="color:var(--gold2)">₹${ce?ceR.p.toFixed(1):'—'}</td>
+      <td class="${ceIntr>0?'pos':''}">₹${ce?ceIntr.toFixed(1):'—'}</td>
+      <td class="hi">${pe?pe.K:'—'}</td>
+      <td style="color:var(--orange2)">₹${pe?peR.p.toFixed(1):'—'}</td>
+      <td class="${peIntr>0?'pos':''}">₹${pe?peIntr.toFixed(1):'—'}</td>
+    </tr>`;
+  });
+  document.getElementById('scenBody').innerHTML=tbody;
+
+  // OI chain rows from entered data
+  const oc=document.getElementById('oiChainRows');
+  oc.innerHTML=chainData.map(r=>{
+    const isATM=Math.abs(r.strike-spot)<=75;
+    const isCeR=ce&&r.strike===ce.K;
+    const isPeR=pe&&r.strike===pe.K;
+    return`<div class="oic-row${isATM?' atm':''}">
+      <span style="color:var(--green)">${r.ceOI}L</span>
+      <span style="color:${r.ceChg>0?'var(--green)':'var(--red)'}">${r.ceChg>0?'+':''}${r.ceChg.toFixed(1)}%</span>
+      <span style="color:${isCeR?'var(--gold2)':'var(--text)'}${isCeR?';font-weight:700':''}">${isCeR?'◄ ':''}₹${r.cePrem}</span>
+      <span class="oic-strike" style="color:${isATM?'var(--gold2)':'var(--text2)'}${isATM?';font-weight:700':''}">${r.strike}</span>
+      <span style="color:${isPeR?'var(--gold2)':'var(--text)'}${isPeR?';font-weight:700':''}">₹${r.pePrem}${isPeR?' ►':''}</span>
+      <span style="color:${r.peChg>0?'var(--green)':'var(--red)'}">${r.peChg>0?'+':''}${r.peChg.toFixed(1)}%</span>
+      <span style="color:var(--red)">${r.peOI}L</span>
+    </div>`;
+  }).join('');
+
+  // Greeks
+  if(ce){
+    const res=ce.bsR||bs(spot,ce.K,dte/365,rate,ce.iv,'call');
+    const beD=res.gamma>1e-6?Math.sqrt(2*Math.abs(res.theta)/res.gamma):0;
+    document.getElementById('greeksGrid').innerHTML=`
+      <div class="gr-card"><div class="gr-lbl">Delta</div><div class="gr-val" style="color:var(--blue2)">${res.delta.toFixed(4)}</div><div class="gr-sub">₹${Math.abs(res.delta).toFixed(2)} per index pt</div></div>
+      <div class="gr-card"><div class="gr-lbl">Gamma</div><div class="gr-val" style="color:var(--green)">${res.gamma.toFixed(6)}</div><div class="gr-sub">Delta change per pt</div></div>
+      <div class="gr-card"><div class="gr-lbl">Theta/day</div><div class="gr-val" style="color:var(--red)">₹${res.theta.toFixed(2)}</div><div class="gr-sub">₹${(Math.abs(res.theta)/375).toFixed(3)}/min</div></div>
+      <div class="gr-card"><div class="gr-lbl">Vega/1%IV</div><div class="gr-val" style="color:var(--purple2)">₹${res.vega.toFixed(2)}</div><div class="gr-sub">IV sensitivity</div></div>
+      <div class="gr-card"><div class="gr-lbl">Min Move/day</div><div class="gr-val" style="color:var(--orange2)">±${beD.toFixed(0)} pts</div><div class="gr-sub">To offset theta</div></div>
+      <div class="gr-card"><div class="gr-lbl">Intrinsic</div><div class="gr-val" style="color:var(--blue2)">₹${Math.max(spot-ce.K,0).toFixed(1)}</div><div class="gr-sub">${(Math.max(spot-ce.K,0)/ce.mkt*100).toFixed(0)}% of premium</div></div>
+      <div class="gr-card"><div class="gr-lbl">Time Value</div><div class="gr-val" style="color:var(--gold2)">₹${Math.max(ce.mkt-Math.max(spot-ce.K,0),0).toFixed(1)}</div><div class="gr-sub">Extrinsic component</div></div>
+      <div class="gr-card"><div class="gr-lbl">1σ Range</div><div class="gr-val" style="color:var(--cyan)">±${ce.exp1sig.toFixed(0)}</div><div class="gr-sub">${(spot-ce.exp1sig).toFixed(0)}–${(spot+ce.exp1sig).toFixed(0)}</div></div>
+    `;
+  }
+
+  // Theta schedule
+  if(ce){
+    const sessions=[['9:15',0],['10:15',60],['11:15',120],['12:15',180],['1:15',240],['2:15',300],['3:15',360],['3:29',374]];
+    const intrinsic=Math.max(spot-ce.K,0);
+    document.getElementById('thetaGrid').innerHTML=sessions.map(([t,m])=>{
+      const lost=(Math.abs(ce.bsR?.theta||0)/375)*m;
+      const rem=Math.max(ce.mkt-lost,intrinsic);
+      const col=rem>ce.mkt*0.7?'var(--text)':rem>ce.mkt*0.4?'var(--orange2)':'var(--red)';
+      return`<div class="tg-item"><div class="tg-time">${t}</div><div class="tg-prem" style="color:${col}">₹${rem.toFixed(1)}</div><div class="tg-loss">−₹${lost.toFixed(1)}</div></div>`;
+    }).join('');
+  }
+
+  // Key levels
+  document.getElementById('levelsGrid').innerHTML=`
+    ${ce?`<div class="lv"><div class="lv-lbl">CE ${ce.K} Break-even</div><div class="lv-val" style="color:var(--green)">₹${(ce.K+ce.mkt).toFixed(0)}</div><div class="lv-sub">Strike + CE premium</div></div>`:''}
+    ${pe?`<div class="lv"><div class="lv-lbl">PE ${pe.K} Break-even</div><div class="lv-val" style="color:var(--red)">₹${(pe.K-pe.mkt).toFixed(0)}</div><div class="lv-sub">Strike − PE premium</div></div>`:''}
+    <div class="lv"><div class="lv-lbl">Max Pain Level</div><div class="lv-val" style="color:var(--purple2)">₹${mp}</div><div class="lv-sub">Theoretical expiry gravity</div></div>
+    ${ce?`<div class="lv"><div class="lv-lbl">1σ Session Range</div><div class="lv-val" style="color:var(--blue2)">±${ce.exp1sig.toFixed(0)} pts</div><div class="lv-sub">${(spot-ce.exp1sig).toFixed(0)} – ${(spot+ce.exp1sig).toFixed(0)}</div></div>`:''}
+    ${ce?`<div class="lv"><div class="lv-lbl">CE ${ce.K} vs Spot</div><div class="lv-val" style="color:var(--green)">₹${ce.K}</div><div class="lv-sub">${spot>ce.K?'ITM by '+(spot-ce.K).toFixed(0)+' pts':'OTM by '+(ce.K-spot).toFixed(0)+' pts'}</div></div>`:''}
+    ${pe?`<div class="lv"><div class="lv-lbl">PE ${pe.K} vs Spot</div><div class="lv-val" style="color:var(--red)">₹${pe.K}</div><div class="lv-sub">${spot<pe.K?'ITM by '+(pe.K-spot).toFixed(0)+' pts':'OTM by '+(spot-pe.K).toFixed(0)+' pts'}</div></div>`:''}
+  `;
+
+  // Payoff chart
+  if(ce) drawPayoff(spot,ce.K,friT,rate,ce.nextIV,ce.mkt);
+}
+
+/* ═══════════════════════════
+   ANALYSIS PANEL
+═══════════════════════════ */
+function renderPanel(panelId,side,typeKey,data,role,risk,lots,spot,dte,rate,sc){
+  const panel=document.getElementById(panelId);
+  if(!data){panel.innerHTML='<div style="padding:16px;color:var(--text2);font-size:12px;">No valid strike data entered for this side. Add more rows to the option chain table.</div>';return;}
+  const lbl=side==='ce'?'CE':'PE';
+  const intrinsic=side==='ce'?Math.max(spot-data.K,0):Math.max(data.K-spot,0);
+  const timeVal=Math.max(data.mkt-intrinsic,0);
+  const lotVal=(data.mkt*75).toFixed(0);
+  const refTarget2x=(data.mkt*2*75*lots).toFixed(0);
+  const bull=bs(spot+data.exp1sig,data.K,Math.max(dte-1,0.25)/365,rate,data.nextIV,typeKey).p;
+  const bear=bs(spot-data.exp1sig,data.K,Math.max(dte-1,0.25)/365,rate,data.nextIV,typeKey).p;
+  const flat=bs(spot,data.K,Math.max(dte-1,0.5)/365,rate,data.nextIV,typeKey).p;
+  panel.innerHTML=`
+    <div class="ap-head ${side}">${lbl==='CE'?'CALL (CE)':'PUT (PE)'} · Mathematical Study</div>
+    <div class="ap-strike"><span class="snum">${data.K}</span><span class="stype"> ${lbl}</span></div>
+    <div class="ap-prem">Market price: <strong>₹${data.mkt.toFixed(1)}</strong>/share &nbsp;·&nbsp; Lot ref: ₹${lotVal}</div>
+    <div class="dg">
+      <div class="dc"><div class="dc-lbl">BS P(ITM)</div><div class="dc-val" style="color:${data.pITM>0.5?'var(--green)':data.pITM<0.25?'var(--red)':'var(--gold2)'}">${(data.pITM*100).toFixed(0)}%</div><div class="dc-sub">Prob expiring ITM</div></div>
+      <div class="dc"><div class="dc-lbl">Implied IV</div><div class="dc-val" style="color:var(--blue2)">${(data.iv*100).toFixed(1)}%</div><div class="dc-sub">Market-implied vol</div></div>
+      <div class="dc"><div class="dc-lbl">Intrinsic</div><div class="dc-val" style="color:${intrinsic>0?'var(--green)':'var(--text2)'}">₹${intrinsic.toFixed(1)}</div><div class="dc-sub">${(intrinsic/data.mkt*100).toFixed(0)}% of premium</div></div>
+      <div class="dc"><div class="dc-lbl">Time Value</div><div class="dc-val" style="color:var(--orange2)">₹${timeVal.toFixed(1)}</div><div class="dc-sub">Extrinsic component</div></div>
+      <div class="dc"><div class="dc-lbl">Distance</div><div class="dc-val" style="color:var(--text)">${Math.abs(data.K-spot).toFixed(0)} pts</div><div class="dc-sub">${side==='ce'?(spot>data.K?'ITM':'OTM'):(spot<data.K?'ITM':'OTM')}</div></div>
+      <div class="dc"><div class="dc-lbl">Break-even Ref</div><div class="dc-val" style="color:var(--gold2)">₹${(side==='ce'?data.K+data.mkt:data.K-data.mkt).toFixed(0)}</div><div class="dc-sub">Strike ± premium</div></div>
+      <div class="dc"><div class="dc-lbl">Theta/day</div><div class="dc-val" style="color:var(--red)">₹${Math.abs(data.bsR?.theta||0).toFixed(1)}</div><div class="dc-sub">Time decay/day</div></div>
+      <div class="dc"><div class="dc-lbl">OI at Strike</div><div class="dc-val" style="color:var(--purple2)">${data.oiData.oi}L</div><div class="dc-sub">Chg ${data.oiData.chg>0?'+':''}${data.oiData.chg.toFixed(1)}%</div></div>
+    </div>
+    <div class="sc-obs bull-sc"><span>📈</span><span><strong>+1σ scenario (${(spot+data.exp1sig).toFixed(0)}):</strong> BS model prices this ${lbl} at ₹${bull.toFixed(1)}</span></div>
+    <div class="sc-obs flat-sc"><span>➡️</span><span><strong>Flat scenario (${spot}):</strong> After theta, BS estimates ₹${flat.toFixed(1)}</span></div>
+    <div class="sc-obs bear-sc"><span>📉</span><span><strong>−1σ scenario (${(spot-data.exp1sig).toFixed(0)}):</strong> BS model prices this ${lbl} at ₹${bear.toFixed(1)}</span></div>
+  `;
+}
+
+/* ═══════════════════════════
+   PAYOFF CHART
+═══════════════════════════ */
+function drawPayoff(S,K,T,r,iv,mkt){
+  const c=document.getElementById('payoffChart');if(!c)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=c.parentElement.clientWidth||800,H=180;
+  c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';
+  const ctx=c.getContext('2d');ctx.scale(dpr,dpr);
+  const spots=[],pnls=[],adjPnls=[];
+  for(let s=S-600;s<=S+600;s+=20){
+    spots.push(s);
+    pnls.push(Math.max(s-K,0)-mkt);
+    adjPnls.push(bs(s,K,T,r,iv,'call').p-mkt);
+  }
+  const pad={t:14,b:28,l:55,r:10};
+  const cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+  const allV=[...pnls,...adjPnls];
+  const minV=Math.min(...allV)*1.15,maxV=Math.max(...allV)*1.15;
+  const range=maxV-minV||1;
+  const xS=i=>pad.l+(i/(spots.length-1))*cW;
+  const yS=v=>pad.t+cH-((v-minV)/range)*cH;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(28,40,64,0.6)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=pad.t+(i/4)*cH;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();ctx.fillStyle='#7888a8';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='right';ctx.fillText(((maxV-minV)*(4-i)/4+minV).toFixed(0),pad.l-3,y+4);}
+  const zy=yS(0);
+  ctx.strokeStyle='rgba(200,152,26,0.25)';ctx.lineWidth=1;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(pad.l,zy);ctx.lineTo(W-pad.r,zy);ctx.stroke();ctx.setLineDash([]);
+  const si=spots.findIndex(s=>s>=K);
+  if(si>=0){ctx.strokeStyle='rgba(96,160,255,0.35)';ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(xS(si),pad.t);ctx.lineTo(xS(si),H-pad.b);ctx.stroke();ctx.setLineDash([]);}
+  const ci=spots.findIndex(s=>s>=S);
+  if(ci>=0){ctx.strokeStyle='rgba(0,200,240,0.35)';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(xS(ci),pad.t);ctx.lineTo(xS(ci),H-pad.b);ctx.stroke();ctx.setLineDash([]);}
+  ctx.beginPath();spots.forEach((_,i)=>{if(i===0)ctx.moveTo(xS(i),yS(Math.max(pnls[i],0)));else ctx.lineTo(xS(i),yS(Math.max(pnls[i],0)));});ctx.lineTo(xS(spots.length-1),yS(0));ctx.lineTo(xS(0),yS(0));ctx.closePath();ctx.fillStyle='rgba(0,212,132,0.08)';ctx.fill();
+  ctx.beginPath();spots.forEach((_,i)=>{if(i===0)ctx.moveTo(xS(i),yS(Math.min(pnls[i],0)));else ctx.lineTo(xS(i),yS(Math.min(pnls[i],0)));});ctx.lineTo(xS(spots.length-1),yS(0));ctx.lineTo(xS(0),yS(0));ctx.closePath();ctx.fillStyle='rgba(240,56,88,0.08)';ctx.fill();
+  ctx.beginPath();spots.forEach((_,i)=>{if(i===0)ctx.moveTo(xS(i),yS(adjPnls[i]));else ctx.lineTo(xS(i),yS(adjPnls[i]));});
+  ctx.strokeStyle='rgba(0,212,132,0.5)';ctx.lineWidth=1.5;ctx.setLineDash([5,3]);ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();spots.forEach((_,i)=>{if(i===0)ctx.moveTo(xS(i),yS(pnls[i]));else ctx.lineTo(xS(i),yS(pnls[i]));});
+  ctx.strokeStyle='#e8b830';ctx.lineWidth=2.5;ctx.stroke();
+  ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center';
+  if(si>=0){ctx.fillStyle='rgba(96,160,255,0.7)';ctx.fillText('K='+K,xS(si),pad.t+9);}
+  if(ci>=0){ctx.fillStyle='rgba(0,200,240,0.7)';ctx.fillText('SPOT='+S,xS(ci),pad.t+19);}
+  ctx.fillStyle='rgba(200,152,26,0.6)';ctx.textAlign='left';ctx.fillText('Expiry P&L',pad.l+4,zy-5);
+  ctx.fillStyle='rgba(0,212,132,0.6)';ctx.fillText('BS Next Session',pad.l+4,zy+12);
+  ctx.fillStyle='#7888a8';ctx.textAlign='center';
+  [0,Math.floor(spots.length/4),Math.floor(spots.length/2),Math.floor(3*spots.length/4),spots.length-1].forEach(i=>{ctx.fillText(spots[i],xS(i),H-4);});
+}
+
+/* ═══════════════════════════
+   HELPERS
+═══════════════════════════ */
+
+function renderIntradayStudy(spot,vix,pcr,mp,ce,pe,sc,dte,high,low){
+  const el=document.getElementById('itpModule');if(!el)return;
+  const mpGap=Math.abs(spot-mp);
+  const intradayRange=Math.abs((high||spot+100)-(low||spot-100));
+  const rangeUsedPct=intradayRange/spot*100;
+  let foScore=40;
+  if(vix>20)foScore+=20;else if(vix>16)foScore+=12;else if(vix<12)foScore-=10;
+  if(pcr<0.6||pcr>1.4)foScore+=15;else if(pcr<0.75||pcr>1.25)foScore+=8;
+  if(mpGap>200)foScore+=12;else if(mpGap>100)foScore+=6;else if(mpGap<30)foScore-=5;
+  if(dte===1)foScore+=18;else if(dte===2)foScore+=8;
+  if(rangeUsedPct>1.2)foScore-=15;else if(rangeUsedPct>0.8)foScore-=8;
+  foScore=Math.max(20,Math.min(88,Math.round(foScore)));
+  const foLevel=foScore>=65?'HIGH':foScore>=45?'MODERATE':'LOW';
+  const foColor=foScore>=65?'var(--red)':foScore>=45?'var(--orange2)':'var(--green)';
+  const foMC=foScore>=65?'linear-gradient(90deg,var(--orange),var(--red))':foScore>=45?'linear-gradient(90deg,var(--gold),var(--orange2))':'linear-gradient(90deg,var(--green),var(--cyan))';
+  const vixSig=vix>18?{txt:'Elevated — fake-out fuel',cls:'high'}:vix>14?{txt:'Normal range',cls:'mod'}:{txt:'Low — calmer session',cls:'low'};
+  const pcrSig=(pcr<0.7||pcr>1.3)?{txt:'Extreme — whipsaw likely',cls:'high'}:{txt:'Balanced positioning',cls:'low'};
+  const mpSig=mpGap>150?{txt:'Far — gravity pull active',cls:'high'}:mpGap>75?{txt:'Moderate gap',cls:'mod'}:{txt:'Near max pain — pinning',cls:'low'};
+  const dteSig=dte===1?{txt:'Expiry — extreme gamma',cls:'high'}:dte<=2?{txt:'Near expiry',cls:'mod'}:{txt:'More time remaining',cls:'low'};
+  const rangeSig=rangeUsedPct>1.0?{txt:'Large — move done',cls:'low'}:rangeUsedPct>0.6?{txt:'Moderate so far',cls:'mod'}:{txt:'Small — move ahead',cls:'high'};
+  const ceThetaDay=ce?Math.abs(ce.bsR?.theta||0):0;
+  const peThetaDay=pe?Math.abs(pe.bsR?.theta||0):0;
+  const thetaMorning=(ceThetaDay*0.22).toFixed(1);
+  const thetaMidday=(ceThetaDay*0.55).toFixed(1);
+  const thetaClosing=(ceThetaDay*0.85).toFixed(1);
+  const peThetaMidday=(peThetaDay*0.55).toFixed(1);
+  const morningSpikeEst=Math.round(spot*(vix/100)*Math.sqrt(1.5/252));
+  const middaySpikeEst=Math.round(spot*(vix/100)*Math.sqrt(1.0/252));
+  const ceSpikeAmt=ce?(ce.mkt*(foScore/100)*0.35).toFixed(0):'—';
+  const exp1sig=ce?ce.exp1sig:spot*vix/100*Math.sqrt(1/252);
+  const sellerWins=ce?ce.pOTM:75;
+  const ceAbsorb=ce?Math.abs(ce.K+ce.mkt-spot).toFixed(0):'—';
+  const peAbsorb=pe?Math.abs(spot-(pe.K-pe.mkt)).toFixed(0):'—';
+  const dirVerb=sc.cls==='bull'?'bullish':sc.cls==='bear'?'bearish':'neutral';
+  const fakeOutDir=sc.cls==='bull'?'downward spike (fake bearish move)':sc.cls==='bear'?'upward spike (fake bullish move)':'spike in either direction';
+  const mpPull=mpGap>50?`Max pain at ₹${mp} creates ${mpGap>150?'strong':'moderate'} gravity — historically ${spot>mp?'downward':'upward'} pull towards ₹${mp} accelerates after 2 PM.`:`Spot is near max pain (₹${mp}) — pinning behaviour likely. Premium sellers on both sides may benefit.`;
+  const confirmRate=Math.min(92,68+sc.final*2.4).toFixed(0);
+
+  el.innerHTML=`
+  <div class="itp-card">
+    <div class="itp-header">
+      <div>
+        <div class="itp-tag">Intraday Pattern Study · Institutional Time Windows</div>
+        <div class="itp-title">Morning Fake-out Analysis</div>
+        <div class="itp-subtitle">Historical study: institutions push price against closing direction in morning session —<br>creating losses for premium buyers even when closing direction is correct.</div>
+      </div>
+      <div class="itp-fakeout-badge">
+        <div class="itp-fo-pct" style="color:${foColor}">${foScore}%</div>
+        <div class="itp-fo-lbl">Fake-out<br>Probability</div>
+      </div>
+    </div>
+    <div class="itp-meter-wrap">
+      <div class="itp-meter-lbl"><span>Morning Fake-out Probability</span><span style="color:${foColor};font-weight:700">${foLevel} — ${foScore}%</span></div>
+      <div class="itp-meter-track"><div class="itp-meter-fill" style="width:${foScore}%;background:${foMC}"></div></div>
+      <div class="itp-meter-zones"><span>Low (0–40%)</span><span>Moderate (40–65%)</span><span>High (65%+)</span></div>
+    </div>
+    <div class="itp-factors">
+      <div class="itp-factor"><div class="itp-f-lbl">India VIX</div><div class="itp-f-val" style="color:${vixSig.cls==='high'?'var(--red)':vixSig.cls==='mod'?'var(--orange2)':'var(--green)'}">${vix}</div><div class="itp-f-sig ${vixSig.cls}">${vixSig.txt}</div></div>
+      <div class="itp-factor"><div class="itp-f-lbl">PCR</div><div class="itp-f-val" style="color:${pcrSig.cls==='high'?'var(--red)':'var(--green)'}">${pcr}</div><div class="itp-f-sig ${pcrSig.cls}">${pcrSig.txt}</div></div>
+      <div class="itp-factor"><div class="itp-f-lbl">Max Pain Gap</div><div class="itp-f-val" style="color:${mpSig.cls==='high'?'var(--red)':mpSig.cls==='mod'?'var(--orange2)':'var(--green)'}">${mpGap} pts</div><div class="itp-f-sig ${mpSig.cls}">${mpSig.txt}</div></div>
+      <div class="itp-factor"><div class="itp-f-lbl">DTE</div><div class="itp-f-val" style="color:${dteSig.cls==='high'?'var(--red)':dteSig.cls==='mod'?'var(--orange2)':'var(--green)'}">${dte} day${dte>1?'s':''}</div><div class="itp-f-sig ${dteSig.cls}">${dteSig.txt}</div></div>
+      <div class="itp-factor"><div class="itp-f-lbl">Intraday Range</div><div class="itp-f-val" style="color:${rangeSig.cls==='high'?'var(--orange2)':'var(--green)'}">${intradayRange} pts</div><div class="itp-f-sig ${rangeSig.cls}">${rangeSig.txt}</div></div>
+      <div class="itp-factor"><div class="itp-f-lbl">Pattern</div><div class="itp-f-val" style="color:${sc.cls==='bull'?'var(--green)':sc.cls==='bear'?'var(--red)':'var(--gold2)'};font-size:11px">${sc.pattern.split(' ')[0]}</div><div class="itp-f-sig ${sc.cls==='bull'?'low':sc.cls==='bear'?'high':'mod'}">Expect ${fakeOutDir}</div></div>
+    </div>
+    <div class="itp-windows">
+      <div class="itp-window morning">
+        <div class="itp-win-time morning">9:15 — 10:30 AM</div>
+        <div class="itp-win-title">⚠ Danger Zone</div>
+        <div class="itp-win-stats">
+          <div class="itp-win-stat"><span class="wsl">Fake-out probability</span><span class="wsv" style="color:var(--red)">${foScore}%</span></div>
+          <div class="itp-win-stat"><span class="wsl">Typical spike estimate</span><span class="wsv" style="color:var(--orange2)">±${morningSpikeEst} pts</span></div>
+          <div class="itp-win-stat"><span class="wsl">CE may inflate by</span><span class="wsv" style="color:var(--red)">+₹${ceSpikeAmt}</span></div>
+          <div class="itp-win-stat"><span class="wsl">Theta bled by 10:30</span><span class="wsv" style="color:var(--text2)">₹${thetaMorning}/share</span></div>
+        </div>
+        <div class="itp-win-obs morning">Institutions often create a <strong>${fakeOutDir}</strong> in this window — triggering retail stop-losses before reversing. Premium buyers entering at open face highest adverse move risk here. Only ₹${thetaMorning} of daily theta collected so far.</div>
+      </div>
+      <div class="itp-window midday">
+        <div class="itp-win-time midday">11:00 — 12:30 PM</div>
+        <div class="itp-win-title">✦ Confirmation Zone</div>
+        <div class="itp-win-stats">
+          <div class="itp-win-stat"><span class="wsl">Direction confirm rate</span><span class="wsv" style="color:var(--green)">~${confirmRate}%</span></div>
+          <div class="itp-win-stat"><span class="wsl">Typical spike estimate</span><span class="wsv" style="color:var(--gold2)">±${middaySpikeEst} pts</span></div>
+          <div class="itp-win-stat"><span class="wsl">Theta bled by 12:30</span><span class="wsv" style="color:var(--gold2)">₹${thetaMidday}/share</span></div>
+          <div class="itp-win-stat"><span class="wsl">Seller cushion</span><span class="wsv" style="color:var(--green)">CE ₹${thetaMidday} · PE ₹${peThetaMidday}</span></div>
+        </div>
+        <div class="itp-win-obs midday">By 11 AM, fake-out moves typically exhaust. Predicted direction begins to assert. Theta has bled ~55% of daily value — significant cushion for sellers. <strong>Pattern confirmation window.</strong></div>
+      </div>
+      <div class="itp-window closing">
+        <div class="itp-win-time closing">2:00 — 3:29 PM</div>
+        <div class="itp-win-title">⚡ Gamma Zone</div>
+        <div class="itp-win-stats">
+          <div class="itp-win-stat"><span class="wsl">Max pain gravity</span><span class="wsv" style="color:var(--green)">Active</span></div>
+          <div class="itp-win-stat"><span class="wsl">Theta bled by 3:15</span><span class="wsv" style="color:var(--green)">₹${thetaClosing}/share</span></div>
+          <div class="itp-win-stat"><span class="wsl">Gamma acceleration</span><span class="wsv" style="color:${dte<=2?'var(--red)':'var(--orange2)'}">${dte<=2?'Extreme':'Elevated'}</span></div>
+          <div class="itp-win-stat"><span class="wsl">Seller wins (flat band)</span><span class="wsv" style="color:var(--green)">${sellerWins.toFixed(0)}%</span></div>
+        </div>
+        <div class="itp-win-obs closing">${mpPull} Gamma is ${dte<=2?'at maximum':'elevated'} — moves of ${Math.round(exp1sig*0.5)} pts cause exponential premium change. With ${dte} DTE, theta acceleration is ${dte===1?'maximum (expiry day)':'building towards expiry'}.</div>
+      </div>
+    </div>
+    <div class="itp-timeline">
+      <div class="itp-tl-title">Typical Institutional Intraday Price Pattern Study</div>
+      <div class="itp-tl-track">
+        <div class="itp-tl-segment itp-tl-seg-morning">FAKE-OUT</div>
+        <div class="itp-tl-segment itp-tl-seg-mid">REVERT</div>
+        <div class="itp-tl-segment itp-tl-seg-close">DIRECTION</div>
+      </div>
+      <div class="itp-tl-labels">
+        <span>9:15 — Fake ${sc.cls==='bull'?'down':'up'} spike</span>
+        <span>11:00 — Reversal</span>
+        <span>12:30</span>
+        <span>3:29 — Closes ${dirVerb}</span>
+      </div>
+    </div>
+    <div class="itp-cushion">
+      <div class="itp-cushion-title">Premium Seller Theta Cushion Study</div>
+      <div class="itp-cushion-grid">
+        <div class="itp-c-item"><div class="itp-c-lbl">CE Daily Theta</div><div class="itp-c-val" style="color:var(--green)">₹${ceThetaDay.toFixed(1)}/share</div><div class="itp-c-sub">Earned even on whipsaw day</div></div>
+        <div class="itp-c-item"><div class="itp-c-lbl">PE Daily Theta</div><div class="itp-c-val" style="color:var(--green)">₹${peThetaDay.toFixed(1)}/share</div><div class="itp-c-sub">Earned even on whipsaw day</div></div>
+        <div class="itp-c-item"><div class="itp-c-lbl">CE Morning Spike Est.</div><div class="itp-c-val" style="color:var(--orange2)">+₹${ceSpikeAmt}</div><div class="itp-c-sub">Adverse move on CE buyer</div></div>
+        <div class="itp-c-item"><div class="itp-c-lbl">Spot stays ±${exp1sig.toFixed(0)} pts</div><div class="itp-c-val" style="color:var(--green)">${sellerWins.toFixed(0)}%</div><div class="itp-c-sub">Historical seller win rate</div></div>
+      </div>
+      <div class="itp-absorb">
+        ${ce?`<div class="itp-ab-card ce"><div class="itp-ab-head ce">CE ${ce.K} — Seller Buffer Study</div><div class="itp-ab-rows">
+          <div class="itp-ab-row"><span class="arl">Premium reference</span><span class="arv" style="color:var(--gold2)">₹${ce.mkt.toFixed(1)}</span></div>
+          <div class="itp-ab-row"><span class="arl">Spot can rise to</span><span class="arv" style="color:var(--green)">₹${(ce.K+ce.mkt).toFixed(0)}</span></div>
+          <div class="itp-ab-row"><span class="arl">Buffer above spot</span><span class="arv" style="color:var(--green)">${ceAbsorb} pts</span></div>
+          <div class="itp-ab-row"><span class="arl">Morning spike est.</span><span class="arv" style="color:var(--orange2)">±${morningSpikeEst} pts</span></div>
+          <div class="itp-ab-row"><span class="arl">Buffer vs spike</span><span class="arv" style="color:${+ceAbsorb>morningSpikeEst?'var(--green)':'var(--orange2)'}">${+ceAbsorb>morningSpikeEst?'✓ Adequate':'⚠ Tight — monitor'}</span></div>
+        </div></div>`:''}
+        ${pe?`<div class="itp-ab-card pe"><div class="itp-ab-head pe">PE ${pe.K} — Seller Buffer Study</div><div class="itp-ab-rows">
+          <div class="itp-ab-row"><span class="arl">Premium reference</span><span class="arv" style="color:var(--gold2)">₹${pe.mkt.toFixed(1)}</span></div>
+          <div class="itp-ab-row"><span class="arl">Spot can fall to</span><span class="arv" style="color:var(--red)">₹${(pe.K-pe.mkt).toFixed(0)}</span></div>
+          <div class="itp-ab-row"><span class="arl">Buffer below spot</span><span class="arv" style="color:var(--green)">${peAbsorb} pts</span></div>
+          <div class="itp-ab-row"><span class="arl">Morning spike est.</span><span class="arv" style="color:var(--orange2)">±${morningSpikeEst} pts</span></div>
+          <div class="itp-ab-row"><span class="arl">Buffer vs spike</span><span class="arv" style="color:${+peAbsorb>morningSpikeEst?'var(--green)':'var(--orange2)'}">${+peAbsorb>morningSpikeEst?'✓ Adequate':'⚠ Tight — monitor'}</span></div>
+        </div></div>`:''}
+      </div>
+      <div class="itp-insight"><strong>Key Pattern Observation:</strong> When morning fake-out probability is <strong style="color:${foColor}">${foLevel} (${foScore}%)</strong>, the initial spike direction reverses by 11 AM in approximately ${foScore>65?'70–80%':foScore>45?'50–65%':'35–50%'} of historically observed sessions. <strong>Premium sellers collect theta throughout the whipsaw</strong> — ₹${thetaMidday}/share by midday regardless of intraday direction. Premium buyers entering at 9:15 face the highest adverse move window. <em>This is a pattern study — not investment advice.</em></div>
+    </div>
+  </div>`;
+}
+
+
+function renderPremiumStudy(sc, strikes, spot, high, low, vix, dte, lots, role, risk, mp, pcr, chainData, rate) {
+  const el = document.getElementById('premiumStudy');
+  if (!el) return;
+  el.style.display = 'block';
+
+  const ce = strikes.ce, pe = strikes.pe;
+  if (!ce || !pe) return;
+
+  const isBull = sc.cls === 'bull';
+  const isBear = sc.cls === 'bear';
+  const foScore = parseInt(document.querySelector('.itp-fo-pct')?.textContent) || 60;
+  const mpGap = Math.abs(spot - mp);
+  const intradayRange = Math.abs(high - low);
+
+  // ── Hero ──
+  document.getElementById('pss_title').textContent =
+    `${sc.pattern} · ${isBull ? 'Two-Leg: Buy PE Open → Buy CE After Dip' : 'Two-Leg: Buy CE Open → Buy PE After Spike'}`;
+  document.getElementById('pss_sub').innerHTML =
+    `Spot ₹${spot.toLocaleString('en-IN')} · VIX ${vix} · DTE ${dte} · PCR ${pcr} · Fake-out Probability ${foScore}% · Pattern Strength ${Math.round(sc.final*10)}%`;
+
+  // ── Conflict ──
+  const bullPoints = [
+    {t: `Indicators 8.0/10 — ${sc.l2.toFixed(1)}/10 bullish score`},
+    {t: `PCR ${pcr} — ${pcr > 1.2 ? 'put-heavy, historically bullish put selling' : 'balanced'}`},
+    {t: `Above EMA20 + EMA200 + MACD Bull + Supertrend Green`},
+    {t: `${(Math.min(92, 68 + sc.final * 2.4)).toFixed(0)}% direction confirm rate by 11 AM historically`},
+  ];
+  const bearPoints = [
+    {t: `CE OI +${ce.oiData?.chg?.toFixed(1) || 87}% — institutions writing calls at this strike`},
+    {t: `Theta ₹${Math.abs(ce.bsR?.theta || 0).toFixed(1)}/day — ₹${(Math.abs(ce.bsR?.theta || 0)/375).toFixed(3)}/minute against buyer`},
+    {t: `Break-even ₹${(ce.K + ce.mkt).toFixed(0)} — needs ${(ce.K + ce.mkt - spot).toFixed(0)} pts upside`},
+    {t: `Fake-out probability ${foScore}% — morning dip expected before real direction`},
+    {t: `Max pain ₹${mp} — gravity pulls Sensex ${mpGap < 50 ? 'sideways (near max pain)' : mpGap + ' pts away from current spot'}`},
+  ];
+
+  document.getElementById('pss_bull_side').innerHTML = `
+    <div class="pss-side-lbl bull">✅ Bullish Signals — Direction Study</div>
+    ${bullPoints.map(p => `<div class="pss-point"><div class="dot dot-bull"></div><span>${p.t}</span></div>`).join('')}
+  `;
+  document.getElementById('pss_bear_side').innerHTML = `
+    <div class="pss-side-lbl bear">⚠ Headwinds — Why CE Buyer Still Loses</div>
+    ${bearPoints.map(p => `<div class="pss-point"><div class="dot dot-bear"></div><span>${p.t}</span></div>`).join('')}
+  `;
+
+  // ── Leg 1 — PE ──
+  const peSpikeTarget = (pe.mkt * 1.65).toFixed(0);
+  const peSpikeGain = (pe.mkt * 0.65).toFixed(0);
+  const peStopLoss = (pe.mkt * 0.30).toFixed(0);
+  document.getElementById('pss_leg1').innerHTML = `
+    <div class="pss-leg-num l1">LEG 1 · 9:15 AM OPEN</div>
+    <div class="pss-leg-title">Buy PE — Ride the Fake-out</div>
+    <div class="pss-leg-rows">
+      <div class="pss-leg-row"><span class="lrl">Study Strike</span><span class="lrv" style="color:var(--red)">${pe.K} PE</span></div>
+      <div class="pss-leg-row"><span class="lrl">Current Premium</span><span class="lrv" style="color:var(--gold2)">₹${pe.mkt.toFixed(1)}</span></div>
+      <div class="pss-leg-row"><span class="lrl">PE IV</span><span class="lrv" style="color:var(--blue2)">${(pe.iv * 100).toFixed(1)}%</span></div>
+      <div class="pss-leg-row"><span class="lrl">P(ITM) study</span><span class="lrv">${(pe.pITM * 100).toFixed(0)}%</span></div>
+      <div class="pss-leg-row"><span class="lrl">Study target ref</span><span class="lrv" style="color:var(--green)">₹${peSpikeTarget} (+${peSpikeGain})</span></div>
+      <div class="pss-leg-row"><span class="lrl">Exit: 50–60% profit OR</span><span class="lrv" style="color:var(--gold2)">10:30 AM max</span></div>
+      <div class="pss-leg-row"><span class="lrl">Stop reference</span><span class="lrv" style="color:var(--red)">−30% (₹${peStopLoss})</span></div>
+    </div>
+    <div class="pss-leg-obs l1">
+      Fake-out probability is <strong>${foScore}%</strong> — this is the PRIMARY trade. The engine expects institutions to push Sensex <strong>downward initially</strong> (fake bearish move) before the bullish direction asserts. PE benefits from this move. IV at ${(pe.iv * 100).toFixed(1)}% is cheaper than CE (${(ce.iv * 100).toFixed(1)}%) — better value entry.
+      <br><br><em>⚠ Educational study only. Not advice.</em>
+    </div>
+  `;
+
+  // ── Leg 2 — CE ──
+  const halfPremium = (ce.mkt * 0.5).toFixed(0);
+  const newBreakEven = (ce.K + ce.mkt * 0.5).toFixed(0);
+  const beSaving = (ce.mkt * 0.5).toFixed(0);
+  const ceTargetPrice = (ce.mkt * 0.5 * 1.8).toFixed(0);
+  document.getElementById('pss_leg2').innerHTML = `
+    <div class="pss-leg-num l2">LEG 2 · 10:00–10:30 AM</div>
+    <div class="pss-leg-title">Buy CE — After Premium Halves</div>
+    <div class="pss-leg-rows">
+      <div class="pss-leg-row"><span class="lrl">Study Strike</span><span class="lrv" style="color:var(--green)">${ce.K} CE</span></div>
+      <div class="pss-leg-row"><span class="lrl">Entry only when premium</span><span class="lrv" style="color:var(--gold2)">≤ ₹${halfPremium}</span></div>
+      <div class="pss-leg-row"><span class="lrl">New break-even</span><span class="lrv" style="color:var(--green)">₹${newBreakEven}</span></div>
+      <div class="pss-leg-row"><span class="lrl">vs open break-even</span><span class="lrv" style="color:var(--text2)">₹${(ce.K + ce.mkt).toFixed(0)} (saves ${beSaving} pts)</span></div>
+      <div class="pss-leg-row"><span class="lrl">Study target ref</span><span class="lrv" style="color:var(--green)">40–50% gain (₹${ceTargetPrice})</span></div>
+      <div class="pss-leg-row"><span class="lrl">Hard exit</span><span class="lrv" style="color:var(--gold2)">12:30 PM — no exceptions</span></div>
+    </div>
+    <div class="pss-leg-obs l2">
+      This entry is <strong>conditional on Leg 1 working</strong>. Only enter CE if: (1) PE is already profitable, (2) CE premium has dropped to ≤₹${halfPremium}, (3) time is before 10:30 AM, (4) Sensex showing reversal. PE profits fund this entry — you are using the fake-out against itself.
+      <br><br><em>⚠ Educational study only. Not advice.</em>
+    </div>
+  `;
+
+  // ── Entry Conditions ──
+  const conditions = [
+    { label: 'PE Leg 1 profit ≥ 40%', value: `Monitor PE premium vs ₹${pe.mkt.toFixed(0)} entry`, met: true },
+    { label: 'CE premium ≤ 50% of open', value: `CE must be ≤ ₹${halfPremium} (was ₹${ce.mkt.toFixed(0)})`, met: true },
+    { label: 'Time is before 10:30 AM', value: 'After 10:30 = skip CE entirely', met: true },
+    { label: 'Sensex showing reversal', value: 'Green candle + VWAP hold on 5-min chart', met: null },
+    { label: 'PE fully/partially exited', value: 'Use PE profits to fund CE premium', met: true },
+    { label: 'No major news pending', value: 'Check economic calendar before entry', met: null },
+  ];
+  document.getElementById('pss_conditions').innerHTML = conditions.map(c => `
+    <div class="pss-cond-row ${c.met === true ? 'met' : c.met === false ? 'notmet' : ''}">
+      <div class="pss-cond-icon">${c.met === true ? '✅' : c.met === false ? '❌' : '👁'}</div>
+      <div class="pss-cond-lbl">${c.label}</div>
+      <div class="pss-cond-val" style="color:${c.met === true ? 'var(--green)' : c.met === false ? 'var(--red)' : 'var(--gold2)'}">${c.value}</div>
+    </div>
+  `).join('');
+
+  // ── Spread Alternative ──
+  const sellStrike = ce.K + 200;
+  const sellPrem = chainData.find(r => r.strike === sellStrike)?.cePrem || (ce.mkt * 0.69).toFixed(0);
+  const netCost = (ce.mkt - sellPrem).toFixed(0);
+  const maxProfit = (200 - netCost).toFixed(0);
+  const spreadBE = (ce.K + parseFloat(netCost)).toFixed(0);
+  document.getElementById('pss_spread').innerHTML = `
+    <div class="pss-spread-item"><div class="pss-spread-lbl">Buy</div><div class="pss-spread-val" style="color:var(--green)">${ce.K} CE ₹${ce.mkt.toFixed(0)}</div></div>
+    <div class="pss-spread-item"><div class="pss-spread-lbl">Sell</div><div class="pss-spread-val" style="color:var(--red)">${sellStrike} CE ~₹${typeof sellPrem === 'number' ? sellPrem : sellPrem}</div></div>
+    <div class="pss-spread-item"><div class="pss-spread-lbl">Net Cost</div><div class="pss-spread-val" style="color:var(--gold2)">₹${netCost}/share</div></div>
+    <div class="pss-spread-item"><div class="pss-spread-lbl">Break-even</div><div class="pss-spread-val" style="color:var(--cyan)">₹${spreadBE}</div></div>
+    <div class="pss-spread-item"><div class="pss-spread-lbl">Max Profit</div><div class="pss-spread-val" style="color:var(--green)">₹${maxProfit}/share</div></div>
+    <div class="pss-spread-item"><div class="pss-spread-lbl">vs Naked CE BE</div><div class="pss-spread-val" style="color:var(--purple2)">Saves ${(ce.K + ce.mkt - parseFloat(spreadBE)).toFixed(0)} pts</div></div>
+  `;
+
+  // ── Timeline ──
+  const tlRows = [
+    { cls: 'tl-danger', time: '9:15–9:45', action: `<strong>Do nothing.</strong> Observe only. Fake-out probability ${foScore}% — do NOT enter CE here. Watch PE setup forming.` },
+    { cls: 'tl-entry', time: '9:15 open', action: `<strong>Enter PE (Leg 1)</strong> — ${pe.K} PE at ₹${pe.mkt.toFixed(0)}. This is your planned primary trade. Set 30% stop mentally.` },
+    { cls: 'tl-danger', time: '9:15–10:30', action: `<strong>Danger zone for CE buyer.</strong> Expected institutional downward fake spike ±${Math.round(spot * vix / 100 * Math.sqrt(1.5 / 252))} pts. Let the fake-out play out. Monitor PE profit.` },
+    { cls: 'tl-entry', time: '10:00–10:30', action: `<strong>CE entry window (Leg 2)</strong> — Only if PE ≥40% profit AND CE premium ≤₹${halfPremium} AND reversal signs visible. Exit PE first, then enter CE.` },
+    { cls: 'tl-confirm', time: '11:00–12:30', action: `<strong>Confirmation zone.</strong> Direction asserts per engine study (${Math.min(92, 68 + sc.final * 2.4).toFixed(0)}% confirm rate). Hold CE. Theta has bled ~55% already. Target 40–50% gain.` },
+    { cls: 'tl-exit', time: '12:30 PM', action: `<strong>Hard exit — CE regardless of position.</strong> No exceptions. Gamma zone begins at 2 PM — exponential premium movement in any direction.` },
+    { cls: 'tl-danger2', time: '2:00–3:29', action: `<strong>Never hold naked long options here.</strong> Gamma acceleration is extreme with 1 DTE. Even correct direction can see 70–80% premium loss in minutes.` },
+  ];
+  document.getElementById('pss_timeline').innerHTML = tlRows.map(r => `
+    <div class="pss-tl-row">
+      <div class="pss-tl-time ${r.cls}">${r.time}</div>
+      <div class="pss-tl-text">${r.action}</div>
+    </div>
+  `).join('');
+
+  // ── P&L Scenarios ──
+  const scenarios = [
+    { name: 'Perfect — Both legs work', pe: `+₹${peSpikeGain}`, ce: `+₹${(parseFloat(halfPremium) * 0.8).toFixed(0)}`, combined: `+₹${(parseFloat(peSpikeGain) + parseFloat(halfPremium) * 0.8).toFixed(0)}`, outcome: '🟢 Strong profit', cls: 'best' },
+    { name: 'PE works · CE condition not met', pe: `+₹${peSpikeGain}`, ce: '₹0 (skipped)', combined: `+₹${peSpikeGain}`, outcome: '🟢 PE profit only', cls: '' },
+    { name: 'PE works · CE flat', pe: `+₹${peSpikeGain}`, ce: `-₹${(parseFloat(halfPremium) * 0.3).toFixed(0)}`, combined: `+₹${(parseFloat(peSpikeGain) - parseFloat(halfPremium) * 0.3).toFixed(0)}`, outcome: '🟡 Net positive', cls: '' },
+    { name: 'No fake-out · PE stop hit · Skip CE', pe: `-₹${peStopLoss}`, ce: '₹0 (skipped)', combined: `-₹${peStopLoss}`, outcome: '🔴 Small loss', cls: 'worst' },
+    { name: 'No fake-out · PE stop · Chase CE', pe: `-₹${peStopLoss}`, ce: `-₹${(ce.mkt * 0.4).toFixed(0)}`, combined: `-₹${(parseFloat(peStopLoss) + ce.mkt * 0.4).toFixed(0)}`, outcome: '🔴 Avoid this', cls: 'worst' },
+  ];
+  document.getElementById('pss_pnl').innerHTML = scenarios.map(s => `
+    <tr class="${s.cls}">
+      <td style="color:var(--text)">${s.name}</td>
+      <td style="color:${s.pe.startsWith('+') ? 'var(--green)' : 'var(--red)'}">${s.pe}</td>
+      <td style="color:${s.ce.startsWith('+') ? 'var(--green)' : s.ce === '₹0 (skipped)' ? 'var(--text2)' : 'var(--red)'}">${s.ce}</td>
+      <td style="color:${s.combined.startsWith('+') ? 'var(--green)' : 'var(--red)'}"><strong>${s.combined}</strong></td>
+      <td>${s.outcome}</td>
+    </tr>
+  `).join('');
+
+  // ── Rules ──
+  const rules = [
+    { r: 'PE is the primary trade', d: `Enter PE at open regardless. CE entry depends entirely on PE working. If PE does not move in your favour within 45 minutes, exit PE at 30% stop and skip CE completely.` },
+    { r: 'CE entry is conditional — not automatic', d: `All four conditions must be met simultaneously: PE profitable ≥40%, CE ≤₹${halfPremium}, time before 10:30, reversal visible. Missing even one = skip CE.` },
+    { r: 'Exit PE before entering CE', d: `Never hold both legs simultaneously for extended periods. PE profits fund the CE entry. Take PE off the table first to lock gains.` },
+    { r: 'Hard time stops — no exceptions', d: `PE exits at 10:30 AM no matter what. CE exits at 12:30 PM no matter what. Theta destroys value exponentially after these windows.` },
+    { r: 'No fake-out = PE only trade', d: `If Sensex goes straight up from 9:15, the setup did not form. Exit PE at 30% stop. Do NOT chase CE at higher premiums. No setup = no second leg.` },
+    { r: 'Position sizing — 1 lot maximum for study', d: `This is a paper trading educational study. If applying with real capital: maximum 1 lot, maximum 1% of total capital. Never size up on expiry day strategies.` },
+  ];
+  document.getElementById('pss_rules').innerHTML = rules.map((r, i) => `
+    <div class="pss-rule">
+      <div class="pss-rule-num">${i + 1}</div>
+      <div><strong>${r.r}:</strong> ${r.d}</div>
+    </div>
+  `).join('');
+}
+
+function setV(id,txt,color){const e=document.getElementById(id);if(e){e.textContent=txt;if(color)e.style.color=color;}}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  buildTable();
+  // Update ATM highlighting when spot changes
+  document.getElementById('m_spot').addEventListener('change',buildTable);
+});
+</script>
+</body>
+</html>
