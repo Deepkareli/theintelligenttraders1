@@ -142,6 +142,18 @@ footer{background:var(--ink);border-top:1px solid var(--edge);padding:32px 5vw;}
 .fb2{max-width:1200px;margin:28px auto 0;padding-top:20px;border-top:1px solid var(--edge);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:10px;color:var(--muted);}
 @media(max-width:880px){.mg{grid-template-columns:1fr;}.fi{grid-template-columns:1fr 1fr;}}
 @media(max-width:600px){nav,.hdr,.mw,footer{padding-left:16px;padding-right:16px;}.dg{grid-template-columns:repeat(2,1fr);}.nl{display:none;}.fi{grid-template-columns:1fr;}}
+/* ── DataBridge Sync Bar ── */
+#it-sync-bar{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;padding:8px 14px;background:var(--ink3);border:1px solid var(--edge2);border-radius:7px;font-size:10px;color:var(--muted2);margin-bottom:14px;line-height:1.5;}
+#it-sync-bar strong{color:var(--paper);}
+.it-sync-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
+.it-sync-dot.fresh{background:var(--green);box-shadow:0 0 5px var(--green);}
+.it-sync-dot.stale{background:var(--red);box-shadow:0 0 5px var(--red);}
+.it-sync-dot.empty{background:var(--muted);}
+.it-sync-pill{background:rgba(16,200,176,0.1);border:1px solid rgba(16,200,176,0.25);color:var(--teal);border-radius:3px;padding:1px 7px;font-size:9px;letter-spacing:.5px;}
+.it-sync-pill.red{background:rgba(216,64,64,0.1);border-color:rgba(216,64,64,0.3);color:var(--red);}
+.it-sync-pill.gold{background:rgba(200,160,32,0.1);border-color:rgba(200,160,32,0.25);color:var(--gold2);}
+.it-sync-saved{animation:syncpulse .6s ease;}
+@keyframes syncpulse{0%{opacity:1;}50%{opacity:.4;}100%{opacity:1;}}
 </style>
 </head>
 <body>
@@ -168,6 +180,9 @@ footer{background:var(--ink);border-top:1px solid var(--edge);padding:32px 5vw;}
 <div class="mw">
 <div class="mg">
 <div>
+  <!-- DataBridge Sync Bar -->
+  <div id="it-sync-bar"><span class="it-sync-dot empty"></span><span style="color:var(--muted)">DataBridge loading...</span></div>
+
   <div class="dh">
     <div class="dl">Select Analysis Date</div>
     <input type="date" class="di" id="adate">
@@ -340,6 +355,7 @@ window.onload = function() {
   document.getElementById('adate').value = y+'-'+m+'-'+day;
   renderH();
   checkLoginStatus();
+  itBridgeRefreshBar();
 };
 
 function checkLoginStatus() {
@@ -678,6 +694,19 @@ function runAI() {
     date: document.getElementById('adate').value
   };
   if(!d.spot || d.spot === 0) { alert('Please auto-fill or enter market data first.'); return; }
+
+  // ── DataBridge: save market data so Algo + Journal can read it ──
+  itBridgeSaveMarket({
+    date: d.date, underlying: d.ul,
+    spotPrice: d.spot, dayChange: d.dc,
+    vix: d.vix, vixChange: d.vc,
+    ivRank: d.ivr, pcr: d.pcr,
+    fiiNet: d.fii, advDecline: d.adr,
+    maxPain: d.mp, ema20: d.e20,
+    rsi: d.rsi, capital: d.cap
+  });
+  // ── End DataBridge ──
+
   var tr = getTrgs(d);
   var conf = updConf(tr);
   var rl = [];
@@ -699,6 +728,23 @@ function runAI() {
     var el = document.getElementById('ac');
     el.style.display = 'block';
     el.innerHTML = report;
+
+    // ── DataBridge: save signal output so Journal pre-fills trigger checkboxes ──
+    var triggerNames = {T1:'T1 VaR Breach',T2:'T2 FII Drawdown',T3:'T3 Max Pain',T4:'T4 Margin Cascade',T5:'T5 IV Crush',T6:'T6 Macro FII'};
+    var firedTriggers = rl.map(function(k){ return triggerNames[k] || k; });
+    var riskAmt = conf.r>=2 ? d.cap*0.02 : conf.r===1 ? d.cap*0.01 : 0;
+    itBridgeSaveSignal({
+      triggers: firedTriggers,
+      confluenceScore: conf.sc,
+      redCount: conf.r,
+      recSize: riskAmt,
+      stopLoss: Math.round(riskAmt * 0.3),
+      target:   Math.round(riskAmt * 0.6),
+      signalText: conf.r>=2?'HIGH CONVICTION':conf.r===1?'SINGLE TRIGGER':conf.y>=2?'WATCH':'NO TRADE'
+    });
+    itBridgeRefreshBar();
+    // ── End DataBridge ──
+
     saveH({
       date: d.date, ul: d.ul, sc: conf.sc, r: conf.r,
       signal: conf.r>=2?'HIGH CONVICTION':conf.r===1?'SINGLE TRIGGER':conf.y>=2?'WATCH':'NO TRADE',
@@ -748,6 +794,91 @@ function loadH(i) {
 function clearH() {
   if(confirm('Clear all history?')) { localStorage.removeItem('it_h'); renderH(); }
 }
+
+// ════════════════════════════════════════════════════════
+// DataBridge v1.0 — Dashboard Writer
+// Saves market data + signal to localStorage so
+// Algo (it-bridge.js) and Journal can auto-fill
+// ════════════════════════════════════════════════════════
+var IT_MARKET_KEY = 'it_shared_market';
+var IT_SIGNAL_KEY = 'it_shared_signal';
+
+function itBridgeSaveMarket(data) {
+  data._savedAt = Date.now();
+  data._source  = 'dashboard';
+  try { localStorage.setItem(IT_MARKET_KEY, JSON.stringify(data)); } catch(e){}
+}
+
+function itBridgeSaveSignal(data) {
+  data._savedAt = Date.now();
+  data._source  = 'dashboard';
+  try { localStorage.setItem(IT_SIGNAL_KEY, JSON.stringify(data)); } catch(e){}
+}
+
+function itBridgeLoadMarket() {
+  try { return JSON.parse(localStorage.getItem(IT_MARKET_KEY)); } catch(e){ return null; }
+}
+
+function itBridgeLoadSignal() {
+  try { return JSON.parse(localStorage.getItem(IT_SIGNAL_KEY)); } catch(e){ return null; }
+}
+
+function itBridgeAgeStr(ts) {
+  if(!ts) return 'never';
+  var m = Math.floor((Date.now()-ts)/60000);
+  if(m < 1) return 'just now';
+  if(m < 60) return m+'m ago';
+  var h = Math.floor(m/60);
+  if(h < 24) return h+'h ago';
+  return Math.floor(h/24)+'d ago';
+}
+
+function itBridgeRefreshBar() {
+  var bar = document.getElementById('it-sync-bar');
+  if(!bar) return;
+  var mkt = itBridgeLoadMarket();
+  var sig = itBridgeLoadSignal();
+  var capRaw = localStorage.getItem('it_shared_capital');
+  var cap = null; try { cap = JSON.parse(capRaw); } catch(e){}
+
+  var html = '';
+  if(!mkt) {
+    html = '<span class="it-sync-dot empty"></span><span style="color:var(--muted)">DataBridge — no data yet. Run analysis to sync with Algo &amp; Journal.</span>';
+  } else {
+    var stale = (Date.now() - mkt._savedAt) > 4*60*60*1000;
+    html  = '<span class="it-sync-dot '+(stale?'stale':'fresh')+'"></span>';
+    html += '<strong>DataBridge</strong>';
+    html += ' &nbsp;|&nbsp; Synced: <span style="color:'+(stale?'var(--gold2)':'var(--teal)')+'">'+itBridgeAgeStr(mkt._savedAt)+'</span>';
+    html += ' &nbsp;|&nbsp; '+mkt.underlying+' @ <strong>'+Number(mkt.spotPrice).toLocaleString('en-IN')+'</strong>';
+    html += ' &nbsp;|&nbsp; VIX: <strong>'+mkt.vix+'</strong>';
+    html += ' &nbsp;|&nbsp; IVR: <strong>'+mkt.ivRank+'</strong>';
+    if(sig) {
+      var tc = sig.redCount>=2?'teal':sig.redCount===1?'gold':'';
+      var tpills = (sig.triggers||[]).map(function(t){
+        return '<span class="it-sync-pill '+(sig.redCount>=2?'':'gold')+'">'+t+'</span>';
+      }).join(' ');
+      html += ' &nbsp;|&nbsp; Triggers: '+(tpills||'<span style="color:var(--muted)">None</span>');
+      html += ' &nbsp;|&nbsp; Score: <span style="color:var(--gold2)"><strong>'+sig.confluenceScore+'</strong>/100</span>';
+    }
+    if(cap) {
+      var phcol = cap.phase===1?'var(--red)':cap.phase===2?'var(--blue)':'var(--green)';
+      html += ' &nbsp;|&nbsp; Capital: <strong>Rs'+Number(cap.amount).toLocaleString('en-IN')+'</strong>';
+      html += ' &nbsp;|&nbsp; Phase: <strong style="color:'+phcol+'">P'+cap.phase+'</strong>';
+    }
+    html += ' &nbsp;<span style="font-size:9px;color:var(--teal);letter-spacing:1px;">● LIVE → Algo &amp; Journal</span>';
+  }
+  bar.innerHTML = html;
+}
+
+// Refresh bar on page load and after data changes
+window.addEventListener('storage', function(e) {
+  if(e.key === IT_MARKET_KEY || e.key === IT_SIGNAL_KEY || e.key === 'it_shared_capital') {
+    itBridgeRefreshBar();
+  }
+});
+// ════════════════════════════════════════════════════════
+// End DataBridge
+// ════════════════════════════════════════════════════════
 </script>
 </body>
 </html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataBridge Integration Guide — IntelligentTraders</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e14;--bg2:#0f1520;--bg3:#141c2b;--border:#1e2d45;--text:#e2e8f0;--muted:#64748b;--accent:#3b82f6;--green:#22c55e;--orange:#f97316;--purple:#a855f7;--mono:'IBM Plex Mono',monospace;--display:'Syne',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13px;line-height:1.7}
+.page{max-width:960px;margin:0 auto;padding:40px 24px}
+h1{font-family:var(--display);font-size:28px;font-weight:800;margin-bottom:8px}
+h2{font-family:var(--display);font-size:18px;font-weight:700;margin:32px 0 12px;color:var(--accent)}
+h3{font-size:13px;font-weight:600;color:var(--text);margin:20px 0 8px;text-transform:uppercase;letter-spacing:.6px}
+p{color:var(--muted);margin-bottom:12px;font-size:12px}
+.subtitle{color:var(--muted);font-size:13px;margin-bottom:32px}
+.step-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:24px 0}
+.step-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px;position:relative}
+.step-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:8px 8px 0 0}
+.step-card.dashboard::before{background:var(--accent)}
+.step-card.algo::before{background:var(--purple)}
+.step-card.journal::before{background:var(--green)}
+.step-num{font-family:var(--display);font-weight:800;font-size:32px;color:var(--border);line-height:1;margin-bottom:8px}
+.step-title{font-family:var(--display);font-weight:700;font-size:14px;margin-bottom:6px}
+.step-desc{font-size:11px;color:var(--muted);line-height:1.6}
+.flow{display:flex;align-items:center;gap:8px;margin:24px 0;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap}
+.flow-node{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:8px 14px;font-size:12px;font-weight:600}
+.flow-node.db{border-color:#3b82f640;color:var(--accent)}
+.flow-node.algo{border-color:#a855f740;color:var(--purple)}
+.flow-node.journal{border-color:#22c55e40;color:var(--green)}
+.flow-arrow{color:var(--muted);font-size:16px}
+.flow-label{font-size:10px;color:var(--muted)}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:16px;overflow-x:auto;font-size:12px;line-height:1.6;margin:8px 0 16px}
+code{color:#7dd3fc}
+.highlight{color:var(--green)}
+.comment{color:var(--muted)}
+.tag{color:#f9a8d4}
+.attr{color:#86efac}
+.val{color:#fde68a}
+.fn{color:#c4b5fd}
+.alert{padding:12px 16px;border-radius:6px;font-size:12px;margin:16px 0}
+.alert-info{background:#3b82f610;border:1px solid #3b82f630;color:#93c5fd}
+.alert-warn{background:#f9731610;border:1px solid #f9731630;color:#fdba74}
+.alert-success{background:#22c55e10;border:1px solid #22c55e30;color:#86efac}
+.file-badge{display:inline-block;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:11px;color:var(--text);margin-bottom:8px}
+.divider{height:1px;background:var(--border);margin:32px 0}
+.sync-preview{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-size:11px;color:var(--muted);margin:12px 0}
+table{width:100%;border-collapse:collapse;margin:12px 0}
+th{background:var(--bg3);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.6px;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.pill-read{background:#3b82f620;color:var(--accent);border:1px solid #3b82f640}
+.pill-write{background:#22c55e20;color:var(--green);border:1px solid #22c55e40}
+.pill-rw{background:#a855f720;color:var(--purple);border:1px solid #a855f740}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+  <div style="background:var(--accent);width:4px;height:40px;border-radius:2px"></div>
+  <div>
+    <h1>DataBridge Integration Guide</h1>
+    <div class="subtitle">How to wire Dashboard → Algo → Journal so one data entry updates all three pages</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="flow">
+  <div class="flow-node db">📊 Dashboard</div>
+  <div class="flow-arrow">→</div>
+  <div>
+    <div style="font-size:10px;color:var(--muted)">saves to</div>
+    <div style="font-size:11px;color:var(--text);font-weight:600">localStorage</div>
+    <div style="font-size:10px;color:var(--muted)">'it_shared_market'</div>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node algo">⚡ Algo</div>
+  <div class="flow-arrow">→</div>
+  <div>
+    <div style="font-size:10px;color:var(--muted)">saves triggers to</div>
+    <div style="font-size:11px;color:var(--text);font-weight:600">localStorage</div>
+    <div style="font-size:10px;color:var(--muted)">'it_shared_signal'</div>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-node journal">📓 Journal</div>
+  <div style="margin-left:auto;font-size:10px;color:var(--muted)">All on same browser · No server needed</div>
+</div>
+
+<div class="alert alert-info">
+  ℹ  Everything uses <strong>browser localStorage</strong> — no server, no API, no cost. Works instantly. Data persists until browser cache is cleared. Works across tabs in the same browser.
+</div>
+
+<!-- STEP CARDS -->
+<div class="step-grid">
+  <div class="step-card dashboard">
+    <div class="step-num">01</div>
+    <div class="step-title" style="color:var(--accent)">Dashboard</div>
+    <div class="step-desc">User enters market data once. On "Run Analysis", bridge saves ALL fields to shared storage. Becomes the single source of truth.</div>
+  </div>
+  <div class="step-card algo">
+    <div class="step-num">02</div>
+    <div class="step-title" style="color:var(--purple)">Algo Tool</div>
+    <div class="step-desc">Loads → auto-fills all 13 fields from bridge. After analysis runs, saves trigger output (T1–T6), confluence score, SL, Target back to bridge.</div>
+  </div>
+  <div class="step-card journal">
+    <div class="step-num">03</div>
+    <div class="step-title" style="color:var(--green)">Journal</div>
+    <div class="step-desc">When logging a trade, auto-fills VIX, IV Rank, triggers fired, recommended SL/Target, and current capital phase — zero re-entry.</div>
+  </div>
+</div>
+
+<!-- WHAT SYNCS -->
+<h2>📋 What Syncs Where</h2>
+<table>
+  <thead>
+    <tr><th>Field</th><th>Dashboard</th><th>Algo</th><th>Journal</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Underlying</td><td><span class="pill pill-write">writes</span></td><td><span class="pill pill-read">reads</span></td><td><span class="pill pill-read">reads</span></td></tr>
+    <tr><td>Spot Price</td><td><span class="pill pill-write">writes</span></td><td><span class="pill pill-read">reads</span></td><td>—</td></tr>
+    <tr><td>India VIX</td><td><span class="pill pill-write">writes</span></td><td><span class="pill pill-read">reads</span></td><td><span class="pill pill-read">reads → fVix</span></td></tr>
+    <tr><td>IV Rank</td><td><span class="pill pill-write">writes</span></td><td><span class="pill pill-read">reads</span></td><td><span class="pill pill-read">reads → fIVR</span></td></tr>
+    <tr><td>PCR, FII, A/D, Max Pain, EMA, RSI</td><td><span class="pill pill-write">writes</span></td><td><span class="pill pill-read">reads</span></td><td>—</td></tr>
+    <tr><td>T1–T6 Triggers fired</td><td>—</td><td><span class="pill pill-write">writes</span></td><td><span class="pill pill-read">reads → pre-checks boxes</span></td></tr>
+    <tr><td>Confluence Score</td><td>—</td><td><span class="pill pill-write">writes</span></td><td>shown in sync bar</td></tr>
+    <tr><td>Recommended SL / Target</td><td>—</td><td><span class="pill pill-write">writes</span></td><td><span class="pill pill-read">reads → fSL, fTarget</span></td></tr>
+    <tr><td>Capital & Phase</td><td>—</td><td>—</td><td><span class="pill pill-rw">reads + writes</span></td></tr>
+  </tbody>
+</table>
+
+<div class="divider"></div>
+
+<!-- STEP 1: COPY JS FILE -->
+<h2>📁 Step 1 — Add it-bridge.js to your project</h2>
+<p>Copy the <strong>it-bridge.js</strong> file into your website's root folder (same level as dashboard.html, journal.html, algo.html).</p>
+
+<div class="alert alert-success">
+  ✅ The bridge file is included in the download. Place it at: <code>/it-bridge.js</code> (website root)
+</div>
+
+<!-- STEP 2: DASHBOARD -->
+<div class="divider"></div>
+<h2>📊 Step 2 — Wire dashboard.html</h2>
+<div class="file-badge">dashboard.html (or ai-engine page)</div>
+
+<h3>A) Add the script tag</h3>
+<p>Paste this just before your closing <code>&lt;/body&gt;</code> tag:</p>
+<pre><code><tag>&lt;script</tag> <attr>src</attr>=<val>"/it-bridge.js"</val><tag>&gt;&lt;/script&gt;</tag></code></pre>
+
+<h3>B) Add a sync bar host div</h3>
+<p>Find the main wrapper div in your dashboard HTML. Add <code>id="sync-bar-host"</code> to it, or add this div just inside your form section:</p>
+<pre><code><comment>&lt;!-- Add this div just above your market data form --&gt;</comment>
+<tag>&lt;div</tag> <attr>id</attr>=<val>"sync-bar-host"</val><tag>&gt;&lt;/div&gt;</tag></code></pre>
+
+<h3>C) Save data when user clicks "Run Analysis"</h3>
+<p>Find the button or function that triggers analysis. Add ONE line to save market data before running:</p>
+<pre><code><comment>// Find your existing "Run Analysis" click handler and add this line at the top:</comment>
+
+<fn>document.querySelector</fn>(<val>'[onclick*="runAnalysis"], #runBtn, .run-btn'</val>)
+  .<fn>addEventListener</fn>(<val>'click'</val>, <fn>function</fn>() {
+
+  <comment>// ← ADD THIS LINE (saves all form fields to bridge)</comment>
+  <fn>ITBridge.collectDashboard</fn>();
+
+  <comment>// ... rest of your existing analysis code ...</comment>
+});</code></pre>
+
+<h3>D) Save signal output when analysis completes</h3>
+<p>Find where your analysis result is rendered. After you have the trigger results, add:</p>
+<pre><code><comment>// After your trigger detection logic runs, add this call:</comment>
+<fn>ITBridge.saveSignal</fn>({
+  triggers:        firedTriggers,      <comment>// array like ['T1 VaR Breach', 'T5 IV Crush']</comment>
+  confluenceScore: confluenceScore,    <comment>// number 0-100</comment>
+  recSize:         recommendedSize,    <comment>// ₹ amount</comment>
+  stopLoss:        stopLossPrice,      <comment>// ₹ premium</comment>
+  target:          targetPrice,        <comment>// ₹ premium</comment>
+  recType:         'Long Call',        <comment>// trade type suggestion</comment>
+  rationale:       aiRationale,        <comment>// text from AI report</comment>
+});</code></pre>
+
+<div class="alert alert-warn">
+  ⚠ If your analysis variables have different names, just map them. The key thing is calling <code>ITBridge.saveSignal()</code> after triggers are detected.
+</div>
+
+<!-- STEP 3: ALGO -->
+<div class="divider"></div>
+<h2>⚡ Step 3 — Wire algo.html</h2>
+<div class="file-badge">algo.html</div>
+
+<h3>A) Add the script tag</h3>
+<pre><code><tag>&lt;script</tag> <attr>src</attr>=<val>"/it-bridge.js"</val><tag>&gt;&lt;/script&gt;</tag></code></pre>
+
+<h3>B) Add sync bar host</h3>
+<pre><code><comment>&lt;!-- Add just above your market data input panel --&gt;</comment>
+<tag>&lt;div</tag> <attr>id</attr>=<val>"sync-bar-host"</val><tag>&gt;&lt;/div&gt;</tag></code></pre>
+
+<h3>C) Add an "Auto-fill from Dashboard" button</h3>
+<p>The sync bar already has an auto-fill button. But you can also add a standalone button next to your form:</p>
+<pre><code><tag>&lt;button</tag> <attr>onclick</attr>=<val>"ITBridge.fillAlgo()"</val> <attr>class</attr>=<val>"your-existing-btn-class"</val><tag>&gt;</tag>
+  ⬇ Load from Dashboard
+<tag>&lt;/button&gt;</tag></code></pre>
+
+<h3>D) Save trigger results after Algo runs</h3>
+<p>Find where your algo outputs triggers/confluence. Add the same <code>saveSignal</code> call:</p>
+<pre><code><comment>// In your algo's "RUN ANALYSIS" output handler:</comment>
+<fn>ITBridge.saveSignal</fn>({
+  triggers:       algoFiredTriggers,
+  confluenceScore: algoConfluence,
+  recSize:        algoRecSize,
+  stopLoss:       algoStopLoss,
+  target:         algoTarget,
+});</code></pre>
+
+<!-- STEP 4: JOURNAL -->
+<div class="divider"></div>
+<h2>📓 Step 4 — Wire journal.html</h2>
+<div class="file-badge">journal.html</div>
+
+<p>If using the <strong>new journal.html</strong> we built — it already has full bridge integration built in. Just add the script tag:</p>
+<pre><code><tag>&lt;script</tag> <attr>src</attr>=<val>"/it-bridge.js"</val><tag>&gt;&lt;/script&gt;</tag></code></pre>
+
+<p>If using your existing journal.html, add the script tag AND add a sync bar host div, then add this button to your "Log New Trade" form:</p>
+<pre><code><comment>&lt;!-- Add this button at the top of your Log Trade form --&gt;</comment>
+<tag>&lt;button</tag> <attr>onclick</attr>=<val>"ITBridge.fillJournal()"</val> <attr>type</attr>=<val>"button"</val><tag>&gt;</tag>
+  ⬇ Auto-fill from today's Dashboard analysis
+<tag>&lt;/button&gt;</tag>
+
+<comment>&lt;!-- And add sync-bar-host somewhere visible --&gt;</comment>
+<tag>&lt;div</tag> <attr>id</attr>=<val>"sync-bar-host"</val><tag>&gt;&lt;/div&gt;</tag></code></pre>
+
+<h3>Save capital updates back to bridge</h3>
+<p>When a trade is closed and capital changes, update the bridge:</p>
+<pre><code><comment>// After closing a trade and updating capital in your journal logic:</comment>
+<fn>ITBridge.saveCapital</fn>(newCapitalAmount, currentPhase);
+<comment>// e.g.: ITBridge.saveCapital(27500, 1);</comment></code></pre>
+
+<!-- STEP 5: TEST -->
+<div class="divider"></div>
+<h2>✅ Step 5 — Test the flow</h2>
+<div class="alert alert-success">
+<strong>Test checklist:</strong><br><br>
+1. Open Dashboard → enter market data → click Run Analysis<br>
+2. Check: green sync bar appears with today's data ✅<br>
+3. Open Algo in a new tab → check: fields auto-filled ✅<br>
+4. Run Algo analysis → check: triggers saved ✅<br>
+5. Open Journal → click "Log New Trade" → check: VIX, IVR, trigger checkboxes pre-filled ✅<br>
+6. Close a trade → check: capital updates in sync bar on all pages ✅
+</div>
+
+<!-- SYNC BAR PREVIEW -->
+<div class="divider"></div>
+<h2>👁 What the Sync Bar Looks Like</h2>
+<p>This bar appears at the top of every wired page automatically:</p>
+<div class="sync-preview">
+  🟢 <strong style="color:#e2e8f0">DataBridge</strong> &nbsp;|&nbsp;
+  Last sync: <span style="color:#22c55e">3m ago</span> &nbsp;|&nbsp;
+  Date: <span style="color:#e2e8f0">2026-05-24</span> &nbsp;|&nbsp;
+  Nifty 50 @ <span style="color:#e2e8f0">24,520</span> &nbsp;|&nbsp;
+  VIX: <span style="color:#e2e8f0">14.2</span> &nbsp;|&nbsp;
+  IVR: <span style="color:#e2e8f0">38</span> &nbsp;|&nbsp;
+  Triggers: <span style="color:#22c55e">T5 IV Crush, T3 Max Pain</span> &nbsp;|&nbsp;
+  Confluence: <span style="color:#a855f7">72</span> &nbsp;|&nbsp;
+  Capital: <span style="color:#3b82f6">₹25,000</span> &nbsp;|&nbsp;
+  Phase: <span style="color:#a855f7">P1</span> &nbsp;
+  <button style="background:#1e2d45;border:1px solid #243550;color:#e2e8f0;font-size:10px;padding:3px 10px;border-radius:4px;cursor:pointer">⬇ Auto-fill from Dashboard</button>
+</div>
+<p>🔴 dot = data older than 4 hours (re-enter today's data) &nbsp; 🟢 dot = data is fresh</p>
+
+<!-- TROUBLESHOOTING -->
+<div class="divider"></div>
+<h2>🔧 Troubleshooting</h2>
+<table>
+  <tr><th>Problem</th><th>Fix</th></tr>
+  <tr><td>Sync bar not appearing</td><td>Add <code>id="sync-bar-host"</code> to your main wrapper div</td></tr>
+  <tr><td>Fields not auto-filling</td><td>Your input IDs may differ — check browser console for field mapping. Edit <code>fieldMap</code> in it-bridge.js</td></tr>
+  <tr><td>Data not persisting</td><td>User cleared browser cache/localStorage. Normal — re-enter on Dashboard</td></tr>
+  <tr><td>Works in one tab but not another</td><td>Both pages must load it-bridge.js. Check script tag on each page</td></tr>
+  <tr><td>Netlify shows old version</td><td>Hard refresh (Ctrl+Shift+R) after deploying. Netlify may cache JS files</td></tr>
+</table>
+
+<div class="divider"></div>
+<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px 0">
+  IntelligentTraders DataBridge v1.0 · localStorage-based · No server required · Works on Netlify as-is<br>
+  Educational only · Not SEBI registered advice
+</div>
+
+</div>
+</body>
+</html>
